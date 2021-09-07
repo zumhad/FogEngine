@@ -152,6 +152,7 @@ void Application::InitApp()
 	mStarted = true;
 }
 
+
 int32 Application::Run()
 {
 	InitApp();
