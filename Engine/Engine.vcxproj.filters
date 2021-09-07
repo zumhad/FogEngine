@@ -1,0 +1,149 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{e3c168dd-e88b-4496-bf19-531d8bb7bfcf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{899181f3-935d-4308-b12b-3413bff5f6f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="stuff">
+      <UniqueIdentifier>{99d32c22-8aff-4793-aa68-bde9d70865cb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Engine\Application.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Camera.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\CustomString.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Direct3D.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\dxerr.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\EditHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Input.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\MessageHandler.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\ParseFile.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\PathHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Engine\Trace.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Cube.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Application.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Camera.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\CustomString.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\CustomTypes.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Definitions.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Direct3D.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\DirectXIncludes.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\dxerr.h">
+      <Filter>stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\EditHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Functions.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Engine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Input.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Matrix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\ParseFile.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\PathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Quaternion.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Scalar.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Trace.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Vector.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\VirtualKeys.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Engine\Core.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceInput.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Properties.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Devices.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Cube.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\shader.hlsl">
+      <Filter>stuff</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
