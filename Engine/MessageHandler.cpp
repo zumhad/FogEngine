@@ -100,6 +100,17 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             return 0;
         }
 
+        case WM_MOVE:
+        {
+            if (app.mStarted)
+            {
+                app.mKeyboard->ResetKeysPress();
+                app.mMouse->ResetKeysPress();
+            }
+
+            return 0;
+        }
+
         case WM_ERASEBKGND:
         {
             if (app.mIsGame) break;

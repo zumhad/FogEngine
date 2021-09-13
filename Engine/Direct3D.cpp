@@ -7,6 +7,8 @@
 
 #include <d3dcompiler.h>
 #include <directxcolors.h>
+#include <dxgidebug.h>
+
 using namespace DirectX;
 
 namespace Module
@@ -36,8 +38,8 @@ namespace Module
         DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
 
 #ifdef _DEBUG
-        shaderFlags |= D3DCOMPILE_DEBUG;
-        shaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+        dwShaderFlags |= D3DCOMPILE_DEBUG;
+        dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
         ID3DBlob* pErrorBlob = nullptr;

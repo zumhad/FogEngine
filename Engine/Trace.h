@@ -3,7 +3,7 @@
 #include <string>
 #include <windows.h>
 #include <comdef.h>
-//#include "dxerr.h"
+#include "dxerr.h"
 
 
 #if defined(DEBUG) | defined(_DEBUG) // TRACE
