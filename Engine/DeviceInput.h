@@ -54,11 +54,13 @@ enum KeyboardInput
 
 enum MouseInput
 {
-	MOUSE_SCROLL
+	//MOUSE_SCROLL,
+	MOUSE_LEFT,
+	MOUSE_RIGHT
 };
 
 enum MouseAxis
 {
 	MOUSE_X,
-	MOUSE_Y,
+	MOUSE_Y
 };

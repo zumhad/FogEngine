@@ -25,7 +25,7 @@ void MyHandler()
 	if (xMove || zMove) Edit::CameraMoveLocal(xMove, 0.0f, zMove);
 
 	Edit::CameraRotate(-pitch, yaw, 0);
-	Edit::CameraSetRotationX(Clamp(Edit::CameraGetRotateX(), -XM_PIDIV2, XM_PIDIV2));
+	//Edit::CameraSetRotationX(Clamp(Edit::CameraGetRotateX(), -XM_PIDIV2, XM_PIDIV2));
 		
 	if (Input::IsKeyDown(KEY_ESC))
 		Edit::Exit();
@@ -33,7 +33,8 @@ void MyHandler()
 
 void MyInit()
 {
-	
+	/*Cube c;
+	ObjectManager::Add(c);*/
 }
 
 class Editor : public Application
@@ -41,24 +42,13 @@ class Editor : public Application
 public:
 	Editor()
 	{
-		mProperties.sceneColor = RGB(255, 255, 255);
-		mProperties.editorColor = RGB(70, 70, 70);
-		mProperties.handleKey = MyHandler;
-		mProperties.init = MyInit;
-		//mProperties.captionHeight = 50;
-		//mProperties.camera.position = { 0.0f, 3.0f, -10.0f };
-		mProperties.camera.rotationSmooth = 5000.0f;
-		mProperties.camera.moveSmooth = 2000.0f;
-		//mProperties.maxFps = 0;
-		//mProperties.sceneRect = { 0, 0, 1280, 720 };
-
-#ifdef GAME_APP
-		mProperties.isGame = true;
-		mProperties.showCursor = true;
-#else
-		mProperties.isGame = false;
-		mProperties.showCursor = true;
-#endif
+		prop.camera.moveSmooth = 20;
+		prop.camera.rotationSmooth = 50;
+		prop.foo.update = MyHandler;
+		prop.editor.color = RGB(70, 70, 70);
+		//prop.fpsMax = 300;
+		//prop.isGame = true;
+		//prop.cursorShow = false;
 	}
 };
 

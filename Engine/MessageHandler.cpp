@@ -1,303 +1,317 @@
 #include "Application.h"
 
-#include <windowsx.h>
-
+#include "Definitions.h"
 #include "EditHelper.h"
 #include "Devices.h"
 #include "Direct3D.h"
+#include "Time.h"
 
+#include <windowsx.h>
 
 void Application::AdjustMaxClient(RECT& rect)
 {
-	WINDOWPLACEMENT placement = {};
-	GetWindowPlacement(mHwnd, &placement);
+    WINDOWPLACEMENT placement = {};
+    GetWindowPlacement(mHwnd, &placement);
 
-	if (placement.showCmd != SW_MAXIMIZE) return;
+    if (placement.showCmd != SW_MAXIMIZE) return;
 
-	HMONITOR monitor = MonitorFromWindow(mHwnd, MONITOR_DEFAULTTONULL);
+    HMONITOR monitor = MonitorFromWindow(mHwnd, MONITOR_DEFAULTTONULL);
 
-	MONITORINFO monitor_info{};
-	monitor_info.cbSize = sizeof(monitor_info);
+    MONITORINFO monitor_info{};
+    monitor_info.cbSize = sizeof(monitor_info);
 
-	if (!GetMonitorInfoW(monitor, &monitor_info)) return;
+    if (!GetMonitorInfoW(monitor, &monitor_info)) return;
 
-	rect = monitor_info.rcWork;
+    rect = monitor_info.rcWork;
 }
 
 LRESULT Application::HitTest()
 {
-	static int32 xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-	static int32 yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-	int32 x = mMouse->GetX();
-	int32 y = mMouse->GetY();
+    static int32 xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static int32 yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    int32 x = mMouse->GetX();
+    int32 y = mMouse->GetY();
 
-	int16 result =
-		BORDER_LEFT * (x < xBorder) |
-		BORDER_RIGHT * (x >= (RECT_WIDTH(mProperties.editorRect) - xBorder)) |
-		BORDER_TOP * (y < (xBorder)) |
-		BORDER_BOTTOM * (y >= (RECT_HEIGHT(mProperties.editorRect) - yBorder));
+    int16 result =
+        BORDER_LEFT * (x < xBorder) |
+        BORDER_RIGHT * (x >= (Singlton.editor.width - xBorder)) |
+        BORDER_TOP * (y < (xBorder)) |
+        BORDER_BOTTOM * (y >= (Singlton.editor.height - yBorder));
 
-	switch (result)
-	{
-	case BORDER_LEFT: return HTLEFT;
-	case BORDER_RIGHT: return HTRIGHT;
-	case BORDER_TOP: return HTTOP;
-	case BORDER_BOTTOM: return HTBOTTOM;
-	case BORDER_TOP | BORDER_LEFT: return HTTOPLEFT;
-	case BORDER_TOP | BORDER_RIGHT: return HTTOPRIGHT;
-	case BORDER_BOTTOM | BORDER_LEFT: return HTBOTTOMLEFT;
-	case BORDER_BOTTOM | BORDER_RIGHT: return HTBOTTOMRIGHT;
-	default: return ((y <= mProperties.captionHeight) ? HTCAPTION : HTCLIENT);
-	}
+    switch (result)
+    {
+    case BORDER_LEFT: return HTLEFT;
+    case BORDER_RIGHT: return HTRIGHT;
+    case BORDER_TOP: return HTTOP;
+    case BORDER_BOTTOM: return HTBOTTOM;
+    case BORDER_TOP | BORDER_LEFT: return HTTOPLEFT;
+    case BORDER_TOP | BORDER_RIGHT: return HTTOPRIGHT;
+    case BORDER_BOTTOM | BORDER_LEFT: return HTBOTTOMLEFT;
+    case BORDER_BOTTOM | BORDER_RIGHT: return HTBOTTOMRIGHT;
+    default: return ((y <= Singlton.captionHeight) ? HTCAPTION : HTCLIENT);
+    }
 }
 
-LRESULT CALLBACK Application::EditorProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+
+LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	static Application* pApp = nullptr;
+    static Application* pApp = 0;
 
-	if (msg == WM_NCCREATE)
-	{
-		LPCREATESTRUCTW userdata = reinterpret_cast<LPCREATESTRUCTW>(lParam);
-		SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(userdata->lpCreateParams));
+    if (msg == WM_NCCREATE)
+    {
+        LPCREATESTRUCTW userdata = reinterpret_cast<LPCREATESTRUCTW>(lparam);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(userdata->lpCreateParams));
+        pApp = (Application*)(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    }
 
-		pApp = (Application*)(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
-	}
+    if (!pApp) return DefWindowProc(hwnd, msg, wparam, lparam);
+    static Application& app = *pApp;
 
-	if (!pApp) return DefWindowProc(hwnd, msg, wParam, lParam);
-	static Application& app = *pApp;
+    switch (msg)
+    {
+        case WM_PAINT:
+        {
+            if (app.mTime->LockFPS())
+            {
+                app.mTime->Tick();
 
-	/////////////////////////////////////////////////////////////////////////////////////////////
-	switch (msg)
-	{
-		case WM_ERASEBKGND:
-		{
-			if (app.mIsGame) break;
-			return 0;
-		}
+                if (Singlton.foo.update)
+                    Singlton.foo.update();
 
-		case WM_PAINT:
-		{
-			if (app.mTime->LockFPS())
-			{
-				app.mTime->Tick();
-				app.CalculateFrameStats(); // fps
+                app.mMouse->Update();
+                app.mCamera->Update(Module::Time::DeltaTime());
+                app.mDirect->UpdateViewMatrix(app.mCamera->GetViewMatrix());
 
-				if (app.mProperties.handleKey) app.mProperties.handleKey(); // hotkeys
+                
 
-
-				app.Update(); //update
-
-				if (app.mIsGame)              //
-					app.mDirect->DrawGame();  //
-				else                          // draw
-					app.mDirect->DrawScene(); //
-				app.mDirect->Present();       //
+                if (app.mIsGame)
+                    app.mDirect->DrawGame();
+                else
+                    app.mDirect->DrawScene();
 
 
-				app.mKeyboard->ResetKeys();
-			}
+
+                app.mDirect->Present();
+
+                app.mKeyboard->ResetKeys();
+                app.mMouse->ResetKeys();
+            }
+
+            return 0;
+        }
+
+        case WM_ERASEBKGND:
+        {
+            if (app.mIsGame) break;
+            return 0;
+        }
+
+        case WM_DESTROY:
+        {
+            PostQuitMessage(0);
+            return 0;
+        }
+
+        case WM_NCHITTEST:
+        {
+            static POINT p;
+            p = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+            ScreenToClient(hwnd, &p);
+            app.mMouse->SetPos((uint16)p.x, (uint16)p.y);
+
+            if (!app.mStarted) break;
+            if (app.mIsGame) return HTCLIENT;
+
+            return app.HitTest();
+        }
+
+        case WM_NCCALCSIZE:
+        {
+            if (app.mIsGame) break;
+
+            if (wparam)
+            {
+                NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)(lparam);
+                app.AdjustMaxClient(params->rgrc[0]);
+
+                return 0;
+            }
+            break;
+        }
+
+        case WM_ENTERSIZEMOVE:
+        {
+            app.mResizing = true;
+            return 0;
+        }
+
+        case WM_EXITSIZEMOVE:
+        {
+            app.mResizing = false;
+            return 0;
+        }
+
+        case WM_SIZE:
+        {
+            if (!app.mIsGame)
+            {
+                Singlton.editor.width = (int16)LOWORD(lparam);
+                Singlton.editor.height = (int16)HIWORD(lparam);
+            }
+
+            if (app.mStarted)
+            {
+                app.mKeyboard->ResetKeysPress();
+                app.mMouse->ResetKeysPress();
+            }
+
+            if (wparam == SIZE_MINIMIZED)
+            {
+                app.mPaused = true;
+                app.mMinimized = true;
+                app.mMaximized = false;
+            }
+            else if (wparam == SIZE_MAXIMIZED)
+            {
+                app.mPaused = false;
+                app.mMinimized = false;
+                app.mMaximized = true;
+            }
+            else if (wparam == SIZE_RESTORED)
+            {
+                if (app.mMinimized)
+                {
+                    app.mMinimized = false;
+                }
+                else if (app.mMaximized)
+                {
+                    app.mMaximized = false;
+
+                }
+                else if (app.mResizing) // move sizebar
+                {
+                }
+                else // call foo()
+                {
+                }
+            }
+
+            if (app.mStarted && !app.mIsGame)
+            {
+                app.mDirect->ResizeEditor();
+                app.InitBuffers();
+            }
+
+            return 0;
+        }
+
+        case WM_ACTIVATE:
+        {
+            if (LOWORD(wparam) == WA_INACTIVE)
+            {
+                if (app.mStarted)
+                {
+                    if (app.mIsGame)
+                    {
+                        //app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
+                        ShowWindow(hwnd, SW_MINIMIZE);
+                    }
+
+                    if (app.mMouse->GetState() == false)
+                        app.SetCursorState(true);
+
+                    //app.mTimer->Stop();
+                }
+
+                app.mPaused = true;
+            }
+            else
+            {
+                if (app.mStarted)
+                {
+                    if (app.mIsGame)
+                    {
+                        //app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
+                    }
+
+                    if (app.mMouse->GetEnabled() == false && app.mMouse->GetState() == true)
+                        app.SetCursorState(false);
+
+                    //app.mTimer->Start();
+                }
+
+                app.mPaused = false;
+            }
+            return 0;
+        }
 
 
-			return 0;
-		}
+        case WM_LBUTTONDOWN:
+        {
+            app.mMouse->KeyDown(0);
 
-		/*case WM_ENTERSIZEMOVE:
-		{
-			app.mResizing = true;
-			return 0;
-		}
+            return 0;
+        }
 
-		case WM_EXITSIZEMOVE:
-		{
-			app.mResizing = false;
-			return 0;
-		}
+        case WM_LBUTTONUP:
+        {
+            app.mMouse->KeyUp(0);
 
-		case WM_SIZE:
-		{
-			if(!app.mIsGame)
-				app.mProperties.editorRect = {0, 0, (int16)LOWORD(lParam), (int16)HIWORD(lParam)};
+            return 0;
+        }
 
-			if (app.mStarted)
-				app.mKeyboard->ResetKeysPress();
+        case WM_RBUTTONDOWN:
+        {
+            app.mMouse->KeyDown(1);
 
-			if (wParam == SIZE_MINIMIZED)
-			{
-				app.mPaused = true;
-				app.mMinimized = true;
-				app.mMaximized = false;
-			}
-			else if (wParam == SIZE_MAXIMIZED)
-			{
-				app.mPaused = false;
-				app.mMinimized = false;
-				app.mMaximized = true;
-			}
-			else if (wParam == SIZE_RESTORED)
-			{
-				if (app.mMinimized)
-				{
-					app.mMinimized = false;
-				}
-				else if (app.mMaximized)
-				{
-					app.mMaximized = false;
+            if (!app.mIsGame)
+            {
+                SetCapture(hwnd);
 
-				}
-				else if (app.mResizing) // move sizebar
-				{
-				}
-				else // call foo()
-				{
-				}
-			}
+                if(app.CursorInScene())
+                    app.mMouse->SetCapture(true);
+            }
+            return 0;
+        }
 
-			if (app.mStarted && !app.mIsGame)
-			{
-				app.mDirect->ResizeApp(app.mProperties.editorRect.right, app.mProperties.editorRect.bottom);
-				app.mDirect->DrawEngine();
-				app.mDirect->Present();
-			}
+        case WM_RBUTTONUP:
+        {
+            app.mMouse->KeyUp(1);
 
-			return 0;
-		}*/
+            if (!app.mIsGame)
+            {
+                ReleaseCapture();
+                app.mMouse->SetCapture(false);
+                app.mMouse->SetZeroAxis();
+            }
 
-		case WM_NCCALCSIZE:
-		{
-			if (app.mIsGame) break;
+            return 0;
+        }
 
-			if (wParam)
-			{
-				NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)(lParam);
-				//app.AdjustMaxClient(params->rgrc[0]);
+        case WM_GETMINMAXINFO:
+        {
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = 800;
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = 600;
 
-				return 0;
-			}
-			break;
-		}
+            return 0;
+        }
 
-		case WM_ACTIVATE:
-		{
-			if (LOWORD(wParam) == WA_INACTIVE)
-			{
-				if (app.mStarted)
-				{
-					if (app.mIsGame)
-					{
-						app.mDirect->ToggleFullscreen(false);
-						app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
-						ShowWindow(hwnd, SW_MINIMIZE);
-					}
+        case WM_SYSKEYDOWN:
+        case WM_KEYDOWN:
+        {
+            if (!(HIWORD(lparam) & KF_REPEAT)) //delete repeat messages
+                app.mKeyboard->KeyDown((unsigned int)wparam);
 
-					if (app.mMouse->GetState() == false)
-						app.SetCursorState(true);
+            return 0;
+        }
 
-					//app.mTimer->Stop();
-				}
+        case WM_SYSKEYUP:
+        case WM_KEYUP:
+        {
+            app.mKeyboard->KeyUp((unsigned int)wparam);
+            return 0;
+        }
+    }
 
-				app.mPaused = true;
-			}
-			else
-			{
-				if (app.mStarted)
-				{
-					if (app.mIsGame)
-					{
-						//app.mDirect->ToggleFullscreen(true);
-						//app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
-					}
-
-
-					if (app.mMouse->GetEnabled() == false && app.mMouse->GetState() == true)
-						app.SetCursorState(false);
-
-					//app.mTimer->Start();
-				}
-
-				app.mPaused = false;
-			}
-			return 0;
-		}
-
-		case WM_RBUTTONDOWN:
-		{
-			if (!app.mIsGame && app.CursorInScene())
-			{
-				SetCapture(hwnd);
-				app.mMouse->SetCapture(true);
-			}
-			return 0;
-		}
-
-		case WM_RBUTTONUP:
-		{
-			if (!app.mIsGame)
-			{
-				ReleaseCapture();
-				app.mMouse->SetCapture(false);
-				app.mMouse->SetZeroAxis();
-			}
-
-			return 0;
-		}
-
-		case WM_NCLBUTTONDOWN: //fix bug
-		{
-			if (!app.mStarted) break;
-			app.mKeyboard->ResetKeysPress();
-			break;
-		}
-
-		/*case WM_NCHITTEST:
-		{
-			static POINT p;
-			p = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-			ScreenToClient(hwnd, &p);
-			app.mMouse->SetPos((uint16)p.x, (uint16)p.y);
-
-			if (!app.mStarted) break;
-			if (app.mIsGame) return HTCLIENT;
-
-			return app.HitTest();
-		}
-
-		case WM_GETMINMAXINFO:
-		{
-			((MINMAXINFO*)lParam)->ptMinTrackSize.x = MIN_WIDTH;
-			((MINMAXINFO*)lParam)->ptMinTrackSize.y = MIN_HEIGHT;
-
-			return 0;
-		}
-
-		case WM_SYSKEYDOWN:
-		case WM_KEYDOWN:
-		{
-			if (!(HIWORD(lParam) & KF_REPEAT)) //delete repeat messages
-				app.mKeyboard->KeyDown((unsigned int)wParam);			
-
-			return 0;
-		}
-
-		case WM_SYSKEYUP:
-		case WM_KEYUP:
-		{
-			app.mKeyboard->KeyUp((unsigned int)wParam);
-			//if(app.pHandleKey) app.pHandleKey();
-			return 0;
-		}
-
-		case WM_CLOSE:
-		{
-			PostQuitMessage(EXIT_SUCCESS);
-			return 0;
-		}
-		*/
-		case WM_DESTROY:
-		{
-			PostQuitMessage(EXIT_SUCCESS);
-			return 0;
-		}
-	}
-
-	return DefWindowProc(hwnd, msg, wParam, lParam);
+    return DefWindowProc(hwnd, msg, wparam, lparam);
 }

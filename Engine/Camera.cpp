@@ -5,18 +5,19 @@
 #include "Trace.h"
 
 using namespace DirectX;
+using namespace Math;
 
 namespace Module
 {
-	Camera::Camera(CAMERACLASS* camera)
+	Camera::Camera()
 	{
-		mRotationSmooth = camera->rotationSmooth;
-		mMoveSmooth = camera->moveSmooth;
+		mRotationSmooth = Singlton.camera.rotationSmooth;
+		mMoveSmooth = Singlton.camera.moveSmooth;
 
-		mPosition = camera->position;
-		mTargetPosition = camera->position;
+		mPosition = Singlton.camera.position;
+		mTargetPosition = Singlton.camera.position;
 
-		SetTarget(camera->targetPosition);
+		SetTarget(Singlton.camera.targetPosition);
 
 		Vector3 direction = mDotPosition - mTargetPosition;
 		Scalar directionLenSq = LengthSq(direction);
@@ -26,6 +27,7 @@ namespace Module
 		mPitch = ASin(direction.GetY());
 		mYaw = ATan2(direction.GetX(), direction.GetZ());
 		mRoll = 0;
+
 
 		mTargetRotation = XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll);
 		mRotation = mTargetRotation;

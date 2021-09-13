@@ -1,48 +1,70 @@
 #pragma once
 
 #include "Core.h"
+#include "CustomTypes.h"
 #include "MathHelper.h"
 
-struct CAMERACLASS
+class FOG_API ENGINECLASS
 {
-	Vector3 position = { 0.0f, 5.0f, -5.0f };
-	Vector3 targetPosition = Vector3::Zero();
+public:
+	static ENGINECLASS& getInstance() 
+	{
+		static ENGINECLASS instance;
+		return instance;
+	}
 
-	float nearZ = 0.1f;
-	float farZ = 1000.0f;
-	float fov = 45.0f;
-	float rotationSmooth = 1000.0f;
-	float moveSmooth = 1000.0f;
-};
+	struct
+	{
+		int16 width = 0;
+		int16 height = 0;
+		Color color = 0;
+	} editor;
 
+	struct
+	{
+		int16 x = 0;
+		int16 y = 0;
+		int16 width = 0;
+		int16 height = 0;
+		Color color = 255;
+	} scene;
 
-struct ENGINECLASS
-{
-	Rect sceneRect = { 0, 0, 800, 600 };
-	COLORREF sceneColor = RGB(255, 255, 255);
+	struct
+	{
+		int16 width = 0;
+		int16 height = 0;
+		Color color = 255;
+	} game;
 
-	Rect editorRect = { 0, 0, 1280, 720 };
-	COLORREF editorColor = RGB(0, 0, 0);
+	struct
+	{
+		Vector3 position = { 0.0f, 0.0f, -5.0f };
+		Vector3 targetPosition = Vector3::Zero();
 
-	Rect gameRect = { 0, 0, 800, 600 };
-	COLORREF gameColor = RGB(255, 255, 255);
+		float nearZ = 0.1f;
+		float farZ = 1000.0f;
+		float fov = 45.0f;
+		float rotationSmooth = 1000.0f;
+		float moveSmooth = 1000.0f;
+	} camera;
 
-	uint16 captionHeight = 0;
-	bool showCursor = true;
-	int16 maxFps = 0;
+	struct
+	{
+		int16 width = 0;
+		int16 height = 0;
+	} resolution;
+
+	struct
+	{
+		void (*start)() = 0;
+		void (*update)() = 0;
+	} foo;
+
+	int16 captionHeight = 50;
+	int16 fpsMax = 0;
 	bool isGame = false;
-
-	CAMERACLASS camera;
-	void (*handleKey)() = 0;
-	void (*init)() = 0;
+	bool cursorShow = true;
 };
 
-struct GAMECLASS
-{
-	COLORREF gameColor = RGB(0, 0, 0);
-	bool showCursor = true;
-	int16 maxFps = 0;
+static ENGINECLASS& Singlton = ENGINECLASS::getInstance();
 
-	CAMERACLASS camera;
-	void (*handleKey)() = 0;
-};

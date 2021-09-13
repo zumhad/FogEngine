@@ -3,6 +3,7 @@
 #include "EditHelper.h"
 #include "Trace.h"
 #include "Devices.h"
+#include "Properties.h"
 
 
 Module::Keyboard* Input::mKeyboard = 0;
@@ -15,13 +16,13 @@ namespace Module
 		Input::SetKeyboard(this);
 	}
 
-	Mouse::Mouse(bool cursor, bool isGame)
+	Mouse::Mouse()
 	{
 		Input::SetMouse(this);
 
-		SetEnabled(cursor);
-		SetState(cursor);
-		SetCapture(isGame);
+		SetEnabled(Singlton.cursorShow);
+		SetState(Singlton.cursorShow);
+		SetCapture(Singlton.isGame);
 		Initialize();
 	}
 
@@ -32,6 +33,13 @@ namespace Module
 		mIsKeyDown = true;
 	}
 
+	void Mouse::KeyDown(int16 mouse)
+	{
+		mKeysPress[mouse] = true;
+		mKeysDown[mouse] = true;
+	}
+
+	
 	void Keyboard::KeyUp(uint32 key)
 	{
 		if (mKeysPress[key])
@@ -39,6 +47,15 @@ namespace Module
 			mKeysPress[key] = false;
 			mKeysUp[key] = true;
 			mIsKeyUp = true;
+		}
+	}
+
+	void Mouse::KeyUp(int16 mouse)
+	{
+		if (mKeysPress[mouse])
+		{
+			mKeysPress[mouse] = false;
+			mKeysUp[mouse] = true;
 		}
 	}
 
@@ -57,6 +74,20 @@ namespace Module
 		}
 
 	}
+
+	void Mouse::ResetKeys()
+	{
+		ZeroMemory(mKeysDown, 2);
+		ZeroMemory(mKeysUp, 2);
+	}
+
+
+	void Mouse::ResetKeysPress()
+	{
+		for (int16 i = 0; i < 2; i++)
+			KeyUp(i);
+	}
+
 
 	void Keyboard::ResetKeysPress()
 	{
@@ -83,6 +114,22 @@ namespace Module
 
 
 
+	bool Mouse::IsMousePress(uint32 key)
+	{
+		return mKeysPress[key];
+	}
+
+	bool Mouse::IsMouseDown(uint32 key)
+	{
+		return mKeysDown[key];
+	}
+
+	bool Mouse::IsMouseUp(uint32 key)
+	{
+		return mKeysUp[key];
+	}
+
+
 	void Mouse::Initialize()
 	{
 		SetZeroAxis();
@@ -96,20 +143,22 @@ namespace Module
 
 	void Mouse::Update()
 	{
-		if (Edit::IsAppPaused())
-		{
-			SetZeroInput();
-		}
-		else
-		{
-			mMouseDevice->Acquire();
-			mMouseDevice->GetDeviceState(sizeof(DIMOUSESTATE2), &mMouseState);
-		}
+		mMouseDevice->Acquire();
+		mMouseDevice->GetDeviceState(sizeof(DIMOUSESTATE2), &mMouseState);
 
 		SetZeroAxis();
 
-		mAxis[MOUSE_X] = (float)mMouseState.lX;
-		mAxis[MOUSE_Y] = (float)mMouseState.lY;
+		if (Edit::IsAppPaused())
+		{
+			mAxis[MOUSE_X] = 0;
+			mAxis[MOUSE_Y] = 0;
+		}
+		else
+		{
+			mAxis[MOUSE_X] = (float)mMouseState.lX;
+			mAxis[MOUSE_Y] = (float)mMouseState.lY;
+		}
+
 
 		/*if (mMouseState.lZ > 0)
 			mAxis[GameInput::MouseScroll] = 1.0f;
@@ -136,6 +185,20 @@ namespace Module
 	}
 }
 
+bool Input::IsMouseDown(uint32 mouse)
+{
+	return mMouse->IsMouseDown(mouse);
+}
+
+bool Input::IsMouseUp(uint32 mouse)
+{
+	return mMouse->IsMouseUp(mouse);
+}
+
+bool Input::IsMousePress(uint32 mouse)
+{
+	return mMouse->IsMousePress(mouse);
+}
 
 
 bool Input::IsKeyPress(uint32 key)
@@ -166,4 +229,13 @@ float Input::GetMouseAxis(MouseAxis ma)
 void Input::SetMouse(Module::Mouse* mouse)
 {
 	mMouse = mouse;
+}
+
+int Input::GetCursorX()
+{ 
+	return mMouse->GetX(); 
+}
+int Input::GetCursorY()
+{
+	return mMouse->GetY();
 }

@@ -1,29 +1,30 @@
 #pragma once
 
-using namespace DirectX;
+#include <algorithm>
+
 
 namespace Math
 {
-	inline Scalar ACos(Scalar s) { return Scalar(XMVectorACos(s)); }
-	inline Scalar ASin(Scalar s) { return Scalar(XMVectorASin(s)); }
-	inline Scalar Sin(Scalar s) { return Scalar(XMVectorSin(s)); }
-	inline Scalar ATan2(Scalar y, Scalar x) { return Scalar(XMVectorATan2(y, x)); }
-	inline Scalar Length(Vector3 v) { return Scalar(XMVector3Length(v)); }
-	inline Scalar LengthSq(Vector3 v) { return Scalar(XMVector3LengthSq(v)); }
-	inline Scalar RecipSqrt(Scalar s) { return Scalar(XMVectorReciprocalSqrt(s)); }
-	inline Scalar Dot(Vector3 v1, Vector3 v2) { return Scalar(XMVector3Dot(v1, v2)); }
-	inline Scalar Pow(Scalar b, Scalar e) { return Scalar(XMVectorPow(b, e)); }
+	inline Scalar ACos(Scalar s) { return Scalar(DirectX::XMVectorACos(s)); }
+	inline Scalar ASin(Scalar s) { return Scalar(DirectX::XMVectorASin(s)); }
+	inline Scalar Sin(Scalar s) { return Scalar(DirectX::XMVectorSin(s)); }
+	inline Scalar ATan2(Scalar y, Scalar x) { return Scalar(DirectX::XMVectorATan2(y, x)); }
+	inline Scalar Length(Vector3 v) { return Scalar(DirectX::XMVector3Length(v)); }
+	inline Scalar LengthSq(Vector3 v) { return Scalar(DirectX::XMVector3LengthSq(v)); }
+	inline Scalar RecipSqrt(Scalar s) { return Scalar(DirectX::XMVectorReciprocalSqrt(s)); }
+	inline Scalar Dot(Vector3 v1, Vector3 v2) { return Scalar(DirectX::XMVector3Dot(v1, v2)); }
+	inline Scalar Pow(Scalar b, Scalar e) { return Scalar(DirectX::XMVectorPow(b, e)); }
 
 	inline Vector3 Lerp(Vector3 a, Vector3 b, float t)
 	{ 
-		if (t > 1.0f) return Vector3(XMVectorLerp(a, b, 1.0f));
-		else return Vector3(XMVectorLerp(a, b, t));
+		if (t > 1.0f) return Vector3(DirectX::XMVectorLerp(a, b, 1.0f));
+		else return Vector3(DirectX::XMVectorLerp(a, b, t));
 	}
-	inline Vector3 Cross(Vector3 v1, Vector3 v2) { return Vector3(XMVector3Cross(v1, v2)); }
-	inline Vector3 Normalize(Vector3 v) { return Vector3(XMVector3Normalize(v)); }
+	inline Vector3 Cross(Vector3 v1, Vector3 v2) { return Vector3(DirectX::XMVector3Cross(v1, v2)); }
+	inline Vector3 Normalize(Vector3 v) { return Vector3(DirectX::XMVector3Normalize(v)); }
 
-	inline Quaternion Normalize(Quaternion q) { return Quaternion(XMQuaternionNormalize(q)); }
-	inline Quaternion Slerp(Quaternion a, Quaternion b, float t) { return Normalize(Quaternion(XMQuaternionSlerp(a, b, t))); }
+	inline Quaternion Normalize(Quaternion q) { return Quaternion(DirectX::XMQuaternionNormalize(q)); }
+	inline Quaternion Slerp(Quaternion a, Quaternion b, float t) { return Normalize(Quaternion(DirectX::XMQuaternionSlerp(a, b, t))); }
 
 
 	//template <typename T> 
@@ -41,6 +42,6 @@ namespace Math
 
 	inline Quaternion Lerp(Quaternion a, Quaternion b, float t)
 	{
-		return Normalize(Quaternion(XMVectorLerp(a, b, Min(t, 1.0f))));
+		return Normalize(Quaternion(DirectX::XMVectorLerp(a, b, Min(t, 1.0f))));
 	}
 }

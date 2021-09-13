@@ -4,6 +4,8 @@
 #include "MathHelper.h"
 using namespace Math;
 
+#pragma warning(disable: 26812)
+
 class Cube;
 class Light;
 
@@ -38,8 +40,8 @@ public:
 	             
 	Matrix4 GetWorldMatrix() 
 	{ 
-		mQRotation = XMQuaternionRotationRollPitchYaw(-mRotation.GetX(), -mRotation.GetY(), mRotation.GetZ());
-		return XMMatrixAffineTransformation(mScaling, Quaternion::Zero(), mQRotation, mPosition);
+		mQRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mRotation.GetX(), -mRotation.GetY(), mRotation.GetZ());
+		return DirectX::XMMatrixAffineTransformation(mScaling, Quaternion::Zero(), mQRotation, mPosition);
 	}
 
 	void* GetRef()
@@ -52,6 +54,8 @@ public:
 		case tLight:
 			return rLight;
 		}
+
+		return 0;
 	}
 
 	ObjectType GetType()

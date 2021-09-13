@@ -1,5 +1,7 @@
 #include "Object.h"
 
+using namespace DirectX;
+
 Object::Object()
 {
 	mWorld = XMMatrixIdentity();

@@ -1,15 +1,16 @@
 #pragma once
 
 #define FOG_LOAD_DLL
-#define GAME_APP
 
 #include "Definitions.h"
-
-#include "CustomTypes.h"
-#include "CustomString.h"
-#include "Input.h"
 #include "Application.h"
-#include "ObjectManager.h"
+#include "Input.h"
+#include "Time.h"
+#include "EditHelper.h"
+
+using Module::Time;
+
+
 
 #define CREATE_APPLICATION()\
 int32 wmain()\

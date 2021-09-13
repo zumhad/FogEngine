@@ -1,6 +1,5 @@
 #pragma once
 
-using namespace DirectX;
 
 namespace Math
 {
@@ -9,15 +8,15 @@ namespace Math
 	{
 	public:
 		Scalar(const Scalar& s) { mVec = s; }
-		Scalar(float f) { mVec = XMVectorReplicate(f); }
-		Scalar(FXMVECTOR vec) { mVec = vec; }
+		Scalar(float f) { mVec = DirectX::XMVectorReplicate(f); }
+		Scalar(DirectX::FXMVECTOR vec) { mVec = vec; }
 
-		operator XMVECTOR() const { return mVec; }
-		operator float() const { return XMVectorGetX(mVec); }
+		operator DirectX::XMVECTOR() const { return mVec; }
+		operator float() const { return DirectX::XMVectorGetX(mVec); }
 
 	private:
-		XMVECTOR mVec;
+		DirectX::XMVECTOR mVec;
 	};
 
-	inline Scalar operator- (Scalar s) { return Scalar(XMVectorNegate(s)); }
+	inline Scalar operator- (Scalar s) { return Scalar(DirectX::XMVectorNegate(s)); }
 }

@@ -5,20 +5,22 @@
 #include "Properties.h"
 #include "MathHelper.h"
 
+using namespace Math;
+
 namespace Module
 {
 	class Camera
 	{
 	public:
-		Camera(CAMERACLASS* camera);
+		Camera();
 
-		XMMATRIX GetViewMatrix() { return mView; }
+		DirectX::XMMATRIX GetViewMatrix() { return mView; }
 		void Update(float dt);
 		void SetPosition(Vector3 position) { mPosition = position; mTargetPosition = position; }
 		void SetRotation(float x, float y, float z);
-		void SetRotationX(float x) { mPitch = x; mTargetRotation = XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
-		void SetRotationY(float y) { mYaw = y; mTargetRotation = XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
-		void SetRotationZ(float z) { mRoll = z; mTargetRotation = XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
+		void SetRotationX(float x) { mPitch = x; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
+		void SetRotationY(float y) { mYaw = y; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
+		void SetRotationZ(float z) { mRoll = z; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
 
 		void MoveLocal(float x, float y, float z);
 		void MoveGlobal(float x, float y, float z);

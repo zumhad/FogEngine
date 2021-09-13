@@ -12,134 +12,131 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Engine\Application.cpp">
+    <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="Light.cpp" />
+    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="Application.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Camera.cpp">
+    <ClCompile Include="Camera.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\CustomString.cpp">
+    <ClCompile Include="CustomString.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Direct3D.cpp">
+    <ClCompile Include="Direct3D.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\dxerr.cpp">
+    <ClCompile Include="dxerr.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\EditHelper.cpp">
+    <ClCompile Include="EditHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\Input.cpp">
+    <ClCompile Include="Input.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\Engine\MessageHandler.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\ParseFile.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\PathHelper.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Time.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Engine\Trace.cpp">
+    <ClCompile Include="MessageHandler.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="ParseFile.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="PathHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Time.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Trace.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Application.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Camera.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\CustomString.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\CustomTypes.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Definitions.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Direct3D.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\DirectXIncludes.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\Engine\dxerr.h">
       <Filter>stuff</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\EditHelper.h">
+    <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="Light.h" />
+    <ClInclude Include="Cube.h" />
+    <ClInclude Include="Application.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\Functions.h">
+    <ClInclude Include="Camera.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\Engine.h">
+    <ClInclude Include="Core.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\Input.h">
+    <ClInclude Include="CustomString.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\Matrix.h">
+    <ClInclude Include="CustomTypes.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\Engine\ParseFile.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\PathHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Quaternion.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Scalar.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Trace.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Vector.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="MathHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\VirtualKeys.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Time.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Engine\Core.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
+    <ClInclude Include="Definitions.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DeviceInput.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Properties.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Devices.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Cube.h" />
+    <ClInclude Include="Direct3D.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="EditHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Header.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ParseFile.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Properties.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Scalar.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Time.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Assets\shader.hlsl">

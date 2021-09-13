@@ -20,6 +20,13 @@ public:
 	static bool IsKeyUp(uint32 key);
 	static bool IsKeyPress(uint32 key);
 
+	static bool IsMouseDown(uint32 mouse);
+	static bool IsMouseUp(uint32 mouse);
+	static bool IsMousePress(uint32 mouse);
+
+	static int GetCursorX();
+	static int GetCursorY();
+
 	static float GetMouseAxis(MouseAxis ma);
 
 private:

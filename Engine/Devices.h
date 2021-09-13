@@ -36,10 +36,19 @@ namespace Module
 	class Mouse
 	{
 	public:
-		Mouse(bool cursor, bool isGame);
+		Mouse();
 		void Initialize();
 		void Update();
 		void SetZeroAxis();
+
+		void KeyDown(int16 mouse);
+		void KeyUp(int16 mouse);
+		void ResetKeys();
+		void ResetKeysPress();
+
+		bool IsMouseDown(uint32 key);
+		bool IsMouseUp(uint32 key);
+		bool IsMousePress(uint32 key);
 
 		void SetPos(uint16 x, uint16 y) { mPosX = x; mPosY = y; }
 		uint16 GetX() { return mPosX; }
@@ -63,6 +72,10 @@ namespace Module
 		DIMOUSESTATE2 mMouseState;
 
 		float mAxis[2];
+
+		bool mKeysPress[2] = {};
+		bool mKeysUp[2] = {};
+		bool mKeysDown[2] = {};
 
 		uint16 mPosX, mPosY;
 

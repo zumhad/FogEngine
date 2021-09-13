@@ -101,13 +101,13 @@ void Parse::ParseProperties(WCHAR* prop, WCHAR* cmd)
 
 		switch (index)
 		{
-			case IP_SCENE_RECT_RIGHT: Edit::SetSceneRectRight((uint16)var); return;
+			/*case IP_SCENE_RECT_RIGHT: Edit::SetSceneRectRight((uint16)var); return;
 			case IP_SCENE_RECT_LEFT: Edit::SetSceneRectLeft((uint16)var); return;
 			case IP_SCENE_RECT_TOP: Edit::SetSceneRectTop((uint16)var); return;
 			case IP_SCENE_RECT_BOTTOM: Edit::SetSceneRectBottom((uint16)var); return;
 			case IP_SCENE_COLOR_R: Edit::SetSceneColorR(var); return;
 			case IP_SCENE_COLOR_G: Edit::SetSceneColorG(var); return;
-			case IP_SCENE_COLOR_B: Edit::SetSceneColorB(var); return;
+			case IP_SCENE_COLOR_B: Edit::SetSceneColorB(var); return;*/
 		}
 		return;
 	}

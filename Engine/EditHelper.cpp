@@ -15,6 +15,7 @@
 
 Application* Edit::mApp = 0;
 
+
 void Edit::Exit() { PostQuitMessage(EXIT_SUCCESS); }
 
 void Edit::CheckDebug()
@@ -24,7 +25,7 @@ void Edit::CheckDebug()
 #endif
 }
 
-void Edit::SetSceneRect(int16 left, int16 top, int16 right, int16 bottom)
+/*void Edit::SetSceneRect(int16 left, int16 top, int16 right, int16 bottom)
 {
 	if (mApp->mIsGame) return;
 
@@ -34,7 +35,7 @@ void Edit::SetSceneRect(int16 left, int16 top, int16 right, int16 bottom)
 	SetSceneRectBottom(bottom);
 
 	mApp->ResizeScene();
-}
+}*/
 
 void Edit::SetCursorEnabled(bool var)
 {
@@ -42,72 +43,67 @@ void Edit::SetCursorEnabled(bool var)
 	mApp->SetCursorState(var);
 }
 
-void Edit::SetSceneRect(Rect* rect)
+void Edit::SetSceneX(int16 x)
 {
 	if (mApp->mIsGame) return;
 
-	SetSceneRectLeft(rect->left);
-	SetSceneRectTop(rect->top);
-	SetSceneRectRight(rect->right);
-	SetSceneRectBottom(rect->bottom);
+	Singlton.scene.x = (int16)Math::Max(0, x);
 
-	mApp->ResizeScene();
+	mApp->mDirect->ResizeScene();
+	mApp->InitBuffers();
 }
 
-void Edit::SetSceneRectLeft(int16 left)
+void Edit::SetSceneY(int16 y)
 {
 	if (mApp->mIsGame) return;
 
-	mApp->mProperties.sceneRect.left = std::max((int16)0, left);
-	mApp->ResizeScene();
+	Singlton.scene.y = (int16)Math::Max(0, y);
+
+	mApp->mDirect->ResizeScene();
+	mApp->InitBuffers();
 }
 
-void Edit::SetSceneRectTop(int16 top)
+void Edit::SetSceneWidth(int16 width)
 {
 	if (mApp->mIsGame) return;
 
-	mApp->mProperties.sceneRect.top = std::max((int16)0, top);
-	mApp->ResizeScene();
+	Singlton.scene.width = (int16)Math::Max(0, width);
+
+	mApp->mDirect->ResizeScene();
+	mApp->InitBuffers();
 }
 
-void Edit::SetSceneRectRight(int16 right)
+void Edit::SetSceneHeight(int16 height)
 {
 	if (mApp->mIsGame) return;
 
-	mApp->mProperties.sceneRect.right = std::max((int16)0, right);
-	mApp->ResizeScene();
-}
+	Singlton.scene.height = (int16)Math::Max(0, height);
 
-void Edit::SetSceneRectBottom(int16 bottom)
-{
-	if (mApp->mIsGame) return;
-
-	mApp->mProperties.sceneRect.bottom = std::max((int16)0, bottom);
-	mApp->ResizeScene();
+	mApp->mDirect->ResizeScene();
+	mApp->InitBuffers();
 }
 
 void Edit::MoveSceneX(int16 x)
 {
-	if (mApp->mIsGame) return;
-	if (mApp->mProperties.sceneRect.left+x < 0) return;
+	if (Singlton.scene.x + x < 0) return;
 
-	SetSceneRectLeft(mApp->mProperties.sceneRect.left + x);
-	SetSceneRectRight(mApp->mProperties.sceneRect.right + x);
+	SetSceneX(Singlton.scene.x + x);
 }
 
 void Edit::MoveSceneY(int16 y)
 {
-	if (mApp->mIsGame) return;
-	if (mApp->mProperties.sceneRect.top + y < 0) return;
+	if (Singlton.scene.y + y < 0) return;
 
-	SetSceneRectTop(mApp->mProperties.sceneRect.top + y);
-	SetSceneRectBottom(mApp->mProperties.sceneRect.bottom + y);
+	SetSceneY(Singlton.scene.y + y);
 }
 
+int16 Edit::GetSceneX() { return Singlton.scene.x; }
+int16 Edit::GetSceneY() { return Singlton.scene.y; }
+int16 Edit::GetSceneWidth() { return Singlton.scene.width; }
+int16 Edit::GetSceneHeight() { return Singlton.scene.height; }
 
 bool Edit::IsAppPaused() { return mApp->mPaused; }
 HWND Edit::GetHWND() { return mApp->mHwnd; }
-Rect* Edit::GetSceneRect() { return &(mApp->mProperties.sceneRect); }
 bool Edit::GetCursorEnabled() { return mApp->mMouse->GetState(); }
 
 void Edit::CameraSetTarget(Vector3 target) { mApp->mCamera->SetTarget(target); }
@@ -123,6 +119,4 @@ void Edit::CameraSetRotationZ(float z) { mApp->mCamera->SetRotationZ(z); }
 void Edit::CameraMoveLocal(float x, float y, float z) { mApp->mCamera->MoveLocal(x, y, z); }
 void Edit::CameraMoveGlobal(float x, float y, float z) { mApp->mCamera->MoveGlobal(x, y, z); }
 
-void Edit::SetSceneColorR(int32 red) { SetRValue(mApp->mProperties.sceneColor, red); }
-void Edit::SetSceneColorG(int32 green) { SetGValue(mApp->mProperties.sceneColor, green); }
-void Edit::SetSceneColorB(int32 blue) { SetBValue(mApp->mProperties.sceneColor, blue); }
+void Edit::SetSceneColor(int16 red, int16 green, int16 blue) { Singlton.scene.color = { red, green, blue }; }
