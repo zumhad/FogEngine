@@ -17,7 +17,6 @@
 
 void MyHandler()
 {
-	float dt = Time::DeltaTime();
 	float mouseSpeed = 0.001f * 2.0f;
 	float yaw = Input::GetMouseAxis(MOUSE_X) * mouseSpeed;
 	float pitch = Input::GetMouseAxis(MOUSE_Y) * mouseSpeed;
@@ -62,12 +61,12 @@ public:
 	Editor()
 	{
 		prop.camera.moveSmooth = 20;
-		prop.camera.rotationSmooth = 50;
+		prop.camera.rotationSmooth = 50000;
 		prop.foo.update = MyHandler;
 		prop.editor.color = RGB(70, 70, 70);
-		//prop.fpsMax = 300;
+		prop.fpsMax = 0;
 		prop.isGame = true;
-		//prop.cursorShow = false;
+		prop.cursorShow = false;
 	}
 };
 

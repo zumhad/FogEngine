@@ -50,9 +50,9 @@ namespace Module
 		bool IsMouseUp(uint32 key);
 		bool IsMousePress(uint32 key);
 
-		void SetPos(uint16 x, uint16 y) { mPosX = x; mPosY = y; }
-		uint16 GetX() { return mPosX; }
-		uint16 GetY() { return mPosY; }
+		void SetPos(short x, short y) { mPosX = x; mPosY = y; }
+		short GetX() { return mPosX; }
+		short GetY() { return mPosY; }
 
 		void SetCapture(bool var) { mCapture = var; }
 		void SetEnabled(bool var) { mCursorEnabled = var; }
@@ -77,7 +77,7 @@ namespace Module
 		bool mKeysUp[2] = {};
 		bool mKeysDown[2] = {};
 
-		uint16 mPosX, mPosY;
+		short mPosX, mPosY;
 
 		bool mCapture = false;
 		bool mCursorEnabled;

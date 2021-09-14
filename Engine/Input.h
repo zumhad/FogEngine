@@ -24,8 +24,8 @@ public:
 	static bool IsMouseUp(uint32 mouse);
 	static bool IsMousePress(uint32 mouse);
 
-	static int GetCursorX();
-	static int GetCursorY();
+	static short GetCursorX();
+	static short GetCursorY();
 
 	static float GetMouseAxis(MouseAxis ma);
 

@@ -231,11 +231,12 @@ void Input::SetMouse(Module::Mouse* mouse)
 	mMouse = mouse;
 }
 
-int Input::GetCursorX()
+short Input::GetCursorX()
 { 
 	return mMouse->GetX(); 
 }
-int Input::GetCursorY()
+
+short Input::GetCursorY()
 {
 	return mMouse->GetY();
 }

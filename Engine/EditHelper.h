@@ -19,10 +19,10 @@ public:
 	static void Exit();
 	static void SetCursorEnabled(bool var);
 
-	static void SetSceneX(int16);
-	static void SetSceneY(int16);
-	static void SetSceneWidth(int16);
-	static void SetSceneHeight(int16);
+	static void SetSceneX(short);
+	static void SetSceneY(short);
+	static void SetSceneWidth(short);
+	static void SetSceneHeight(short);
 
 	static bool CursorInScene();
 	static void SetSceneColor(int16 red, int16 green, int16 blue);

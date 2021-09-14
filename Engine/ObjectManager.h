@@ -12,7 +12,10 @@ class FOG_API ObjectManager
 public:
     static void Add(Object& obj)
     {
-        Cube* temp = new Cube;
+        Object* temp = new Object();
+        temp->SetPosition(obj.GetPosition());
+        temp->SetRotation(obj.GetRotation());
+        temp->SetScaling(obj.GetScaling());
 
         v.push_back(temp);
         size++;

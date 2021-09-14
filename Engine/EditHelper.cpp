@@ -44,41 +44,41 @@ void Edit::SetCursorEnabled(bool var)
 	mApp->SetCursorState(var);
 }
 
-void Edit::SetSceneX(int16 x)
+void Edit::SetSceneX(short x)
 {
 	if (mApp->mIsGame) return;
 
-	Singlton.scene.x = (int16)Math::Max(0, x);
+	Singlton.scene.x = (short)Math::Max(0, x);
 
 	mApp->mDirect->ResizeScene();
 	mApp->InitBuffers();
 }
 
-void Edit::SetSceneY(int16 y)
+void Edit::SetSceneY(short y)
 {
 	if (mApp->mIsGame) return;
 
-	Singlton.scene.y = (int16)Math::Max(0, y);
+	Singlton.scene.y = (short)Math::Max(0, y);
 
 	mApp->mDirect->ResizeScene();
 	mApp->InitBuffers();
 }
 
-void Edit::SetSceneWidth(int16 width)
+void Edit::SetSceneWidth(short width)
 {
 	if (mApp->mIsGame) return;
 
-	Singlton.scene.width = (int16)Math::Max(0, width);
+	Singlton.scene.width = (short)Math::Max(0, width);
 
 	mApp->mDirect->ResizeScene();
 	mApp->InitBuffers();
 }
 
-void Edit::SetSceneHeight(int16 height)
+void Edit::SetSceneHeight(short height)
 {
 	if (mApp->mIsGame) return;
 
-	Singlton.scene.height = (int16)Math::Max(0, height);
+	Singlton.scene.height = (short)Math::Max(0, height);
 
 	mApp->mDirect->ResizeScene();
 	mApp->InitBuffers();
