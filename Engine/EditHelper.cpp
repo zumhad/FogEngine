@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "Devices.h"
 #include "Direct3D.h"
+#include "Input.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -95,6 +96,17 @@ void Edit::MoveSceneY(int16 y)
 	if (Singlton.scene.y + y < 0) return;
 
 	SetSceneY(Singlton.scene.y + y);
+}
+
+bool Edit::CursorInScene()
+{
+	if (Input::GetCursorX() <= GetSceneX() + GetSceneWidth() && 
+		Input::GetCursorX() >= GetSceneX() &&
+		Input::GetCursorY() <= GetSceneY() + GetSceneHeight() &&
+		Input::GetCursorY() >= GetSceneY())
+		return true;
+
+	return false;
 }
 
 int16 Edit::GetSceneX() { return Singlton.scene.x; }

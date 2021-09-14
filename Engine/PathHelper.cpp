@@ -6,7 +6,7 @@ void PathHelper::GetAssetsPath(WCHAR* dest)
     WCHAR buff[MAX_PATH];
 
     GetModuleFileName(0, buff, _countof(buff));
-    CString::Strcpy(dest, buff, 0, CString::FindStr(buff, APP_NAME) + CString::Strlen(APP_NAME));
+    CString::Strcpy(dest, buff, 0, CString::FindStr(buff, L"Build") - 1);
 
     CString::Strcat(dest, L"Engine\\Assets\\");
 }

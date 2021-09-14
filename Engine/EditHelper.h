@@ -24,6 +24,7 @@ public:
 	static void SetSceneWidth(int16);
 	static void SetSceneHeight(int16);
 
+	static bool CursorInScene();
 	static void SetSceneColor(int16 red, int16 green, int16 blue);
 
 	static void MoveSceneX(int16 x);

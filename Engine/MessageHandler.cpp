@@ -52,6 +52,7 @@ LRESULT Application::HitTest()
     }
 }
 
+#include <string>
 
 LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -66,6 +67,9 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
     if (!pApp) return DefWindowProc(hwnd, msg, wparam, lparam);
     static Application& app = *pApp;
+
+    OutputDebugString(std::to_wstring(msg).c_str());
+    OutputDebugString(L"\n");
 
     switch (msg)
     {
@@ -97,6 +101,12 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 app.mMouse->ResetKeys();
             }
 
+            return 0;
+        }
+
+        case WM_MOUSEMOVE:
+        {
+            app.mMouse->SetPos(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             return 0;
         }
 
@@ -261,12 +271,19 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         {
             app.mMouse->KeyDown(0);
 
+            if (!app.mIsGame)
+                SetCapture(hwnd);
+
+
             return 0;
         }
 
         case WM_LBUTTONUP:
         {
             app.mMouse->KeyUp(0);
+
+            if (!app.mIsGame)
+                ReleaseCapture();
 
             return 0;
         }

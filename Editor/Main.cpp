@@ -13,6 +13,8 @@
 	/// ENGINE ///
 #endif
 
+#include <string>
+
 void MyHandler()
 {
 	float dt = Time::DeltaTime();
@@ -25,6 +27,22 @@ void MyHandler()
 	if (xMove || zMove) Edit::CameraMoveLocal(xMove, 0.0f, zMove);
 
 	Edit::CameraRotate(-pitch, yaw, 0);
+
+	static bool test = false;
+	if (Input::IsMouseDown(MOUSE_LEFT) && !Edit::CursorInScene())
+		test = true;
+	if(Input::IsMouseUp(MOUSE_LEFT))
+		test = false;
+
+	if (Input::IsMousePress(MOUSE_LEFT) && test)
+	{
+		Edit::SetSceneX(Input::GetCursorX());
+		Edit::SetSceneY(Input::GetCursorY());
+	}
+
+
+	//OutputDebugString(std::to_wstring(Input::GetCursorX()).c_str());
+	//OutputDebugString(L"\n");
 	//Edit::CameraSetRotationX(Clamp(Edit::CameraGetRotateX(), -XM_PIDIV2, XM_PIDIV2));
 		
 	if (Input::IsKeyDown(KEY_ESC))
@@ -47,7 +65,7 @@ public:
 		prop.foo.update = MyHandler;
 		prop.editor.color = RGB(70, 70, 70);
 		//prop.fpsMax = 300;
-		//prop.isGame = true;
+		prop.isGame = true;
 		//prop.cursorShow = false;
 	}
 };

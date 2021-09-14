@@ -117,6 +117,12 @@ namespace Module
 
     void Direct3D::Initialize(HWND hwnd)
     {
+        UINT createDeviceFlags = 0;
+
+#ifdef _DEBUG
+        createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
         D3D_FEATURE_LEVEL featureLevels[] =
         {
             D3D_FEATURE_LEVEL_12_1,
@@ -127,7 +133,7 @@ namespace Module
             D3D_FEATURE_LEVEL_10_0,
         };
 
-        FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, 0, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
+        FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
         IDXGIFactory1* dxgiFactory = 0;
         IDXGIDevice* dxgiDevice = 0;
         FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
@@ -333,7 +339,11 @@ namespace Module
     {
         SAFE_RELEASE(mVertexShader);
         SAFE_RELEASE(mPixelShader);
-        //SAFE_RELEASE(mConstantBuffer);
+        SAFE_RELEASE(mConstantBuffer);
+        SAFE_RELEASE(mRasterizerState);
+        SAFE_RELEASE(mVertexLayout);
+        SAFE_RELEASE(mVertexBuffer);
+        SAFE_RELEASE(mIndexBuffer);
 
         if (mSwapChain)
         {
@@ -354,7 +364,7 @@ namespace Module
 
 #ifdef _DEBUG
         ID3D11Debug* d3dDebug;
-        mDevice->QueryInterface(IID_PPV_ARGS(&d3dDebug));
+        FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&d3dDebug)));
         FOG_TRACE(d3dDebug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL));
         SAFE_RELEASE(d3dDebug);
 #endif
