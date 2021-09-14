@@ -49,6 +49,7 @@ void MyHandler()
 		Edit::Exit();
 }
 
+
 void MyInit()
 {
 	/*Cube c;
