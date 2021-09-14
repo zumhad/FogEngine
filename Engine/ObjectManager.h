@@ -12,27 +12,20 @@ class FOG_API ObjectManager
 public:
     static void Add(Object& obj)
     {
-        Object* temp = new Object();
-        temp->SetPosition(obj.GetPosition());
-        temp->SetRotation(obj.GetRotation());
-        temp->SetScaling(obj.GetScaling());
+        Object* temp = new Object(obj);
 
         v.push_back(temp);
-        size++;
     }
 
-    static void Add(Cube& obj)
+    static void Add(Cube& cube)
     {
-        Cube* temp = new Cube;
-        temp->SetPosition(obj.GetPosition());
-        temp->SetRotation(obj.GetRotation());
-        temp->SetScaling(obj.GetScaling());
+        Cube* temp = new Cube(cube);
+        temp->Load();
 
         v.push_back(temp);
-        size++;
     }
 
-    static int Length() { return size; }
+    static int Size() { return v.size(); }
 
     static Object* Get(int i)
     {
@@ -42,6 +35,5 @@ public:
 
 private:
     static std::vector<Object*> v;
-    static int size;
 };
 

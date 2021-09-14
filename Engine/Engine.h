@@ -8,6 +8,9 @@
 #include "Time.h"
 #include "EditHelper.h"
 
+#include "ObjectManager.h"
+#include "Cube.h"
+
 using Module::Time;
 
 

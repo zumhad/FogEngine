@@ -14,7 +14,7 @@
 #endif
 
 
-void MyHandler()
+void MyUpdate()
 {
 	float mouseSpeed = 0.001f * 2.0f;
 	float yaw = Input::GetMouseAxis(MOUSE_X) * mouseSpeed;
@@ -44,10 +44,19 @@ void MyHandler()
 }
 
 
-void MyInit()
+void MyStart()
 {
-	/*Cube c;
-	ObjectManager::Add(c);*/
+	Cube cube;
+
+
+	for (int i = 0; i < 10; i++)
+	{
+		for (int j = 0; j < 10; j++)
+		{
+			cube.mPosition = Vector3(j*3, 0, i * 3);
+			ObjectManager::Add(cube);
+		}
+	}
 }
 
 class Editor : public Application
@@ -57,7 +66,8 @@ public:
 	{
 		prop.camera.moveSmooth = 20;
 		prop.camera.rotationSmooth = 50000;
-		prop.foo.update = MyHandler;
+		prop.foo.update = MyUpdate;
+		prop.foo.start = MyStart;
 		prop.editor.color = RGB(70, 70, 70);
 		prop.fpsMax = 0;
 		prop.isGame = true;

@@ -4,6 +4,7 @@
 #include "Trace.h"
 #include "Definitions.h"
 #include "PathHelper.h"
+#include "ObjectManager.h"
 
 #include <d3dcompiler.h>
 #include <directxcolors.h>
@@ -13,6 +14,9 @@ using namespace DirectX;
 
 namespace Module
 {
+    ID3D11Device* Direct3D::mDevice = 0;
+    ID3D11DeviceContext* Direct3D::mDeviceContext = 0;
+
     Direct3D::Direct3D(HWND hwnd)
     {
         Initialize(hwnd);
@@ -215,38 +219,11 @@ namespace Module
         SAFE_RELEASE(pPSBlob);
 
 
-
-
-
-        // create
-        SimpleVertex vertices[] =
-        {
-            XMFLOAT3(0.0f, 0.5f, 0.5f),
-            XMFLOAT3(0.5f, -0.5f, 0.5f),
-            XMFLOAT3(-0.5f, -0.5f, 0.5f),
-        };
-        D3D11_BUFFER_DESC bd = {};
-        bd.Usage = D3D11_USAGE_DEFAULT;
-        bd.ByteWidth = sizeof(SimpleVertex) * 3;
-        bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-        bd.CPUAccessFlags = 0;
-        D3D11_SUBRESOURCE_DATA InitData = {};
-        InitData.pSysMem = vertices;
-        FOG_TRACE(mDevice->CreateBuffer(&bd, &InitData, &mVertexBuffer));
-
-        // set
-        UINT stride = sizeof(SimpleVertex);
-        UINT offset = 0;
-        mDeviceContext->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-
-
+        D3D11_BUFFER_DESC bd = { 0 };
         bd.Usage = D3D11_USAGE_DEFAULT;
         bd.ByteWidth = sizeof(ConstantBuffer);
         bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        bd.CPUAccessFlags = 0;
         mDevice->CreateBuffer(&bd, nullptr, &mConstantBuffer);
-
-
 
 
 
@@ -270,7 +247,6 @@ namespace Module
     {
         DrawEditor();
         mDeviceContext->RSSetViewports(1, &mSceneViewport);
-        UpdateGame();
         RenderGame();
     }
 
@@ -291,7 +267,6 @@ namespace Module
         mDeviceContext->VSSetShader(mVertexShader, 0, 0);
         mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
-        UpdateGame();
         RenderGame();
     }
 
@@ -306,16 +281,22 @@ namespace Module
             mDeviceContext1->ClearView(mRenderTargetView, mSceneColor, &mSceneRect, 1);
         }
 
-        mDeviceContext->Draw(3, 0);
-    }
+        for (int i = 0; i < ObjectManager::Size(); i++)
+        {
+            Object* obj = ObjectManager::Get(i);
 
-    void Direct3D::UpdateGame()
-    {
-        static ConstantBuffer cb;
-        cb.mWorldViewProj = XMMatrixTranspose(mWorld * mView * mProjection);
-        mDeviceContext->UpdateSubresource(mConstantBuffer, 0, 0, &cb, 0, 0);
-        mDeviceContext->VSSetConstantBuffers(0, 1, &mConstantBuffer);
-        mDeviceContext->PSSetConstantBuffers(0, 1, &mConstantBuffer);
+            if (obj->GetType() == tCube)
+            {
+                static ConstantBuffer cb;
+                cb.mWorldViewProj = XMMatrixTranspose(((Cube*)obj)->GetWorldMatrix() * mView * mProjection);
+                mDeviceContext->UpdateSubresource(mConstantBuffer, 0, 0, &cb, 0, 0);
+                mDeviceContext->VSSetConstantBuffers(0, 1, &mConstantBuffer);
+                mDeviceContext->PSSetConstantBuffers(0, 1, &mConstantBuffer);
+
+                ((Cube*)obj)->Set();
+                mDeviceContext->DrawIndexed(((Cube*)obj)->VertexCount(), 0, 0);
+            }
+        }
     }
 
     void Direct3D::DrawScene()
@@ -325,7 +306,6 @@ namespace Module
         mDeviceContext->VSSetShader(mVertexShader, 0, 0);
         mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
-        UpdateGame();
         RenderGame();
     }
 

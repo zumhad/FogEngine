@@ -4,6 +4,8 @@
 #include "MathHelper.h"
 using namespace Math;
 
+#include <d3d11_4.h>
+
 #pragma warning(disable: 26812)
 
 class Cube;
@@ -15,6 +17,15 @@ enum ObjectType
 	tCube,
 	tLight
 };
+
+
+struct Vertex
+{
+	Vector3 pos;
+	Vector3 normal;
+};
+
+
 
 class FOG_API Object
 {
@@ -38,8 +49,9 @@ public:
 	void RotateY(float angle) { mRotation.SetY(mRotation.GetY() + angle); }
 	void RotateZ(float angle) { mRotation.SetZ(mRotation.GetZ() + angle); }
 	             
-	Matrix4 GetWorldMatrix() 
+	Matrix4 GetWorldMatrix()
 	{ 
+		//EDIT
 		mQRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mRotation.GetX(), -mRotation.GetY(), mRotation.GetZ());
 		return DirectX::XMMatrixAffineTransformation(mScaling, Quaternion::Zero(), mQRotation, mPosition);
 	}

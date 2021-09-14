@@ -28,16 +28,17 @@ namespace Module
         void ResizeEngine();
         void ResizeGame();
 
+        static ID3D11Device* Device() { return mDevice; }
+        static ID3D11DeviceContext* DeviceContext() { return mDeviceContext; }
+
     private:
         void Initialize(HWND hwnd);
         void RenderGame();
-        void RenderEditor();
-        void UpdateGame();
 
     private:
-        ID3D11Device* mDevice = 0;
+        static ID3D11Device* mDevice;
         ID3D11Device1* mDevice1 = 0;
-        ID3D11DeviceContext* mDeviceContext = 0;
+        static ID3D11DeviceContext* mDeviceContext;
         ID3D11DeviceContext1* mDeviceContext1 = 0;
         IDXGISwapChain* mSwapChain = 0;
         IDXGISwapChain1* mSwapChain1 = 0;
@@ -62,11 +63,6 @@ namespace Module
         Matrix4 mWorld;
         Matrix4 mView;
         Matrix4 mProjection;
-    };
-
-    struct SimpleVertex
-    {
-        DirectX::XMFLOAT3 pos;
     };
 
     struct ConstantBuffer

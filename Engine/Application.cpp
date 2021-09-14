@@ -67,7 +67,7 @@ void Application::InitApp()
         ShowCursor(false);
 
     if (Singlton.foo.start)
-        Singlton.foo.start;
+        Singlton.foo.start();
 
     mStarted = true;
 }
