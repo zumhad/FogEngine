@@ -13,7 +13,6 @@
 	/// ENGINE ///
 #endif
 
-#include <string>
 
 void MyHandler()
 {
@@ -40,10 +39,6 @@ void MyHandler()
 	}
 
 
-	//OutputDebugString(std::to_wstring(Input::GetCursorX()).c_str());
-	//OutputDebugString(L"\n");
-	//Edit::CameraSetRotationX(Clamp(Edit::CameraGetRotateX(), -XM_PIDIV2, XM_PIDIV2));
-		
 	if (Input::IsKeyDown(KEY_ESC))
 		Edit::Exit();
 }

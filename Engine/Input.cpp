@@ -26,21 +26,21 @@ namespace Module
 		Initialize();
 	}
 
-	void Keyboard::KeyDown(uint32 key)
+	void Keyboard::KeyDown(short key)
 	{
 		mKeysPress[key] = true;
 		mKeysDown[key] = true;
 		mIsKeyDown = true;
 	}
 
-	void Mouse::KeyDown(int16 mouse)
+	void Mouse::KeyDown(short mouse)
 	{
 		mKeysPress[mouse] = true;
 		mKeysDown[mouse] = true;
 	}
 
 	
-	void Keyboard::KeyUp(uint32 key)
+	void Keyboard::KeyUp(short key)
 	{
 		if (mKeysPress[key])
 		{
@@ -50,7 +50,7 @@ namespace Module
 		}
 	}
 
-	void Mouse::KeyUp(int16 mouse)
+	void Mouse::KeyUp(short mouse)
 	{
 		if (mKeysPress[mouse])
 		{
@@ -84,47 +84,47 @@ namespace Module
 
 	void Mouse::ResetKeysPress()
 	{
-		for (int16 i = 0; i < 2; i++)
+		for (short i = 0; i < 2; i++)
 			KeyUp(i);
 	}
 
 
 	void Keyboard::ResetKeysPress()
 	{
-		for (uint16 i = 0; i < 256; i++)
+		for (short i = 0; i < 256; i++)
 		{
 			KeyUp(i);
 		}
 	}
 
-	bool Keyboard::IsKeyPress(uint32 key)
+	bool Keyboard::IsKeyPress(short key)
 	{
 		return mKeysPress[key];
 	}
 
-	bool Keyboard::IsKeyDown(uint32 key)
+	bool Keyboard::IsKeyDown(short key)
 	{
 		return mKeysDown[key];
 	}
 
-	bool Keyboard::IsKeyUp(uint32 key)
+	bool Keyboard::IsKeyUp(short key)
 	{
 		return mKeysUp[key];
 	}
 
 
 
-	bool Mouse::IsMousePress(uint32 key)
+	bool Mouse::IsMousePress(short key)
 	{
 		return mKeysPress[key];
 	}
 
-	bool Mouse::IsMouseDown(uint32 key)
+	bool Mouse::IsMouseDown(short key)
 	{
 		return mKeysDown[key];
 	}
 
-	bool Mouse::IsMouseUp(uint32 key)
+	bool Mouse::IsMouseUp(short key)
 	{
 		return mKeysUp[key];
 	}
@@ -185,33 +185,33 @@ namespace Module
 	}
 }
 
-bool Input::IsMouseDown(uint32 mouse)
+bool Input::IsMouseDown(short mouse)
 {
 	return mMouse->IsMouseDown(mouse);
 }
 
-bool Input::IsMouseUp(uint32 mouse)
+bool Input::IsMouseUp(short mouse)
 {
 	return mMouse->IsMouseUp(mouse);
 }
 
-bool Input::IsMousePress(uint32 mouse)
+bool Input::IsMousePress(short mouse)
 {
 	return mMouse->IsMousePress(mouse);
 }
 
 
-bool Input::IsKeyPress(uint32 key)
+bool Input::IsKeyPress(short key)
 {
 	return mKeyboard->IsKeyPress(key);
 }
 
-bool Input::IsKeyDown(uint32 key)
+bool Input::IsKeyDown(short key)
 {
 	return mKeyboard->IsKeyDown(key);
 }
 
-bool Input::IsKeyUp(uint32 key)
+bool Input::IsKeyUp(short key)
 {
 	return mKeyboard->IsKeyUp(key);
 }

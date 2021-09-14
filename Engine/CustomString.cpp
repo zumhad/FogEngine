@@ -1,7 +1,5 @@
 #include "CustomString.h"
 
-#include <string>
-
 
 WCHAR* CString::Strcat(WCHAR* dest, const WCHAR* src)
 {
@@ -13,17 +11,17 @@ WCHAR* CString::Strcpy(WCHAR* dest, const WCHAR* src)
 	return wcscpy(dest, src);
 }
 
-WCHAR* CString::Strcpy(WCHAR* dest, const WCHAR* src, uint16 start, uint16 end)
+WCHAR* CString::Strcpy(WCHAR* dest, const WCHAR* src, short start, short end)
 {
 	dest[end - start + 1] = '\0';
 	return wcsncpy(dest, src + start, end - start + 1);;
 }
 
-uint16 CString::Strlen(const WCHAR* str)
+short CString::Strlen(const WCHAR* str)
 {
-	uint16 res = 0;
+	short res = 0;
 
-	uint16 i = 0;
+	short i = 0;
 	while ((str[i] != L'\0'))
 	{
 		if ((str[i] == L'\n')) break;
@@ -35,12 +33,12 @@ uint16 CString::Strlen(const WCHAR* str)
 
 bool CString::IsFind(const WCHAR* dest, const WCHAR* src)
 {
-	uint16 destLen = Strlen(dest);
-	uint16 srcLen = Strlen(src);
+	short destLen = Strlen(dest);
+	short srcLen = Strlen(src);
 
-	for (uint16 i = 0; i < destLen; i++)
+	for (short i = 0; i < destLen; i++)
 	{
-		for (uint16 j = 0; j < srcLen; j++)
+		for (short j = 0; j < srcLen; j++)
 		{
 			if (src[j] != dest[i + j]) break;
 			if (j == srcLen - 1) return true;
@@ -51,9 +49,9 @@ bool CString::IsFind(const WCHAR* dest, const WCHAR* src)
 
 bool CString::IsFindCh(const WCHAR* dest, const WCHAR ch)
 {
-	uint16 destLen = Strlen(dest);
+	short destLen = Strlen(dest);
 
-	for (uint16 i = 0; i < destLen; i++)
+	for (short i = 0; i < destLen; i++)
 	{
 		if (dest[i] == ch) return true;
 	}
@@ -62,12 +60,12 @@ bool CString::IsFindCh(const WCHAR* dest, const WCHAR ch)
 
 bool CString::Equal(const WCHAR* str1, const WCHAR* str2)
 {
-	uint16 str1Len = Strlen(str1);
-	uint16 str2Len = Strlen(str2);
+	short str1Len = Strlen(str1);
+	short str2Len = Strlen(str2);
 
 	if (str1Len != str2Len) return false;
 
-	for (uint16 i = 0; i < str1Len; i++)
+	for (short i = 0; i < str1Len; i++)
 	{
 		if (str1[i] != str2[i]) return false;
 	}
@@ -75,22 +73,22 @@ bool CString::Equal(const WCHAR* str1, const WCHAR* str2)
 	return true;
 }
 
-uint16 CString::FindCh(const WCHAR* str, WCHAR ch)
+short CString::FindCh(const WCHAR* str, WCHAR ch)
 {
-	uint16 index = 0;
+	short index = 0;
 
-	uint16 i = 0;
+	short i = 0;
 	while (str[i++] != ch) index++;
 
 	return index;
 }
 
-uint16 CString::CountCh(const WCHAR* dest, const WCHAR ch)
+short CString::CountCh(const WCHAR* dest, const WCHAR ch)
 {
-	uint16 res = 0;
-	uint16 destLen = Strlen(dest);
+	short res = 0;
+	short destLen = Strlen(dest);
 
-	for (uint16 i = 0; i < destLen; i++)
+	for (short i = 0; i < destLen; i++)
 	{
 		if (dest[i] == ch) res++;
 	}
@@ -99,16 +97,16 @@ uint16 CString::CountCh(const WCHAR* dest, const WCHAR ch)
 
 bool CString::IsInt(const WCHAR* str)
 {
-	uint16 strLen = Strlen(str);
+	short strLen = Strlen(str);
 
-	for (uint16 i = 0; i < strLen; i++)
+	for (short i = 0; i < strLen; i++)
 	{
 		if (str[i] > L'9' || str[i] < L'0') return false;
 	}
 	return true;
 }
 
-int32 CString::Atoi(const WCHAR* str)
+int CString::Atoi(const WCHAR* str)
 {
 	return wcstol(str, 0, 10);
 }
@@ -121,14 +119,14 @@ bool CString::Atob(const WCHAR* str)
 	return str;
 }
 
-uint16 CString::FindStr(const WCHAR* dest, const WCHAR* str)
+short CString::FindStr(const WCHAR* dest, const WCHAR* str)
 {
-	uint16 destLen = Strlen(dest);
-	uint16 strLen = Strlen(str);
+	short destLen = Strlen(dest);
+	short strLen = Strlen(str);
 
-	for (uint16 i = 0; i < destLen - strLen + 1; i++)
+	for (short i = 0; i < destLen - strLen + 1; i++)
 	{
-		for (uint16 j = 0; j < strLen; j++)
+		for (short j = 0; j < strLen; j++)
 		{
 			if (dest[i + j] != str[j]) break;
 

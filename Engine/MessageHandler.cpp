@@ -27,12 +27,12 @@ void Application::AdjustMaxClient(RECT& rect)
 
 LRESULT Application::HitTest()
 {
-    static int32 xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    static int32 yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    int32 x = mMouse->GetX();
-    int32 y = mMouse->GetY();
+    static short xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static short yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    short x = mMouse->GetX();
+    short y = mMouse->GetY();
 
-    int16 result =
+    short result =
         BORDER_LEFT * (x < xBorder) |
         BORDER_RIGHT * (x >= (Singlton.editor.width - xBorder)) |
         BORDER_TOP * (y < (xBorder)) |
@@ -52,7 +52,6 @@ LRESULT Application::HitTest()
     }
 }
 
-#include <string>
 
 LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -67,9 +66,6 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
     if (!pApp) return DefWindowProc(hwnd, msg, wparam, lparam);
     static Application& app = *pApp;
-
-    OutputDebugString(std::to_wstring(msg).c_str());
-    OutputDebugString(L"\n");
 
     switch (msg)
     {
@@ -138,7 +134,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             static POINT p;
             p = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
             ScreenToClient(hwnd, &p);
-            app.mMouse->SetPos((uint16)p.x, (uint16)p.y);
+            app.mMouse->SetPos((short)p.x, (short)p.y);
 
             if (!app.mStarted) break;
             if (app.mIsGame) return HTCLIENT;
@@ -176,8 +172,8 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         {
             if (!app.mIsGame)
             {
-                Singlton.editor.width = (int16)LOWORD(lparam);
-                Singlton.editor.height = (int16)HIWORD(lparam);
+                Singlton.editor.width = (short)LOWORD(lparam);
+                Singlton.editor.height = (short)HIWORD(lparam);
             }
 
             if (app.mStarted)

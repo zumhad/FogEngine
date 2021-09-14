@@ -47,8 +47,8 @@ bool Parse::IsEmptyProject(WCHAR* src)
 
 	CString::Strcpy(src, argv[1]);
 	WCHAR buff[10];
-	uint16 srcLen = CString::Strlen(src);
-	uint16 extLen = CString::Strlen(DOT_EXT);
+	short srcLen = CString::Strlen(src);
+	short extLen = CString::Strlen(DOT_EXT);
 	return !CString::Equal(CString::Strcpy(buff, src, srcLen - extLen, srcLen - 1), DOT_EXT);
 }
 
@@ -62,7 +62,7 @@ void Parse::ParseProject(WCHAR* src)
 	file = _wfopen(src, L"r"); //open file
 	if (file == 0) return;
 
-	uint16 index;
+	short index;
 	while (fgetws(arr, MAX_PATH, file)) //get line in file
 	{
 		if (CString::Strlen(arr) == 0) continue;
@@ -81,9 +81,9 @@ void Parse::ParseProject(WCHAR* src)
 
 void Parse::ParseProperties(WCHAR* prop, WCHAR* cmd)
 {
-	uint16 propCount = _countof(EngineProperties);
+	short propCount = _countof(EngineProperties);
 
-	uint16 index = 0;
+	short index = 0;
 	while (index < propCount)
 	{
 		if (CString::Equal(prop, EngineProperties[index])) break;

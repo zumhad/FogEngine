@@ -28,7 +28,7 @@ void Application::InitWindow()
     FOG_ASSERT(RegisterClassEx(&wce));
 
     DWORD style;
-    int32 width, height;
+    int width, height;
 
     if (mIsGame)
     {
@@ -62,7 +62,7 @@ void Application::InitApp()
     InitModules();
     InitBuffers();
 
-    srand((uint32)time(0));   // true random
+    srand((unsigned int)time(0));   // true random
     if (!mMouse->GetEnabled())
         ShowCursor(false);
 
@@ -139,16 +139,16 @@ bool Application::CursorInScene()
 
 Application::Application()
 {
-    prop.game.width = (int16)GetSystemMetrics(SM_CXSCREEN);
-    prop.game.height = (int16)GetSystemMetrics(SM_CYSCREEN);
+    prop.game.width = (short)GetSystemMetrics(SM_CXSCREEN);
+    prop.game.height = (short)GetSystemMetrics(SM_CYSCREEN);
 
-    prop.resolution.width = (int16)GetSystemMetrics(SM_CXSCREEN);
-    prop.resolution.height = (int16)GetSystemMetrics(SM_CYSCREEN);
+    prop.resolution.width = (short)GetSystemMetrics(SM_CXSCREEN);
+    prop.resolution.height = (short)GetSystemMetrics(SM_CYSCREEN);
 
     RECT rect;
     SystemParametersInfoW(SPI_GETWORKAREA, 0, &rect, 0);
-    prop.editor.width = int16(rect.right - rect.left);
-    prop.editor.height = int16(rect.bottom - rect.top);
+    prop.editor.width = short(rect.right - rect.left);
+    prop.editor.height = short(rect.bottom - rect.top);
 
     prop.scene.width = prop.game.width / 2;
     prop.scene.height = prop.game.height / 2;

@@ -10,7 +10,7 @@ namespace Module
 		: mSecondsPerCount(0.0f), mBaseTime(0), mStopTime(0),
 		mPausedTime(0), mPrevTime(0), mCurrTime(0), mStopped(false)
 	{
-		int64 countsPerSec;
+		long long countsPerSec;
 		QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
 
 		mSecondsPerCount = 1.0f / (float)countsPerSec;
@@ -36,7 +36,7 @@ namespace Module
 
 	void Time::Reset()
 	{
-		int64 currTime;
+		long long currTime;
 		QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
 
 		mCurrTime = currTime;
@@ -50,7 +50,7 @@ namespace Module
 	{
 		if (mStopped)
 		{
-			int64 startTime;
+			long long startTime;
 			QueryPerformanceCounter((LARGE_INTEGER*)&startTime);
 
 			mPausedTime += (startTime - mStopTime);
@@ -65,7 +65,7 @@ namespace Module
 	{
 		if (!mStopped)
 		{
-			int64 currTime;
+			long long currTime;
 			QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
 
 			mStopTime = currTime;
@@ -80,7 +80,7 @@ namespace Module
 		static const float maxPeriod = 1.0f / Singlton.fpsMax;
 		static float elipsedTime = 0.0f;
 
-		int64 currTime;
+		long long currTime;
 		QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
 		float time = (currTime - mBaseTime) * mSecondsPerCount;
 

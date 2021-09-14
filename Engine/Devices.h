@@ -15,14 +15,14 @@ namespace Module
 	public:
 		Keyboard();
 
-		void KeyDown(uint32 key);
-		void KeyUp(uint32 key);
+		void KeyDown(short key);
+		void KeyUp(short key);
 		void ResetKeys();
 		void ResetKeysPress();
 
-		bool IsKeyDown(uint32 key);
-		bool IsKeyUp(uint32 key);
-		bool IsKeyPress(uint32 key);
+		bool IsKeyDown(short key);
+		bool IsKeyUp(short key);
+		bool IsKeyPress(short key);
 
 	private:
 		bool mKeysPress[256] = {};
@@ -41,14 +41,14 @@ namespace Module
 		void Update();
 		void SetZeroAxis();
 
-		void KeyDown(int16 mouse);
-		void KeyUp(int16 mouse);
+		void KeyDown(short mouse);
+		void KeyUp(short mouse);
 		void ResetKeys();
 		void ResetKeysPress();
 
-		bool IsMouseDown(uint32 key);
-		bool IsMouseUp(uint32 key);
-		bool IsMousePress(uint32 key);
+		bool IsMouseDown(short key);
+		bool IsMouseUp(short key);
+		bool IsMousePress(short key);
 
 		void SetPos(short x, short y) { mPosX = x; mPosY = y; }
 		short GetX() { return mPosX; }

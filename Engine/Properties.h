@@ -15,24 +15,24 @@ public:
 
 	struct
 	{
-		int16 width = 0;
-		int16 height = 0;
+		short width = 0;
+		short height = 0;
 		Color color = 0;
 	} editor;
 
 	struct
 	{
-		int16 x = 0;
-		int16 y = 0;
-		int16 width = 0;
-		int16 height = 0;
+		short x = 0;
+		short y = 0;
+		short width = 0;
+		short height = 0;
 		Color color = 255;
 	} scene;
 
 	struct
 	{
-		int16 width = 0;
-		int16 height = 0;
+		short width = 0;
+		short height = 0;
 		Color color = 255;
 	} game;
 
@@ -50,8 +50,8 @@ public:
 
 	struct
 	{
-		int16 width = 0;
-		int16 height = 0;
+		short width = 0;
+		short height = 0;
 	} resolution;
 
 	struct
@@ -60,8 +60,8 @@ public:
 		void (*update)() = 0;
 	} foo;
 
-	int16 captionHeight = 50;
-	int16 fpsMax = 0;
+	short captionHeight = 50;
+	short fpsMax = 0;
 	bool isGame = false;
 	bool cursorShow = true;
 };

@@ -13,11 +13,11 @@ using Module::Time;
 
 
 #define CREATE_APPLICATION()\
-int32 wmain()\
+int wmain()\
 {\
 	Edit::CheckDebug();\
 	Editor* app = new Editor;\
-	int32 exitCode = app->Run();\
+	int exitCode = app->Run();\
 	SAFE_DELETE(app);\
 	return exitCode;\
 }

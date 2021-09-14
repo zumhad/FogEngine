@@ -21,11 +21,11 @@ namespace Module
 		float mSecondsPerCount;
 		static float mDeltaTime;
 
-		int64 mBaseTime;
-		int64 mPausedTime;
-		int64 mStopTime;
-		int64 mPrevTime;
-		int64 mCurrTime;
+		long long mBaseTime;
+		long long mPausedTime;
+		long long mStopTime;
+		long long mPrevTime;
+		long long mCurrTime;
 
 		bool mStopped;
 	};

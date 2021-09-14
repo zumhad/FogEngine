@@ -167,7 +167,6 @@
     <ClCompile Include="ParseFile.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Time.cpp" />
-    <ClCompile Include="Trace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h" />

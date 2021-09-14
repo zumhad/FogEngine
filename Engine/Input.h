@@ -16,13 +16,13 @@ public:
 	static void SetKeyboard(Module::Keyboard* keyboard);
 	static void SetMouse(Module::Mouse* keyboard);
 
-	static bool IsKeyDown(uint32 key);
-	static bool IsKeyUp(uint32 key);
-	static bool IsKeyPress(uint32 key);
+	static bool IsKeyDown(short key);
+	static bool IsKeyUp(short key);
+	static bool IsKeyPress(short key);
 
-	static bool IsMouseDown(uint32 mouse);
-	static bool IsMouseUp(uint32 mouse);
-	static bool IsMousePress(uint32 mouse);
+	static bool IsMouseDown(short mouse);
+	static bool IsMouseUp(short mouse);
+	static bool IsMousePress(short mouse);
 
 	static short GetCursorX();
 	static short GetCursorY();

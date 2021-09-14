@@ -51,9 +51,6 @@
     <ClCompile Include="Time.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Trace.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h">

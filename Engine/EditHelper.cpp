@@ -84,14 +84,14 @@ void Edit::SetSceneHeight(short height)
 	mApp->InitBuffers();
 }
 
-void Edit::MoveSceneX(int16 x)
+void Edit::MoveSceneX(short x)
 {
 	if (Singlton.scene.x + x < 0) return;
 
 	SetSceneX(Singlton.scene.x + x);
 }
 
-void Edit::MoveSceneY(int16 y)
+void Edit::MoveSceneY(short y)
 {
 	if (Singlton.scene.y + y < 0) return;
 
@@ -109,10 +109,10 @@ bool Edit::CursorInScene()
 	return false;
 }
 
-int16 Edit::GetSceneX() { return Singlton.scene.x; }
-int16 Edit::GetSceneY() { return Singlton.scene.y; }
-int16 Edit::GetSceneWidth() { return Singlton.scene.width; }
-int16 Edit::GetSceneHeight() { return Singlton.scene.height; }
+short Edit::GetSceneX() { return Singlton.scene.x; }
+short Edit::GetSceneY() { return Singlton.scene.y; }
+short Edit::GetSceneWidth() { return Singlton.scene.width; }
+short Edit::GetSceneHeight() { return Singlton.scene.height; }
 
 bool Edit::IsAppPaused() { return mApp->mPaused; }
 HWND Edit::GetHWND() { return mApp->mHwnd; }
@@ -131,4 +131,4 @@ void Edit::CameraSetRotationZ(float z) { mApp->mCamera->SetRotationZ(z); }
 void Edit::CameraMoveLocal(float x, float y, float z) { mApp->mCamera->MoveLocal(x, y, z); }
 void Edit::CameraMoveGlobal(float x, float y, float z) { mApp->mCamera->MoveGlobal(x, y, z); }
 
-void Edit::SetSceneColor(int16 red, int16 green, int16 blue) { Singlton.scene.color = { red, green, blue }; }
+void Edit::SetSceneColor(short red, short green, short blue) { Singlton.scene.color = { red, green, blue }; }

@@ -25,18 +25,18 @@ public:
 	static void SetSceneHeight(short);
 
 	static bool CursorInScene();
-	static void SetSceneColor(int16 red, int16 green, int16 blue);
+	static void SetSceneColor(short red, short green, short blue);
 
-	static void MoveSceneX(int16 x);
-	static void MoveSceneY(int16 y);
+	static void MoveSceneX(short x);
+	static void MoveSceneY(short y);
 
 	static bool IsAppPaused();
 	static HWND	 GetHWND();
 	static bool GetCursorEnabled();
-	static int16 GetSceneX();
-	static int16 GetSceneY();
-	static int16 GetSceneWidth();
-	static int16 GetSceneHeight();
+	static short GetSceneX();
+	static short GetSceneY();
+	static short GetSceneWidth();
+	static short GetSceneHeight();
 
 	static void CameraSetTarget(Vector3 target);
 	static void CameraRotate(float x, float y, float z);

@@ -23,17 +23,17 @@ public:
     ~Application();
     Application();
 
-    int32 Run();
+    int Run();
 
 private:
     friend void Edit::SetCursorEnabled(bool var);
-    friend void Edit::SetSceneX(int16);
-    friend void Edit::SetSceneY(int16);
-    friend void Edit::SetSceneWidth(int16);
-    friend void Edit::SetSceneHeight(int16);
-    friend void Edit::SetSceneColor(int16 red, int16 green, int16 blue);
-    friend void Edit::MoveSceneX(int16 x);
-    friend void Edit::MoveSceneY(int16 y);
+    friend void Edit::SetSceneX(short);
+    friend void Edit::SetSceneY(short);
+    friend void Edit::SetSceneWidth(short);
+    friend void Edit::SetSceneHeight(short);
+    friend void Edit::SetSceneColor(short red, short green, short blue);
+    friend void Edit::MoveSceneX(short x);
+    friend void Edit::MoveSceneY(short y);
     friend HWND Edit::GetHWND();
     friend bool Edit::GetCursorEnabled();
     friend bool Edit::IsAppPaused();
