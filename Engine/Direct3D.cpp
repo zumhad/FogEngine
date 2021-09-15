@@ -72,16 +72,41 @@ namespace Module
     void Direct3D::ResizeEditor()
     {
         SAFE_RELEASE(mRenderTargetView);
+        SAFE_RELEASE(mDepthStencilView);
 
         short width = Singlton.editor.width;
         short height = Singlton.editor.height;
 
         FOG_TRACE(mSwapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
-        ID3D11Texture2D* pBackBuffer2 = {};
+        ID3D11Texture2D* pBackBuffer2 = 0;
         FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
         FOG_ASSERT(pBackBuffer2);
         FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, nullptr, &mRenderTargetView));
         SAFE_RELEASE(pBackBuffer2);
+
+        D3D11_TEXTURE2D_DESC descDepth = {};
+        descDepth.Width = width;
+        descDepth.Height = height;
+        descDepth.MipLevels = 1;
+        descDepth.ArraySize = 1;
+        descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        descDepth.SampleDesc.Count = 1;
+        descDepth.SampleDesc.Quality = 0;
+        descDepth.Usage = D3D11_USAGE_DEFAULT;
+        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        descDepth.CPUAccessFlags = 0;
+        descDepth.MiscFlags = 0;
+        ID3D11Texture2D* depthStencil = 0;
+        FOG_TRACE(mDevice->CreateTexture2D(&descDepth, nullptr, &depthStencil));
+
+        // Create the depth stencil view
+        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+        descDSV.Format = descDepth.Format;
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        descDSV.Texture2D.MipSlice = 0;
+        FOG_TRACE(mDevice->CreateDepthStencilView(depthStencil, 0, &mDepthStencilView));
+        SAFE_RELEASE(depthStencil);
+
 
         mEditorViewport.MinDepth = 0.0f;
         mEditorViewport.MaxDepth = 1.0f;
@@ -100,6 +125,7 @@ namespace Module
     void Direct3D::ResizeGame()
     {
         SAFE_RELEASE(mRenderTargetView);
+        SAFE_RELEASE(mDepthStencilView);
 
         short width = Singlton.resolution.width;
         short height = Singlton.resolution.height;
@@ -110,6 +136,30 @@ namespace Module
         FOG_ASSERT(pBackBuffer2);
         FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, nullptr, &mRenderTargetView));
         SAFE_RELEASE(pBackBuffer2);
+
+        D3D11_TEXTURE2D_DESC descDepth = {};
+        descDepth.Width = width+1;
+        descDepth.Height = height+1;
+        descDepth.MipLevels = 1;
+        descDepth.ArraySize = 1;
+        descDepth.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        descDepth.SampleDesc.Count = 1;
+        descDepth.SampleDesc.Quality = 0;
+        descDepth.Usage = D3D11_USAGE_DEFAULT;
+        descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+        descDepth.CPUAccessFlags = 0;
+        descDepth.MiscFlags = 0;
+        ID3D11Texture2D* depthStencil = 0;
+        FOG_TRACE(mDevice->CreateTexture2D(&descDepth, nullptr, &depthStencil));
+
+        //EDIT
+        // Create the depth stencil view
+        D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+        descDSV.Format = descDepth.Format;
+        descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+        descDSV.Texture2D.MipSlice = 0;
+        FOG_TRACE(mDevice->CreateDepthStencilView(depthStencil, 0, &mDepthStencilView));
+        SAFE_RELEASE(depthStencil);
 
         mGameViewport.MinDepth = 0.0f;
         mGameViewport.MaxDepth = 1.0f;
@@ -224,6 +274,8 @@ namespace Module
         bd.ByteWidth = sizeof(ConstantBuffer);
         bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
         mDevice->CreateBuffer(&bd, nullptr, &mConstantBuffer);
+        bd.ByteWidth = sizeof(ObjectBuffer);
+        mDevice->CreateBuffer(&bd, nullptr, &mObjectBuffer);
 
 
 
@@ -253,17 +305,18 @@ namespace Module
     void Direct3D::DrawEditor()
     {
         mDeviceContext->RSSetViewports(1, &mEditorViewport);
-        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, 0);
+        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
         mDeviceContext->VSSetShader(mVertexShader, 0, 0);
         mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
         mDeviceContext->ClearRenderTargetView(mRenderTargetView, mEditorColor);
+        mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
     }
 
     void Direct3D::DrawGame()
     {
         mDeviceContext->RSSetViewports(1, &mGameViewport);
-        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, 0);
+        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
         mDeviceContext->VSSetShader(mVertexShader, 0, 0);
         mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
@@ -280,6 +333,7 @@ namespace Module
         {
             mDeviceContext1->ClearView(mRenderTargetView, mSceneColor, &mSceneRect, 1);
         }
+        mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
         for (int i = 0; i < ObjectManager::Size(); i++)
         {
@@ -288,10 +342,15 @@ namespace Module
             if (obj->GetType() == tCube)
             {
                 static ConstantBuffer cb;
-                cb.mWorldViewProj = XMMatrixTranspose(((Cube*)obj)->GetWorldMatrix() * mView * mProjection);
+                cb.mWorldViewProj = mView * mProjection;
+                cb.mWorld = ((Cube*)obj)->GetWorldMatrix();
                 mDeviceContext->UpdateSubresource(mConstantBuffer, 0, 0, &cb, 0, 0);
                 mDeviceContext->VSSetConstantBuffers(0, 1, &mConstantBuffer);
-                mDeviceContext->PSSetConstantBuffers(0, 1, &mConstantBuffer);
+
+                static ObjectBuffer ob;
+                ob.color = ((Cube*)obj)->mMaterial;
+                mDeviceContext->UpdateSubresource(mObjectBuffer, 0, 0, &ob, 0, 0);
+                mDeviceContext->PSSetConstantBuffers(1, 1, &mObjectBuffer);
 
                 ((Cube*)obj)->Set();
                 mDeviceContext->DrawIndexed(((Cube*)obj)->VertexCount(), 0, 0);
@@ -302,7 +361,7 @@ namespace Module
     void Direct3D::DrawScene()
     {
         mDeviceContext->RSSetViewports(1, &mSceneViewport);
-        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, 0);
+        mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
         mDeviceContext->VSSetShader(mVertexShader, 0, 0);
         mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
@@ -324,6 +383,8 @@ namespace Module
         SAFE_RELEASE(mVertexLayout);
         SAFE_RELEASE(mVertexBuffer);
         SAFE_RELEASE(mIndexBuffer);
+        SAFE_RELEASE(mObjectBuffer);
+        SAFE_RELEASE(mDepthStencilView);
 
         if (mSwapChain)
         {

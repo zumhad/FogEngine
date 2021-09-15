@@ -27,8 +27,8 @@ void Application::AdjustMaxClient(RECT& rect)
 
 LRESULT Application::HitTest()
 {
-    static short xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    static short yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static short xBorder = short(GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
+    static short yBorder = short(GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
     short x = mMouse->GetX();
     short y = mMouse->GetY();
 
@@ -324,7 +324,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         case WM_KEYDOWN:
         {
             if (!(HIWORD(lparam) & KF_REPEAT)) //delete repeat messages
-                app.mKeyboard->KeyDown((unsigned int)wparam);
+                app.mKeyboard->KeyDown((short)wparam);
 
             return 0;
         }
@@ -332,7 +332,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         case WM_SYSKEYUP:
         case WM_KEYUP:
         {
-            app.mKeyboard->KeyUp((unsigned int)wparam);
+            app.mKeyboard->KeyUp((short)wparam);
             return 0;
         }
     }

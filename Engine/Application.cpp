@@ -6,6 +6,7 @@
 #include "Trace.h"
 #include "Time.h"
 #include "ParseFile.h"
+#include "ObjectManager.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -161,6 +162,8 @@ Application::~Application() //exit
 
     DestroyWindow(mHwnd);
     UnregisterClass(APP_CLASS, 0);
+
+    ObjectManager::Shotdown();
 
     SAFE_DELETE(mDirect);
     SAFE_DELETE(mKeyboard);

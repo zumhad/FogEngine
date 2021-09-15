@@ -51,23 +51,8 @@ public:
 	             
 	Matrix4 GetWorldMatrix()
 	{ 
-		//EDIT
 		mQRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mRotation.GetX(), -mRotation.GetY(), mRotation.GetZ());
 		return DirectX::XMMatrixAffineTransformation(mScaling, Quaternion::Zero(), mQRotation, mPosition);
-	}
-
-	void* GetRef()
-	{
-		switch (mType)
-		{
-		case tCube:
-			return rCube;
-
-		case tLight:
-			return rLight;
-		}
-
-		return 0;
 	}
 
 	ObjectType GetType()
@@ -80,12 +65,6 @@ public:
 	Vector3 mScaling;
 	Vector3 mPosition;
 	Vector3 mRotation;
-
-	union
-	{
-		Cube* rCube;
-		Light* rLight;
-	};
 
 protected:
 	ObjectType mType;

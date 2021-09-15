@@ -48,15 +48,23 @@ void MyStart()
 {
 	Cube cube;
 
+	cube.mMaterial = Vector4(1, 0, 0, 1);
+	cube.mPosition = Vector3(0, 0, 0);
+	ObjectManager::Add(cube);
 
-	for (int i = 0; i < 10; i++)
+	cube.mMaterial = Vector4(0, 1, 0, 1);
+	cube.mPosition = Vector3(0, 0, 3);
+	ObjectManager::Add(cube);
+
+	/*for (int i = 0; i < 10; i++)
 	{
 		for (int j = 0; j < 10; j++)
 		{
+			cube.mMaterial = Vector4(i/10.0f, 0, j/10.0f, 1);
 			cube.mPosition = Vector3(j*3, 0, i * 3);
 			ObjectManager::Add(cube);
 		}
-	}
+	}*/
 }
 
 class Editor : public Application
@@ -70,8 +78,8 @@ public:
 		prop.foo.start = MyStart;
 		prop.editor.color = RGB(70, 70, 70);
 		prop.fpsMax = 0;
-		prop.isGame = true;
-		prop.cursorShow = false;
+		//prop.isGame = true;
+		//prop.cursorShow = false;
 	}
 };
 

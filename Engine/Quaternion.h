@@ -10,7 +10,11 @@ namespace Math
 		Quaternion(const DirectX::XMMATRIX& m) { mVec = DirectX::XMQuaternionRotationMatrix(m); }
 		Quaternion(DirectX::FXMVECTOR v) { mVec = v; }
 
-		static Quaternion Zero() { return DirectX::XMQuaternionIdentity(); }
+		static Quaternion Zero() 
+		{ 
+			static Quaternion q = DirectX::XMQuaternionIdentity();
+			return q;
+		}
 
 		operator DirectX::XMVECTOR() const { return mVec; }
 		Quaternion& operator= (Quaternion rhs) { mVec = rhs; return *this; }

@@ -10,7 +10,6 @@ public:
 	Cube()
 	{
 		mType = tCube;
-		rCube = this;
 	}
 
 	void Load();
@@ -24,7 +23,7 @@ public:
         SAFE_RELEASE(mVertexBuffer);
     }
 
-	Vector3 mMaterial;
+	Vector4 mMaterial;
 
 private:
 	ID3D11Buffer* mVertexBuffer = 0;

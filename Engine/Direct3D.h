@@ -49,7 +49,9 @@ namespace Module
         ID3D11Buffer* mVertexBuffer = 0;
         ID3D11Buffer* mIndexBuffer = 0;
         ID3D11Buffer* mConstantBuffer = 0;
+        ID3D11Buffer* mObjectBuffer = 0;
         ID3D11RasterizerState* mRasterizerState = 0;
+        ID3D11DepthStencilView* mDepthStencilView = 0;
 
         D3D11_VIEWPORT mGameViewport = { 0 };
         D3D11_VIEWPORT mSceneViewport = { 0 };
@@ -70,8 +72,13 @@ namespace Module
         //Matrix4 mWorld;
         //Vector4 mColor;
         Matrix4 mWorldViewProj;
+        Matrix4 mWorld;
     };
 
+    struct ObjectBuffer
+    {
+        Vector4 color;
+    };
 }
 
 
