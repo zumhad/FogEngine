@@ -12,9 +12,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="Light.cpp" />
-    <ClCompile Include="Cube.cpp" />
     <ClCompile Include="Application.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -51,14 +48,20 @@
     <ClCompile Include="Time.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Cube.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Light.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h">
       <Filter>stuff</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="Light.h" />
-    <ClInclude Include="Cube.h" />
     <ClInclude Include="Application.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -132,6 +135,15 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Vector.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Cube.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ObjectManager.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
