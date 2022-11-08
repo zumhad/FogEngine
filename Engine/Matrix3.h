@@ -2,8 +2,6 @@
 
 #include "Vector.h"
 
-#pragma warning(disable: 4251)
-
 namespace Math
 {
 	class FOG_API Matrix3
@@ -30,31 +28,4 @@ namespace Math
 	private:
 		Vector3 mMat[3];
 	};
-
-	class FOG_API Matrix4
-	{
-	public:
-		Matrix4() {}
-		Matrix4(const DirectX::XMMATRIX& mat) { mMat = mat; }
-		Matrix4(const Matrix3& xyz, Vector3 w)
-		{
-			mMat.r[0] = DirectX::XMVectorSetW(xyz.GetX(), 0.0f);
-			mMat.r[1] = DirectX::XMVectorSetW(xyz.GetY(), 0.0f);
-			mMat.r[2] = DirectX::XMVectorSetW(xyz.GetZ(), 0.0f);
-			mMat.r[3] = DirectX::XMVectorSetW(w, 1.0f);
-		}
-
-		operator DirectX::XMMATRIX() const { return mMat; }
-		Matrix4 operator= (DirectX::XMMATRIX m) { return Matrix4(mMat = m); }
-		Vector4 operator* (Vector4 vec) const { return Vector4(DirectX::XMVector4Transform(vec, mMat)); }
-		Matrix4 operator* (const Matrix4& mat) const { return Matrix4(DirectX::XMMatrixMultiply(mMat, mat)); }
-
-	private:
-		DirectX::XMMATRIX mMat = DirectX::XMMatrixSet(0.0f, 0.0f, 0.0f, 0.0f,
-									0.0f, 0.0f, 0.0f, 0.0f,
-									0.0f, 0.0f, 0.0f, 0.0f,
-									0.0f, 0.0f, 0.0f, 0.0f);
-	};
-
-	inline Vector4 Vector4::operator* (Matrix4 mat) const { return Vector4(DirectX::XMVector4Transform(mVec, mat)); }
 }

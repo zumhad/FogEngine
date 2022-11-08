@@ -1,6 +1,6 @@
 #pragma once
 
-#include <string>
+//#include <string>
 #include <windows.h>
 #include <comdef.h>
 #include "dxerr.h"

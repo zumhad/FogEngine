@@ -6,20 +6,24 @@
 #include "Application.h"
 #include "Input.h"
 #include "Time.h"
-#include "EditHelper.h"
+#include "Camera.h"
 
+#include "CustomArray.h"
 #include "ObjectManager.h"
 #include "Cube.h"
+#include "Light.h"
+#include "Plane.h"
 
 using Module::Time;
 
 
-
-#define CREATE_APPLICATION()\
+#define CREATE_APPLICATION(x)\
 int wmain()\
 {\
-	Edit::CheckDebug();\
-	Editor* app = new Editor;\
+	ApplicationEngine* app = new ApplicationEngine;\
+	app->CheckDebug();\
+	app->DefaultProp();\
+	x();\
 	int exitCode = app->Run();\
 	SAFE_DELETE(app);\
 	return exitCode;\

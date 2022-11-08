@@ -20,22 +20,13 @@ class FOG_API Color
 {
 public:
 	Color() {}
-
-	Color(short r, short g, short b)
-	{
-		mColor = RGB(Math::Clamp(r, 0.0f, 255.0f), Math::Clamp(g, 0.0f, 255.0f), Math::Clamp(b, 0.0f, 255.0f));
-	}
-
+	Color(int r, int g, int b) { Set(r, g, b); }
 	Color(COLORREF c) { mColor = c; }
+	Color(int c) { Set(c, c, c); }
 
-	Color(int c)
+	void Set(int r, int g, int b)
 	{
-		mColor = RGB(Math::Clamp((float)c, 0.0f, 255.0f), Math::Clamp((float)c, 0.0f, 255.0f), Math::Clamp((float)c, 0.0f, 255.0f));
-	}
-
-	void Set(short r, short g, short b)
-	{
-		mColor = RGB(Math::Clamp(r, 0.0f, 255.0f), Math::Clamp(g, 0.0f, 255.0f), Math::Clamp(b, 0.0f, 255.0f));
+		mColor = RGB(Math::Clamp(float(r), 0.0f, 255.0f), Math::Clamp(float(g), 0.0f, 255.0f), Math::Clamp(float(b), 0.0f, 255.0f));
 	}
 
 	operator COLORREF() { return mColor; }
@@ -43,4 +34,23 @@ public:
 private:
 	COLORREF mColor = RGB(0, 0, 0);
 };
+
+/*class FOG_API ColorRGBA
+{
+public:
+	ColorRGBA() {}
+	ColorRGBA(int r, int g, int b, int a) { Set(r, g, b, a); }
+	ColorRGBA(COLORREF c) { mColor = c; }
+	ColorRGBA(int c) { Set(c, c, c, c); }
+
+	void Set(int r, int g, int b, int a)
+	{
+		mColor = RGBA(Math::Clamp((float)r, 0.0f, 255.0f), Math::Clamp((float)g, 0.0f, 255.0f), Math::Clamp((float)b, 0.0f, 255.0f), Math::Clamp((float)a, 0.0f, 255.0f));
+	}
+
+	operator COLORREF() { return mColor; }
+
+private:
+	COLORREF mColor = RGBA(0, 0, 0, 0);
+};*/
 

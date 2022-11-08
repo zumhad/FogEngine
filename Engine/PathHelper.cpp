@@ -1,18 +1,27 @@
 #include "PathHelper.h"
 
+#include "Properties.h"
 
-void PathHelper::GetAssetsPath(WCHAR* dest)
+void PathHelper::GetAssetsPath(String& dest)
 {
-    WCHAR buff[MAX_PATH];
-
-    GetModuleFileName(0, buff, _countof(buff));
-    CString::Strcpy(dest, buff, 0, CString::FindStr(buff, L"Build") - 1);
-
-    CString::Strcat(dest, L"Engine\\Assets\\");
+    dest = Singlton.path;
+    dest += L"Engine\\Assets\\";
 }
 
-void PathHelper::GetAssetsFullPath(WCHAR* dest, const WCHAR* asset)
+void PathHelper::GetEnginePath(String& dest)
 {
-    GetAssetsPath(dest);
-    CString::Strcat(dest, asset);
+    dest = Singlton.path;
+    dest += L"Engine\\";
+}
+
+void PathHelper::GetProjectPath(String& dest)
+{
+    dest = Singlton.path;
+    dest += L"Project\\";
+}
+
+void PathHelper::GetEditorPath(String& dest)
+{
+    dest = Singlton.path;
+    dest += L"Editor\\";
 }

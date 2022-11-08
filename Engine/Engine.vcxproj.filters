@@ -18,16 +18,7 @@
     <ClCompile Include="Camera.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="CustomString.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Direct3D.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="dxerr.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="EditHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp">
@@ -37,9 +28,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Object.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="ParseFile.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="PathHelper.cpp">
@@ -57,6 +45,37 @@
     <ClCompile Include="ObjectManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="dxerr.cpp">
+      <Filter>stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="GenerateFiles.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>stuff</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingBox.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="BoundingPlane.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Frustum.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomFile.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomString.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h">
@@ -89,37 +108,22 @@
     <ClInclude Include="Direct3D.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="EditHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Engine.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Functions.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Header.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Input.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="MathHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix.h">
+    <ClInclude Include="Matrix3.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ParseFile.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="PathHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Properties.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Quaternion.h">
@@ -146,10 +150,62 @@
     <ClInclude Include="ObjectManager.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplicationEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Properties.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix4.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingBox.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="BoundingPlane.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Frustum.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomFile.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="LightHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomArray.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Assets\shader.hlsl">
+    <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
-    </FxCompile>
+    </None>
+    <None Include="Assets\light.hlsli">
+      <Filter>stuff</Filter>
+    </None>
   </ItemGroup>
 </Project>

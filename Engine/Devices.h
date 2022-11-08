@@ -17,8 +17,8 @@ namespace Module
 
 		void KeyDown(short key);
 		void KeyUp(short key);
-		void ResetKeys();
 		void ResetKeysPress();
+		void ResetKeys();
 
 		bool IsKeyDown(short key);
 		bool IsKeyUp(short key);
@@ -43,8 +43,8 @@ namespace Module
 
 		void KeyDown(short mouse);
 		void KeyUp(short mouse);
-		void ResetKeys();
 		void ResetKeysPress();
+		void ResetKeys();
 
 		bool IsMouseDown(short key);
 		bool IsMouseUp(short key);

@@ -5,10 +5,9 @@
 class PathHelper
 {
 public:
-    static void GetAssetsPath(WCHAR* dest);
-    static void GetAssetsFullPath(WCHAR* dest, const WCHAR* asset);
-
-private:
-    static const WCHAR* mAppName;
+    static void GetAssetsPath(String& dest);
+    static void GetProjectPath(String& dest);
+    static void GetEnginePath(String& dest);
+    static void GetEditorPath(String& dest);
 };
 

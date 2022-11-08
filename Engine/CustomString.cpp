@@ -1,44 +1,181 @@
 #include "CustomString.h"
 
+#include <cwchar>
+#include <cstdlib>
 
-WCHAR* CString::Strcat(WCHAR* dest, const WCHAR* src)
-{
-	return wcscat(dest, src);
+String::~String()
+{ 
+	SAFE_DELETE_ARR(mStr);
+	mSize = 0;
 }
 
-WCHAR* CString::Strcpy(WCHAR* dest, const WCHAR* src)
+String::String()
 {
-	return wcscpy(dest, src);
+	mStr = new wchar_t[1];
+	mStr[0] = L'\0';
 }
 
-WCHAR* CString::Strcpy(WCHAR* dest, const WCHAR* src, short start, short end)
+String::String(const CHAR* str)
 {
-	dest[end - start + 1] = '\0';
-	return wcsncpy(dest, src + start, end - start + 1);;
-}
-
-short CString::Strlen(const WCHAR* str)
-{
-	short res = 0;
-
-	short i = 0;
-	while ((str[i] != L'\0'))
+	if (str == 0)
 	{
-		if ((str[i] == L'\n')) break;
-		res++; i++;
+		mStr = new wchar_t[1];
+		mStr[0] = L'\0';
 	}
+	else
+	{
+		mSize = Strlen(str);
+		mStr = new wchar_t[mSize + 1];
+		mbstowcs(mStr, str, mSize);
+		mStr[mSize] = L'\0';
+	}
+}
+
+String::String(const WCHAR* str)
+{
+	if (str == 0)
+	{
+		mStr = new wchar_t[1];
+		mStr[0] = L'\0';
+	}
+	else
+	{
+		mSize = Strlen(str);
+		mStr = new wchar_t[mSize + 1];
+		Strcpy(mStr, str);
+	}
+}
+
+String::String(const String& str)
+{
+	*this = str;
+}
+
+String& String::operator= (const String& str)
+{
+	if (str.mStr == 0)
+	{
+		mStr = new WCHAR[1];
+		mStr[0] = L'\0';
+	}
+	else
+	{
+		SAFE_DELETE_ARR(mStr);
+
+		mSize = str.mSize;
+		mStr = new WCHAR[mSize + 1];
+		Strcpy(mStr, str.mStr);
+		mStr[mSize] = L'\0';
+	}
+
+	return *this;
+}
+
+String operator+ (const String& str1, const String& str2)
+{
+	int len = str1.mSize + str2.mSize;
+	wchar_t* buff = new wchar_t[len + 1];
+
+	String::Strcpy(buff, str1.mStr);
+	String::Strcat(buff, str2.mStr);
+
+	String res = buff;
+	SAFE_DELETE_ARR(buff);
 
 	return res;
 }
 
-bool CString::IsFind(const WCHAR* dest, const WCHAR* src)
+String operator+ (const WCHAR* str1, const String& str2)
 {
-	short destLen = Strlen(dest);
-	short srcLen = Strlen(src);
+	String res = String(str1) + str2;
+	return res;
+}
 
-	for (short i = 0; i < destLen; i++)
+String String::operator+= (const String& str)
+{
+	*this = *this + str;
+
+	return *this;
+}
+
+String String::ToStr(Vector4 v)
+{
+	String res = L"{" + ToStr(v.GetX()) + L"," + ToStr(v.GetY()) + L"," + ToStr(v.GetZ()) + L"," + ToStr(v.GetW()) + L"}";
+	return res;
+}
+
+String String::ToStr(float f)
+{
+	WCHAR buffer[50];
+	swprintf(buffer, 50, L"%f", f);
+
+	String res = buffer;
+
+	return res;
+}
+
+String String::ToStr(Scalar s)
+{
+	WCHAR buffer[50];
+	swprintf(buffer, 50, L"%f", float(s));
+
+	String res = buffer;
+	res += L"f";
+
+	return res;
+}
+
+String String::ToStr(Vector3 v)
+{
+	String res = L"{" + ToStr(v.GetX()) + L"," + ToStr(v.GetY()) + L"," + ToStr(v.GetZ()) + L"}";
+	return res;
+}
+
+String String::ToStr(int i)
+{
+	WCHAR buffer[50];
+	swprintf(buffer, 50, L"%d", i);
+
+	String res = buffer;
+
+	return res;
+}
+
+
+void String::Strcat(WCHAR* dest, const WCHAR* src)
+{
+	wcscat(dest, src);
+}
+
+void String::Strcpy(WCHAR* dest, const WCHAR* src)
+{
+	wcscpy(dest, src);
+}
+
+void String::Strcpy(WCHAR* dest, const WCHAR* src, int start, int end)
+{
+	dest[end - start + 1] = '\0';
+	wcsncpy(dest, src + start, end - start + 1);
+}
+
+int String::Strlen(const WCHAR* str)
+{
+	return (int)wcslen(str);
+}
+
+int String::Strlen(const CHAR* str)
+{
+	return (int)strlen(str);
+}
+
+bool String::IsFind(const WCHAR* dest, const WCHAR* src)
+{
+	int destLen = Strlen(dest);
+	int srcLen = Strlen(src);
+
+	for (int i = 0; i < destLen; i++)
 	{
-		for (short j = 0; j < srcLen; j++)
+		for (int j = 0; j < srcLen; j++)
 		{
 			if (src[j] != dest[i + j]) break;
 			if (j == srcLen - 1) return true;
@@ -47,25 +184,25 @@ bool CString::IsFind(const WCHAR* dest, const WCHAR* src)
 	return false;
 }
 
-bool CString::IsFindCh(const WCHAR* dest, const WCHAR ch)
+bool String::IsFindCh(const WCHAR* dest, const WCHAR ch)
 {
-	short destLen = Strlen(dest);
+	int destLen = Strlen(dest);
 
-	for (short i = 0; i < destLen; i++)
+	for (int i = 0; i < destLen; i++)
 	{
 		if (dest[i] == ch) return true;
 	}
 	return false;
 }
 
-bool CString::Equal(const WCHAR* str1, const WCHAR* str2)
+bool String::Equal(const WCHAR* str1, const WCHAR* str2)
 {
-	short str1Len = Strlen(str1);
-	short str2Len = Strlen(str2);
+	int str1Len = Strlen(str1);
+	int str2Len = Strlen(str2);
 
 	if (str1Len != str2Len) return false;
 
-	for (short i = 0; i < str1Len; i++)
+	for (int i = 0; i < str1Len; i++)
 	{
 		if (str1[i] != str2[i]) return false;
 	}
@@ -73,45 +210,45 @@ bool CString::Equal(const WCHAR* str1, const WCHAR* str2)
 	return true;
 }
 
-short CString::FindCh(const WCHAR* str, WCHAR ch)
+int String::FindCh(const WCHAR* str, WCHAR ch)
 {
-	short index = 0;
+	int index = 0;
 
-	short i = 0;
+	int i = 0;
 	while (str[i++] != ch) index++;
 
 	return index;
 }
 
-short CString::CountCh(const WCHAR* dest, const WCHAR ch)
+int String::CountCh(const WCHAR* dest, const WCHAR ch)
 {
-	short res = 0;
-	short destLen = Strlen(dest);
+	int res = 0;
+	int destLen = Strlen(dest);
 
-	for (short i = 0; i < destLen; i++)
+	for (int i = 0; i < destLen; i++)
 	{
 		if (dest[i] == ch) res++;
 	}
 	return res;
 }
 
-bool CString::IsInt(const WCHAR* str)
+bool String::IsInt(const WCHAR* str)
 {
-	short strLen = Strlen(str);
+	int strLen = Strlen(str);
 
-	for (short i = 0; i < strLen; i++)
+	for (int i = 0; i < strLen; i++)
 	{
 		if (str[i] > L'9' || str[i] < L'0') return false;
 	}
 	return true;
 }
 
-int CString::Atoi(const WCHAR* str)
+int String::Atoi(const WCHAR* str)
 {
 	return wcstol(str, 0, 10);
 }
 
-bool CString::Atob(const WCHAR* str)
+bool String::Atob(const WCHAR* str)
 { 
 	if (Equal(str, L"true")) return true;
 	if (Equal(str, L"false")) return false;
@@ -119,14 +256,14 @@ bool CString::Atob(const WCHAR* str)
 	return str;
 }
 
-short CString::FindStr(const WCHAR* dest, const WCHAR* str)
+int String::FindStr(const WCHAR* dest, const WCHAR* str)
 {
-	short destLen = Strlen(dest);
-	short strLen = Strlen(str);
+	int destLen = Strlen(dest);
+	int strLen = Strlen(str);
 
-	for (short i = 0; i < destLen - strLen + 1; i++)
+	for (int i = 0; i < destLen - strLen + 1; i++)
 	{
-		for (short j = 0; j < strLen; j++)
+		for (int j = 0; j < strLen; j++)
 		{
 			if (dest[i + j] != str[j]) break;
 
@@ -134,4 +271,12 @@ short CString::FindStr(const WCHAR* dest, const WCHAR* str)
 		}
 	}
 	return 0;
+}
+
+CHAR* String::ToUTF8()
+{
+	int len = WideCharToMultiByte(CP_UTF8, 0, mStr, -1, NULL, 0, NULL, NULL);
+	CHAR* utf8 = new CHAR[len];
+	WideCharToMultiByte(CP_UTF8, 0, mStr, -1, utf8, len, NULL, NULL);
+	return utf8;
 }

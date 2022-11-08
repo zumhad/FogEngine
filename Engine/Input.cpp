@@ -1,6 +1,6 @@
 #include "Input.h"
 
-#include "EditHelper.h"
+#include "Application.h"
 #include "Trace.h"
 #include "Devices.h"
 #include "Properties.h"
@@ -59,28 +59,6 @@ namespace Module
 		}
 	}
 
-	void Keyboard::ResetKeys()
-	{
-		if (mIsKeyDown)
-		{
-			ZeroMemory(mKeysDown, 256);
-			mIsKeyDown = false;
-		}
-
-		if (mIsKeyUp)
-		{
-			ZeroMemory(mKeysUp, 256);
-			mIsKeyUp = false;
-		}
-
-	}
-
-	void Mouse::ResetKeys()
-	{
-		ZeroMemory(mKeysDown, 2);
-		ZeroMemory(mKeysUp, 2);
-	}
-
 
 	void Mouse::ResetKeysPress()
 	{
@@ -97,6 +75,12 @@ namespace Module
 		}
 	}
 
+	void Keyboard::ResetKeys()
+	{
+		ZeroMemory(mKeysDown, 256);
+		ZeroMemory(mKeysUp, 256);
+	}
+
 	bool Keyboard::IsKeyPress(short key)
 	{
 		return mKeysPress[key];
@@ -104,15 +88,29 @@ namespace Module
 
 	bool Keyboard::IsKeyDown(short key)
 	{
-		return mKeysDown[key];
+		if (mKeysDown[key])
+		{
+			mKeysDown[key] = false;
+			return true;
+		}
+		return false;
 	}
 
 	bool Keyboard::IsKeyUp(short key)
 	{
-		return mKeysUp[key];
+		if (mKeysUp[key])
+		{
+			mKeysUp[key] = false;
+			return true;
+		}
+		return false;
 	}
 
-
+	void Mouse::ResetKeys()
+	{
+		ZeroMemory(mKeysDown, 2);
+		ZeroMemory(mKeysUp, 2);
+	}
 
 	bool Mouse::IsMousePress(short key)
 	{
@@ -148,7 +146,7 @@ namespace Module
 
 		SetZeroAxis();
 
-		if (Edit::IsAppPaused())
+		if (Application::IsAppPaused())
 		{
 			mAxis[MOUSE_X] = 0;
 			mAxis[MOUSE_Y] = 0;

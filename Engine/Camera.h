@@ -4,52 +4,57 @@
 
 #include "Properties.h"
 #include "MathHelper.h"
+#include "Frustum.h"
 
 using namespace Math;
 
-namespace Module
+class FOG_API Camera
 {
-	class Camera
-	{
-	public:
-		Camera();
+public:
+	static void SetPosition(Vector3 position) { mToWorld.SetTranslation(position); mTargetToWorld.SetTranslation(position); }
+	static void SetRotation(Vector3 rotation);
+	static void SetRotation(float x, float y, float z);
+	static void SetRotationX(float x);
+	static void SetRotationY(float y);
+	static void SetRotationZ(float z);
 
-		DirectX::XMMATRIX GetViewMatrix() { return mView; }
-		void Update(float dt);
-		void SetPosition(Vector3 position) { mPosition = position; mTargetPosition = position; }
-		void SetRotation(float x, float y, float z);
-		void SetRotationX(float x) { mPitch = x; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
-		void SetRotationY(float y) { mYaw = y; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
-		void SetRotationZ(float z) { mRoll = z; mTargetRotation = DirectX::XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll); }
+	static void LookAt(Vector3 pos);
+	static void MoveLocal(float x, float y, float z);
+	static void MoveGlobal(float x, float y, float z);
+	static void Rotate(float x, float y, float z);
+	static float GetRotateX() { return mPitch; };
+	static float GetRotateY() { return mYaw; };
+	static float GetRotateZ() { return mRoll; };
 
-		void MoveLocal(float x, float y, float z);
-		void MoveGlobal(float x, float y, float z);
-		void SetTarget(Vector3 target);
-		void LookAt();
-		void Rotate(float x, float y, float z);
-		float GetRotateX() { return mPitch; };
-		float GetRotateY() { return mYaw; };
-		float GetRotateZ() { return mRoll; };
+	static Vector3 GetRotation() { return Vector3(mPitch, mYaw, mRoll); }
+	static Vector3 GetPosition() { return mToWorld.GetTranslation(); }
 
-	private:
-		void Initialize(Vector3 eye, Vector3 at);
+	static void SetPerspective(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip);
 
-	private:
-		float mYaw;
-		float mPitch;
-		float mRoll;
+private:
+	static void UpdateProjMatrix();
 
-		float mRotationSmooth;
-		float mMoveSmooth;
+protected:
+	static float mYaw;
+	static float mPitch;
+	static float mRoll;
 
-		float mDotDistance;
-		Vector3 mDotPosition;
+	static float mRotationSmooth;
+	static float mMoveSmooth;
 
-		Vector3 mPosition;
-		Vector3 mTargetPosition;
-		Quaternion mRotation;
-		Quaternion mTargetRotation;
+	static OrthogonalTransform mToWorld;
+	static OrthogonalTransform mTargetToWorld;
 
-		Matrix4 mView;
-	};
-}
+	static Matrix4 mView;
+	static Matrix4 mProj;
+	static Matrix4 mViewProj;
+
+	static Frustum mFrustumVS;
+	static Frustum mFrustumWS;
+
+private:
+	static float mVerticalFOV;
+	static float mAspectRatio;
+	static float mNearClip;
+	static float mFarClip;
+};

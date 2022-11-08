@@ -1,14 +1,15 @@
-#include "Application.h"
+#include "ApplicationEngine.h"
 
 #include "Definitions.h"
-#include "EditHelper.h"
 #include "Devices.h"
 #include "Direct3D.h"
 #include "Time.h"
+#include "CameraEngine.h"
 
 #include <windowsx.h>
 
-void Application::AdjustMaxClient(RECT& rect)
+
+void ApplicationEngine::AdjustMaxClient(RECT& rect)
 {
     WINDOWPLACEMENT placement = {};
     GetWindowPlacement(mHwnd, &placement);
@@ -25,7 +26,7 @@ void Application::AdjustMaxClient(RECT& rect)
     rect = monitor_info.rcWork;
 }
 
-LRESULT Application::HitTest()
+LRESULT ApplicationEngine::HitTest()
 {
     static short xBorder = short(GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
     static short yBorder = short(GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
@@ -53,19 +54,19 @@ LRESULT Application::HitTest()
 }
 
 
-LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    static Application* pApp = 0;
+    static ApplicationEngine* pApp = 0;
 
     if (msg == WM_NCCREATE)
     {
         LPCREATESTRUCTW userdata = reinterpret_cast<LPCREATESTRUCTW>(lparam);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(userdata->lpCreateParams));
-        pApp = (Application*)(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        pApp = (ApplicationEngine*)(GetWindowLongPtr(hwnd, GWLP_USERDATA));
     }
 
     if (!pApp) return DefWindowProc(hwnd, msg, wparam, lparam);
-    static Application& app = *pApp;
+    static ApplicationEngine& app = *pApp;
 
     switch (msg)
     {
@@ -75,23 +76,19 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             {
                 app.mTime->Tick();
 
+                app.mMouse->Update();
+
                 if (Singlton.foo.update)
                     Singlton.foo.update();
 
-                app.mMouse->Update();
-                app.mCamera->Update(Module::Time::DeltaTime());
-                app.mDirect->UpdateViewMatrix(app.mCamera->GetViewMatrix());
-
+                CameraEngine::Update(Module::Time::DeltaTime());
                 
-
                 if (app.mIsGame)
-                    app.mDirect->DrawGame();
+                    Direct3D::DrawGame();
                 else
-                    app.mDirect->DrawScene();
+                    Direct3D::DrawScene();
 
-
-
-                app.mDirect->Present();
+                Direct3D::Present();
 
                 app.mKeyboard->ResetKeys();
                 app.mMouse->ResetKeys();
@@ -215,7 +212,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
             if (app.mStarted && !app.mIsGame)
             {
-                app.mDirect->ResizeEditor();
+                Direct3D::ResizeEditor();
                 app.InitBuffers();
             }
 
