@@ -40,4 +40,5 @@ private:
 struct ConstantBuffer
 {
 	DirectX::XMMATRIX worldViewProj;
+	DirectX::XMFLOAT4 material;
 };

@@ -58,6 +58,7 @@ void GUI::Draw()
 	{
 		static ConstantBuffer buffer = {};
 		buffer.worldViewProj = ((Button*)mArr[i])->GetWorldMatrix() * CameraEngine::GetWorldMatrix() * CameraEngine::GetProjMatrix();
+		buffer.material = ((Button*)mArr[i])->color;
 
 		Direct3D::DeviceContext()->UpdateSubresource(mBuffer, 0, 0, &buffer, 0, 0);
 		Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, &mBuffer);

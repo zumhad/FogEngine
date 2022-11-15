@@ -186,10 +186,10 @@ float4 PS(VS_OUTPUT input) : SV_Target
     }
 
     [unroll]
-    for (int i = 0; i < gPointCount; i++)
+    for (int j = 0; j < gPointCount; j++)
     {
         float4 A, D, S;
-        ComputePointLight(gMaterial, gPointLight[i], input.PosW, input.NormalW, toCameraW, A, D, S);
+        ComputePointLight(gMaterial, gPointLight[j], input.PosW, input.NormalW, toCameraW, A, D, S);
 
         ambient += A;
         diffuse += D;

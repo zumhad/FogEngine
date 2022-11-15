@@ -36,7 +36,7 @@ void ApplicationEngine::InitWindow()
     GetModuleFileName(0, exePath, MAX_PATH);   // get icon
     HICON hIcon = ExtractIcon(0, exePath, 0);  //
 
-    String::Strcpy(Singlton.path, exePath, 0, String::FindStr(exePath, APP_NAME) + String::Strlen(APP_NAME));
+    String::Strcpy(Singlton.path, exePath, 0, String::FindStr(exePath, L"\\Build"));
 
     WNDCLASSEX wce{};
     wce.cbSize = sizeof(WNDCLASSEX);

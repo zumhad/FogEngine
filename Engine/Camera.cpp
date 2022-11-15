@@ -160,8 +160,8 @@ void Camera::MoveGlobal(float x, float y, float z)
 
 void CameraEngine::Update(float dt)
 {
-	mPosition = Lerp(mPosition, mTargetPosition, dt * mMoveSmooth);
-	mRotation = Lerp(mRotation, mTargetRotation, dt * mRotationSmooth);
+	mPosition = Lerp(mPosition, mTargetPosition, Pow(0.9f, dt * mMoveSmooth));
+	mRotation = Lerp(mRotation, mTargetRotation, Pow(0.9f, dt * mRotationSmooth));
 
 	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(mRotation);
 	Vector3 dir = XMVector3Rotate(Vector3::OneZ(), q);

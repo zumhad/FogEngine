@@ -25,6 +25,7 @@ public:
 		width = obj.width;
 		height = obj.height;
 		action = obj.action;
+		color = obj.color;
 
 		VertexBuf vertices[]
 		{
@@ -87,6 +88,7 @@ public:
 	}
 
 public:
+	Vector4 color;
 	int x = 0, y = 0;
 	int width = 0, height = 0;
 	void (*action)() = 0;

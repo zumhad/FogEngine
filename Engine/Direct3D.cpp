@@ -272,7 +272,7 @@ void Direct3D::Initialize()
 	scd.BufferCount = 1;
 	//scd.Scaling = DXGI_SCALING_STRETCH;
 	//scd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-	//scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	//scd.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
 	fsSwapChainDesc.Windowed = true;

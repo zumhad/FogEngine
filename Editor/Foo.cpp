@@ -87,11 +87,11 @@ void Update()
 	float yaw = Input::GetMouseAxis(MOUSE_X) * mouseSpeed;
 	float pitch = Input::GetMouseAxis(MOUSE_Y) * mouseSpeed;
 
-	float zMove = Input::IsKeyPress(KEY_W) * 1.0f - Input::IsKeyPress(KEY_S) * 1.0f; zMove *= 30;
-	float xMove = Input::IsKeyPress(KEY_D) * 1.0f - Input::IsKeyPress(KEY_A) * 1.0f; xMove *= 30;
+	float zMove = Input::IsKeyPress(KEY_W) * 1.0f - Input::IsKeyPress(KEY_S) * 1.0f; zMove *= 30.0f;
+	float xMove = Input::IsKeyPress(KEY_D) * 1.0f - Input::IsKeyPress(KEY_A) * 1.0f; xMove *= 30.0f;
 	if (xMove || zMove) Camera::MoveLocal(xMove, 0.0f, zMove);
 
-	Camera::Rotate(pitch, yaw, 0);
+	Camera::Rotate(pitch, yaw, 0.0f);
 
 	
 
@@ -117,7 +117,7 @@ void Start()
 	Button b;
 
 	b.x = 1000;
-	b.y = 0;
+	b.y = 50;
 	b.width = 200;
 	b.height = 50;
 	b.action = foo1;
@@ -128,6 +128,7 @@ void Start()
 	b.width = 50;
 	b.height = 50;
 	b.action = foo2;
+	b.color = Vector4(1, 0, 0, 1);
 	GUI::Add(b);
 
 	PointLight l;
@@ -157,10 +158,11 @@ void Setting()
 	Singlton.game.height = 600;
 	Singlton.resolution.width = 800;
 	Singlton.resolution.height = 600;*/
+	Singlton.fpsMax = 0;
 	Singlton.foo.update = Update;
 	Singlton.scene.height = 800;
-	Singlton.camera.rotationSmooth = 50;
-	Singlton.camera.moveSmooth = 10;
+	Singlton.camera.rotationSmooth = 500;
+	Singlton.camera.moveSmooth = 1000;
 }
 
 

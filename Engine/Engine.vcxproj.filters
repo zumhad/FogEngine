@@ -223,13 +223,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\shader.hlsl">
-      <Filter>stuff</Filter>
-    </None>
     <None Include="Assets\light.hlsli">
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\GUIShader.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>
