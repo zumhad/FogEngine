@@ -75,7 +75,18 @@
     <ClCompile Include="CustomString.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Control.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h">
@@ -198,13 +209,27 @@
     <ClInclude Include="CustomArray.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Button.h" />
+    <ClInclude Include="Button.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Control.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\light.hlsli">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\GUIShader.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

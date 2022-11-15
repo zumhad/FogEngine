@@ -43,9 +43,7 @@ cbuffer cbPerFrame : register(b0)
     float3 gCameraPosW;
     int gDirCount;
     int gPointCount;
-    float pad1;
-    float pad2;
-    float pad3;
+    float pad[3];
 };
 
 cbuffer cbPerObject : register(b1)
@@ -203,4 +201,3 @@ float4 PS(VS_OUTPUT input) : SV_Target
 
     return litColor;
 }
-

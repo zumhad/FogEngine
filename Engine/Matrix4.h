@@ -26,6 +26,11 @@ namespace Math
 
 		static Matrix4 Identity() { return DirectX::XMMatrixIdentity(); };
 
+		INLINE Vector4 GetX() const { return Vector4(mMat.r[0]); }
+		INLINE Vector4 GetY() const { return Vector4(mMat.r[1]); }
+		INLINE Vector4 GetZ() const { return Vector4(mMat.r[2]); }
+		INLINE Vector4 GetW() const { return Vector4(mMat.r[3]); }
+
 		operator DirectX::XMMATRIX() const { return mMat; }
 		Matrix4 operator= (DirectX::XMMATRIX m) { return Matrix4(mMat = m); }
 		Vector4 operator* (Vector4 vec) const { return Vector4(DirectX::XMVector4Transform(vec, mMat)); }

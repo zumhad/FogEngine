@@ -155,7 +155,7 @@ void String::Strcpy(WCHAR* dest, const WCHAR* src)
 void String::Strcpy(WCHAR* dest, const WCHAR* src, int start, int end)
 {
 	dest[end - start + 1] = '\0';
-	wcsncpy(dest, src + start, end - start + 1);
+	wcsncpy(dest, src + start, (size_t)end - start + 1);
 }
 
 int String::Strlen(const WCHAR* str)

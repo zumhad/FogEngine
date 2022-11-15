@@ -5,6 +5,7 @@
 #include "Direct3D.h"
 #include "Time.h"
 #include "CameraEngine.h"
+#include "GUI.h"
 
 #include <windowsx.h>
 
@@ -28,28 +29,28 @@ void ApplicationEngine::AdjustMaxClient(RECT& rect)
 
 LRESULT ApplicationEngine::HitTest()
 {
-    static short xBorder = short(GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
-    static short yBorder = short(GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER));
-    short x = mMouse->GetX();
-    short y = mMouse->GetY();
+    static int xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static int yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    int x = mMouse->GetX();
+    int y = mMouse->GetY();
 
-    short result =
-        BORDER_LEFT * (x < xBorder) |
-        BORDER_RIGHT * (x >= (Singlton.editor.width - xBorder)) |
-        BORDER_TOP * (y < (xBorder)) |
-        BORDER_BOTTOM * (y >= (Singlton.editor.height - yBorder));
+    int result =
+        BIT_1 * (x < xBorder) |
+        BIT_2 * (x >= (Singlton.editor.width - xBorder)) |
+        BIT_3 * (y < (xBorder)) |
+        BIT_4 * (y >= (Singlton.editor.height - yBorder));
 
     switch (result)
     {
-    case BORDER_LEFT: return HTLEFT;
-    case BORDER_RIGHT: return HTRIGHT;
-    case BORDER_TOP: return HTTOP;
-    case BORDER_BOTTOM: return HTBOTTOM;
-    case BORDER_TOP | BORDER_LEFT: return HTTOPLEFT;
-    case BORDER_TOP | BORDER_RIGHT: return HTTOPRIGHT;
-    case BORDER_BOTTOM | BORDER_LEFT: return HTBOTTOMLEFT;
-    case BORDER_BOTTOM | BORDER_RIGHT: return HTBOTTOMRIGHT;
-    default: return ((y <= Singlton.captionHeight) ? HTCAPTION : HTCLIENT);
+        case BIT_1: return HTLEFT;
+        case BIT_2: return HTRIGHT;
+        case BIT_3: return HTTOP;
+        case BIT_4: return HTBOTTOM;
+        case BIT_3 | BIT_1: return HTTOPLEFT;
+        case BIT_3 | BIT_2: return HTTOPRIGHT;
+        case BIT_4 | BIT_1: return HTBOTTOMLEFT;
+        case BIT_4 | BIT_2: return HTBOTTOMRIGHT;
+        default: return ((y <= Singlton.captionHeight) ? HTCAPTION : HTCLIENT);
     }
 }
 
@@ -86,8 +87,8 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
                 if (app.mIsGame)
                     Direct3D::DrawGame();
                 else
-                    Direct3D::DrawScene();
-
+                    Direct3D::DrawEngine();
+                
                 Direct3D::Present();
 
                 app.mKeyboard->ResetKeys();
@@ -135,6 +136,7 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (!app.mStarted) break;
             if (app.mIsGame) return HTCLIENT;
+            if (GUI::ClickTest(p.x, p.y)) return HTCLIENT;
 
             return app.HitTest();
         }
@@ -212,6 +214,7 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (app.mStarted && !app.mIsGame)
             {
+                CameraEngine::RestartMatrix();
                 Direct3D::ResizeEditor();
                 app.InitBuffers();
             }
@@ -226,15 +229,10 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
                 if (app.mStarted)
                 {
                     if (app.mIsGame)
-                    {
-                        //app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
                         ShowWindow(hwnd, SW_MINIMIZE);
-                    }
 
                     if (app.mMouse->GetState() == false)
                         app.SetCursorState(true);
-
-                    //app.mTimer->Stop();
                 }
 
                 app.mPaused = true;
@@ -243,15 +241,8 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
             {
                 if (app.mStarted)
                 {
-                    if (app.mIsGame)
-                    {
-                        //app.mDirect->ResizeApp(app.mProperties.gameRect.right, app.mProperties.gameRect.bottom);
-                    }
-
                     if (app.mMouse->GetEnabled() == false && app.mMouse->GetState() == true)
                         app.SetCursorState(false);
-
-                    //app.mTimer->Start();
                 }
 
                 app.mPaused = false;
@@ -259,14 +250,12 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
             return 0;
         }
 
-
         case WM_LBUTTONDOWN:
         {
             app.mMouse->KeyDown(0);
 
             if (!app.mIsGame)
                 SetCapture(hwnd);
-
 
             return 0;
         }
@@ -277,6 +266,9 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (!app.mIsGame)
                 ReleaseCapture();
+
+            if (!app.mIsGame)
+                GUI::Click(app.mMouse->GetX(), app.mMouse->GetY());
 
             return 0;
         }
@@ -311,8 +303,8 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_GETMINMAXINFO:
         {
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = 800;
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = 600;
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = Singlton.scene.width;
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = Singlton.scene.height + Singlton.captionHeight;
 
             return 0;
         }

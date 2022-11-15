@@ -8,10 +8,14 @@
 #define APP_NAME L"FogEngine"
 #define APP_CLASS APP_NAME L"Class"
 
-#define BORDER_LEFT 0b0001 // window rect border
-#define BORDER_RIGHT 0b0010
-#define BORDER_TOP 0b0100
-#define BORDER_BOTTOM 0b1000
+#define BIT_1 0b00000001
+#define BIT_2 0b00000010
+#define BIT_3 0b00000100
+#define BIT_4 0b00001000
+#define BIT_5 0b00010000
+#define BIT_6 0b00100000
+#define BIT_7 0b01000000
+#define BIT_8 0b10000000
 
 #define SAFE_DELETE(x) if(x) { delete x; x = 0; }
 #define SAFE_DELETE_ARR(x) if(x) { delete[] x; x = 0; }

@@ -8,6 +8,7 @@
 #include "Time.h"
 #include "Camera.h"
 
+#include "GUI.h"
 #include "CustomArray.h"
 #include "ObjectManager.h"
 #include "Cube.h"

@@ -11,7 +11,7 @@ using namespace Math;
 class FOG_API Camera
 {
 public:
-	static void SetPosition(Vector3 position) { mToWorld.SetTranslation(position); mTargetToWorld.SetTranslation(position); }
+	static void SetPosition(Vector3 position);
 	static void SetRotation(Vector3 rotation);
 	static void SetRotation(float x, float y, float z);
 	static void SetRotationX(float x);
@@ -22,16 +22,14 @@ public:
 	static void MoveLocal(float x, float y, float z);
 	static void MoveGlobal(float x, float y, float z);
 	static void Rotate(float x, float y, float z);
-	static float GetRotateX() { return mPitch; };
-	static float GetRotateY() { return mYaw; };
-	static float GetRotateZ() { return mRoll; };
+	static float GetRotateX() { return mRotation.GetX(); };
+	static float GetRotateY() { return mRotation.GetY(); };
+	static float GetRotateZ() { return mRotation.GetZ(); };
 
-	static Vector3 GetRotation() { return Vector3(mPitch, mYaw, mRoll); }
-	static Vector3 GetPosition() { return mToWorld.GetTranslation(); }
+	static Vector3 GetRotation() { return mRotation; }
+	static Vector3 GetPosition() { return mPosition; }
 
-	static void SetPerspective(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip);
-
-private:
+protected:
 	static void UpdateProjMatrix();
 
 protected:
@@ -42,9 +40,14 @@ protected:
 	static float mRotationSmooth;
 	static float mMoveSmooth;
 
+	static Vector3 mPosition;
+	static Vector3 mRotation;
+	static Vector3 mTargetPosition;
+	static Vector3 mTargetRotation;
 	static OrthogonalTransform mToWorld;
 	static OrthogonalTransform mTargetToWorld;
 
+	static Matrix4 mWorld;
 	static Matrix4 mView;
 	static Matrix4 mProj;
 	static Matrix4 mViewProj;
@@ -52,9 +55,11 @@ protected:
 	static Frustum mFrustumVS;
 	static Frustum mFrustumWS;
 
-private:
-	static float mVerticalFOV;
+	static float mWidth;
+	static float mHeight;
+	static float mFOV;
 	static float mAspectRatio;
-	static float mNearClip;
-	static float mFarClip;
+	static float mNearZ;
+	static float mFarZ;
+	static bool m3D;
 };

@@ -8,6 +8,7 @@
 #include "ObjectManager.h"
 #include "CameraEngine.h"
 #include "Input.h"
+#include "GUI.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -103,33 +104,26 @@ void ApplicationEngine::InitModules()
     mTime = new Module::Time;
     mKeyboard = new Module::Keyboard;
     CameraEngine::Setup();
-
-    float aspectRatio = 0.0f;
-    if (mIsGame)
-        aspectRatio = float(Singlton.game.height) / float(Singlton.game.width);
-    else
-        aspectRatio = float(Singlton.scene.height) / float(Singlton.scene.width);
-
-    CameraEngine::SetPerspective(Singlton.camera.fov, aspectRatio, Singlton.camera.nearZ, Singlton.camera.farZ);
+    GUI::Setup();
 }
 
 void Application::InitBuffers()
 {
     CameraEngine::Update(Module::Time::DeltaTime());
 
-    if (mIsGame)
-    {
-        Direct3D::DrawGame();
-        Direct3D::Present();
-    }
-    else
-    {
-        for (int i = 0; i < 2; i++)
-        {
-            Direct3D::DrawEngine();
-            Direct3D::Present();
-        }
-    }
+	for (int i = 0; i < 2; i++)
+	{
+		if (mIsGame)
+		{
+			Direct3D::DrawGame();
+			Direct3D::Present();
+		}
+		else
+		{
+			Direct3D::DrawEngine();
+			Direct3D::Present();
+		}
+	}
 }
 
 int ApplicationEngine::Run()
@@ -186,6 +180,7 @@ void ApplicationEngine::DefaultProp()
 
     Singlton.scene.width = Singlton.game.width / 2;
     Singlton.scene.height = Singlton.game.height / 2;
+    Singlton.scene.y = Singlton.captionHeight;
 }
 
 
@@ -197,6 +192,7 @@ ApplicationEngine::~ApplicationEngine() //exit
     DestroyWindow(mHwnd);
     UnregisterClass(APP_CLASS, 0);
 
+    GUI::Shotdown();
     ObjectManager::Shotdown();
     Direct3D::Shotdown();
 

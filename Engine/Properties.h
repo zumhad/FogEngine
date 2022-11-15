@@ -44,7 +44,7 @@ public:
 	struct
 	{
 		float nearZ = 0.1f;
-		float farZ = 1000.0f;
+		float farZ = 10000.0f;
 		float fov = 60.0f;
 		float rotationSmooth = 1000.0f;
 		float moveSmooth = 1000.0f;
@@ -68,6 +68,7 @@ public:
 	int fpsMax = 0;
 	bool isGame = false;
 	bool cursorShow = true;
+	bool stretch = true;
 };
 
 static Properties& Singlton = Properties::getInstance();

@@ -18,10 +18,9 @@ public:
 	static void Shotdown();
 
 	static void DrawGame();
-	static void Present();
-	static void DrawScene();
 	static void DrawEngine();
 	static void DrawEditor();
+	static void Present();
 
 	static void ResizeScene();
 	static void ResizeEditor();
@@ -30,12 +29,13 @@ public:
 
 	static void InitializeShader();
 
+	static void SetZBuffer(bool var);
+
 	static ID3D11Device* Device() { return mDevice; }
 	static ID3D11DeviceContext* DeviceContext() { return mDeviceContext; }
 
 private:
 	static void Initialize();
-	static void RenderGame();
 
 private:
 	static ID3D11Device* mDevice;
@@ -48,12 +48,13 @@ private:
 	static ID3D11VertexShader* mVertexShader;
 	static ID3D11PixelShader* mPixelShader;
 	static ID3D11InputLayout* mVertexLayout;
-	static ID3D11Buffer* mVertexBuffer;
-	static ID3D11Buffer* mIndexBuffer;
 	static ID3D11Buffer* mPerFrameBuffer;
 	static ID3D11Buffer* mPerObjectBuffer;
 	static ID3D11RasterizerState* mRasterizerState;
 	static ID3D11DepthStencilView* mDepthStencilView;
+	static ID3D11DepthStencilState* mDepthStencilState;
+	static ID3D11DepthStencilState* mDepthDisabledStencilState;
+
 
 	static D3D11_VIEWPORT mGameViewport;
 	static D3D11_VIEWPORT mSceneViewport;
@@ -65,34 +66,6 @@ private:
 	static float mGameColor[4];
 };
 
-
-class ShaderInclude : public ID3DInclude
-{
-	HRESULT Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes) override
-	{
-		String includePath;
-		PathHelper::GetAssetsPath(includePath);
-		includePath += String(pFileName);
-
-		if (File::Exists(includePath) == false)
-			return E_FAIL;
-
-		File file(includePath, FileOpenMode::Read);
-		*pBytes = UINT(file.Size());
-		UINT* data = reinterpret_cast<UINT*>(std::malloc(*pBytes));
-		file.Read(data, *pBytes);
-		*ppData = data;
-
-		return S_OK;
-	}
-
-	HRESULT Close(LPCVOID pData) override
-	{
-		std::free(const_cast<void*>(pData));
-		return S_OK;
-	}
-};
-
 struct PerFrameBuffer
 {
 	DirectionalLightBuffer directionalLight[MAX_DIRECTIONAL_LIGHT];
@@ -100,9 +73,7 @@ struct PerFrameBuffer
 	DirectX::XMFLOAT3 cameraPosW;
 	int directionalCount;
 	int pointCount;
-	float pad1;
-	float pad2;
-	float pad3;
+	float pad[3];
 };
 
 

@@ -26,7 +26,7 @@ Cube::Cube(Cube& cube)
 
     Vertex vertices[] =
     {
-        {Vector3(-1.0f, 1.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), {0,0}, },
+        { Vector3(-1.0f, 1.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), {0,0}, },
         { Vector3(1.0f, 1.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), { 0,1 }, },
         { Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f), { 1,1 },},
         { Vector3(-1.0f, 1.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f), { 1,0 },},
@@ -51,11 +51,12 @@ Cube::Cube(Cube& cube)
         { Vector3(1.0f, 1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f), { 1,0 },},
         { Vector3(-1.0f, 1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f), { 0,0 },},
 
-        {Vector3(-1.0f, -1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), {0,1}, },
+        { Vector3(-1.0f, -1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), {0,1}, },
         { Vector3(1.0f, -1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 1,1 }, },
         { Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 1,0 },},
         { Vector3(-1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 0,0 },},
     };
+
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(Vertex) * 24;
@@ -64,7 +65,6 @@ Cube::Cube(Cube& cube)
     D3D11_SUBRESOURCE_DATA InitData = {};
     InitData.pSysMem = vertices;
     FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mVertexBuffer));
-
 
     WORD indices[] =
     {

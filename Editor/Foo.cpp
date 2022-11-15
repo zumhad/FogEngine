@@ -10,8 +10,10 @@ void MyUpdate()
 		isMoveScene = true;
 	if (Input::IsMouseUp(MOUSE_LEFT))
 		isMoveScene = false;
-
-	if (Input::IsMousePress(MOUSE_LEFT) && isMoveScene)
+	//
+	// MOVE SCENE FOR MOUSE //
+	//
+	/*if (Input::IsMousePress(MOUSE_LEFT) && isMoveScene)
 	{
 		if (Input::GetCursorX() + Application::GetSceneWidth() <= Singlton.editor.width)
 			Application::SetSceneX(Input::GetCursorX());
@@ -26,7 +28,7 @@ void MyUpdate()
 			Application::SetSceneY(Singlton.captionHeight);
 		else 
 			Application::SetSceneY(Input::GetCursorY());
-	}
+	}*/
 
 	if (Input::IsKeyDown(KEY_T))
 	{
@@ -38,7 +40,7 @@ void MyUpdate()
 		Cube cube;
 
 		cube.material.diffuse = Vector4(1, 1, 1, 1);
-		cube.position = Vector3((rand() % 10 - 5) * 2, 0, (rand() % 10 - 5) * 2);
+		cube.position = Vector3((rand() % 10 - 5) * 2, 1, (rand() % 10 - 5) * 2);
 		ObjectManager::Add(cube);
 	}
 
@@ -76,6 +78,11 @@ void MyUpdate()
 
 void Update()
 {
+	if (Camera::GetRotateX() > 3.14 / 2.0)
+		Camera::SetRotationX(3.14 / 2.0);
+	else if (Camera::GetRotateX() < -3.14 / 2.0f)
+		Camera::SetRotationX(-3.14 / 2.0f);
+
 	float mouseSpeed = 0.001f;
 	float yaw = Input::GetMouseAxis(MOUSE_X) * mouseSpeed;
 	float pitch = Input::GetMouseAxis(MOUSE_Y) * mouseSpeed;
@@ -84,38 +91,55 @@ void Update()
 	float xMove = Input::IsKeyPress(KEY_D) * 1.0f - Input::IsKeyPress(KEY_A) * 1.0f; xMove *= 30;
 	if (xMove || zMove) Camera::MoveLocal(xMove, 0.0f, zMove);
 
-	Camera::Rotate(-pitch, yaw, 0);
-	//Camera::LookAt(Vector3(0, 5, 0));
+	Camera::Rotate(pitch, yaw, 0);
+
+	
 
 	MyUpdate();
 }
 
+void foo1()
+{
+	Cube cube;
+
+	cube.material.diffuse = Vector4(1, 1, 1, 1);
+	cube.position = Vector3((rand() % 10 - 5) * 2, 1, (rand() % 10 - 5) * 2);
+	ObjectManager::Add(cube);
+}
+
+void foo2()
+{
+	Application::Exit();
+}
 
 void Start()
 {
-	Plane p;
+	Button b;
+
+	b.x = 1000;
+	b.y = 0;
+	b.width = 200;
+	b.height = 50;
+	b.action = foo1;
+	GUI::Add(b);
+	
+	b.x = Singlton.editor.width - 50;
+	b.y = 0;
+	b.width = 50;
+	b.height = 50;
+	b.action = foo2;
+	GUI::Add(b);
+
 	PointLight l;
-	Cube c;
-
-	DirectionalLight dl;
-	dl.diffuse = { 0.5, 0.5, 0.5, 1 };
-	dl.direction = { -0.5, -0.5, -0.5 };
-	ObjectManager::Add(dl);
-
-	p.scale = { 100, 100, 100 };
-	c.position = { 0, 5, 0 };
-	c.scale = { 0.5, 0.5, 0.5 };
-
-	ObjectManager::Add(p);
-
-	l.position = {-10, 5, 10};
+	l.position = { 7, 5, 0 };
 	ObjectManager::Add(l);
 
-	ObjectManager::Add(c);
+	Plane p;
+	p.scale = { 10, 1, 10 };
+	ObjectManager::Add(p);
 
-	c.position = { 0, 0, 5 };
-	ObjectManager::Add(c);
-
+	p.position = { 20, 0, 0 };
+	ObjectManager::Add(p);
 
 
 	//MyStart();
@@ -129,9 +153,13 @@ void Setting()
 	Singlton.cursorShow = true;
 	Singlton.editor.color = { 70, 70, 70 };
 	Singlton.foo.start = Start;
+	/*Singlton.game.width = 800;
+	Singlton.game.height = 600;
+	Singlton.resolution.width = 800;
+	Singlton.resolution.height = 600;*/
 	Singlton.foo.update = Update;
 	Singlton.scene.height = 800;
-	Singlton.camera.rotationSmooth = 10;
+	Singlton.camera.rotationSmooth = 50;
 	Singlton.camera.moveSmooth = 10;
 }
 

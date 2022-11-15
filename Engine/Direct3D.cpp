@@ -8,6 +8,8 @@
 #include "ApplicationEngine.h"
 #include "CameraEngine.h"
 #include "CustomFile.h"
+#include "GUI.h"
+#include "Shader.h"
 
 #include <d3dcompiler.h>
 #include <directxcolors.h>
@@ -28,12 +30,12 @@ ID3D11RenderTargetView* Direct3D::mRenderTargetView = 0;
 ID3D11VertexShader* Direct3D::mVertexShader = 0;
 ID3D11PixelShader* Direct3D::mPixelShader = 0;
 ID3D11InputLayout* Direct3D::mVertexLayout = 0;
-ID3D11Buffer* Direct3D::mVertexBuffer = 0;
-ID3D11Buffer* Direct3D::mIndexBuffer = 0;
 ID3D11Buffer* Direct3D::mPerFrameBuffer = 0;
 ID3D11Buffer* Direct3D::mPerObjectBuffer = 0;
 ID3D11RasterizerState* Direct3D::mRasterizerState = 0;
 ID3D11DepthStencilView* Direct3D::mDepthStencilView = 0;
+ID3D11DepthStencilState* Direct3D::mDepthDisabledStencilState = 0;
+ID3D11DepthStencilState* Direct3D::mDepthStencilState = 0;
 
 D3D11_VIEWPORT Direct3D::mGameViewport = { 0 };
 D3D11_VIEWPORT Direct3D::mSceneViewport = { 0 };
@@ -67,24 +69,6 @@ void Direct3D::Setup()
 	mGameColor[3] = 1.0f;
 }
 
-void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
-{
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-
-#ifdef _DEBUG
-	dwShaderFlags |= D3DCOMPILE_DEBUG;
-	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-	ShaderInclude include;
-
-	ID3DBlob* pErrorBlob = 0;
-	FOG_TRACE(D3DCompileFromFile(szFileName, 0, &include, szEntryPoint, szShaderModel, dwShaderFlags, 0, ppBlobOut, &pErrorBlob));
-
-	SAFE_RELEASE(pErrorBlob);
-}
-
-
 void Direct3D::ResizeScene()
 {
 	int left = Singlton.scene.x;
@@ -109,7 +93,7 @@ void Direct3D::ResizeEditor()
 	int width = Singlton.editor.width;
 	int height = Singlton.editor.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+	FOG_TRACE(mSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
 	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
 	FOG_ASSERT(pBackBuffer2);
@@ -162,8 +146,8 @@ void Direct3D::ResizeGame()
 	int width = Singlton.resolution.width;
 	int height = Singlton.resolution.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(2, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
-	ID3D11Texture2D* pBackBuffer2 = {};
+	FOG_TRACE(mSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
 	FOG_ASSERT(pBackBuffer2);
 	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, nullptr, &mRenderTargetView));
@@ -184,8 +168,6 @@ void Direct3D::ResizeGame()
 	ID3D11Texture2D* depthStencil = 0;
 	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, nullptr, &depthStencil));
 
-	//EDIT
-	// Create the depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
@@ -238,7 +220,6 @@ void Direct3D::InitializeShader()
 	SAFE_RELEASE(pVSBlob);
 	mDeviceContext->IASetInputLayout(mVertexLayout);
 
-
 	// Pixel Shader
 	ID3DBlob* pPSBlob = nullptr;
 	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
@@ -282,16 +263,16 @@ void Direct3D::Initialize()
 	FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&mDevice1)));
 	FOG_TRACE(mDeviceContext->QueryInterface(IID_PPV_ARGS(&mDeviceContext1)));
 
-	DXGI_SWAP_CHAIN_DESC1 scd = { 0 };
+	DXGI_SWAP_CHAIN_DESC1 scd = {};
 	scd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	scd.SampleDesc.Count = 1;
 	scd.SampleDesc.Quality = 0;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	scd.BufferCount = 2;
+	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	scd.BufferCount = 1;
 	//scd.Scaling = DXGI_SCALING_STRETCH;
 	//scd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	//scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
 	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
 	fsSwapChainDesc.Windowed = true;
@@ -303,12 +284,10 @@ void Direct3D::Initialize()
 	FOG_TRACE(dxgiFactory->MakeWindowAssociation(ApplicationEngine::mHwnd, DXGI_MWA_NO_ALT_ENTER));
 	SAFE_RELEASE(dxgiFactory);
 
-
 	if (Singlton.isGame)
 		ResizeGame();
 	else
 		ResizeEngine();
-
 
 	D3D11_RASTERIZER_DESC rd = {};
 	rd.ScissorEnable = false;
@@ -318,7 +297,7 @@ void Direct3D::Initialize()
 
 	InitializeShader();
 
-	D3D11_BUFFER_DESC bd = { 0 };
+	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.ByteWidth = sizeof(PerFrameBuffer);
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
@@ -326,50 +305,72 @@ void Direct3D::Initialize()
 	bd.ByteWidth = sizeof(PerObjectBuffer);
 	mDevice->CreateBuffer(&bd, nullptr, &mPerObjectBuffer);
 
+	D3D11_DEPTH_STENCIL_DESC dsd = {};
+	dsd.DepthEnable = false;
+	dsd.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+	dsd.DepthFunc = D3D11_COMPARISON_LESS;
+	dsd.StencilEnable = true;
+	dsd.StencilReadMask = 0xFF;
+	dsd.StencilWriteMask = 0xFF;
+	dsd.FrontFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsd.FrontFace.StencilDepthFailOp = D3D11_STENCIL_OP_INCR;
+	dsd.FrontFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsd.FrontFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	dsd.BackFace.StencilFailOp = D3D11_STENCIL_OP_KEEP;
+	dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_DECR;
+	dsd.BackFace.StencilPassOp = D3D11_STENCIL_OP_KEEP;
+	dsd.BackFace.StencilFunc = D3D11_COMPARISON_ALWAYS;
+	FOG_TRACE(mDevice->CreateDepthStencilState(&dsd, &mDepthDisabledStencilState));
+	dsd.DepthEnable = true;
+	FOG_TRACE(mDevice->CreateDepthStencilState(&dsd, &mDepthStencilState));
+
 	mDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
+
+void Direct3D::SetZBuffer(bool var)
+{
+	if (var)
+		mDeviceContext->OMSetDepthStencilState(mDepthStencilState, 1);
+	else
+		mDeviceContext->OMSetDepthStencilState(mDepthDisabledStencilState, 1);
+}
 
 
 void Direct3D::DrawEngine()
 {
 	DrawEditor();
-	mDeviceContext->RSSetViewports(1, &mSceneViewport);
-	RenderGame();
+	DrawGame();
 }
 
 void Direct3D::DrawEditor()
 {
 	mDeviceContext->RSSetViewports(1, &mEditorViewport);
 	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
-	mDeviceContext->VSSetShader(mVertexShader, 0, 0);
-	mDeviceContext->PSSetShader(mPixelShader, 0, 0);
-
 	mDeviceContext->ClearRenderTargetView(mRenderTargetView, mEditorColor);
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	GUI::Draw();
 }
 
 void Direct3D::DrawGame()
 {
-	mDeviceContext->RSSetViewports(1, &mGameViewport);
-	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
-	mDeviceContext->VSSetShader(mVertexShader, 0, 0);
-	mDeviceContext->PSSetShader(mPixelShader, 0, 0);
-
-	RenderGame();
-}
-
-void Direct3D::RenderGame()
-{
 	if (Singlton.isGame)
 	{
+		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+		mDeviceContext->RSSetViewports(1, &mGameViewport);
 		mDeviceContext->ClearRenderTargetView(mRenderTargetView, mGameColor);
+		mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	else
 	{
+		mDeviceContext->RSSetViewports(1, &mSceneViewport);
 		mDeviceContext1->ClearView(mRenderTargetView, mSceneColor, &mSceneRect, 1);
 	}
-	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+	mDeviceContext->IASetInputLayout(mVertexLayout);
+	mDeviceContext->VSSetShader(mVertexShader, 0, 0);
+	mDeviceContext->PSSetShader(mPixelShader, 0, 0);
 
 
 	static PerFrameBuffer frameBuffer;
@@ -456,8 +457,8 @@ void Direct3D::RenderGame()
 			BoundingBox bb = obj.GetBoundingBox();
 			if (!CameraEngine::AABB(bb)) continue;
 
-			static PerObjectBuffer buffer;
-			buffer.world = obj.GetWorldMatrix();
+			PerObjectBuffer buffer;
+			buffer.world = XMMatrixTranspose(obj.GetWorldMatrix());
 			buffer.worldInvTranspose = obj.GetWorldInvTransposeMatrix();
 			buffer.worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
 			buffer.material = obj.material;
@@ -474,19 +475,9 @@ void Direct3D::RenderGame()
 	}
 }
 
-void Direct3D::DrawScene()
-{
-	mDeviceContext->RSSetViewports(1, &mSceneViewport);
-	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
-	mDeviceContext->VSSetShader(mVertexShader, 0, 0);
-	mDeviceContext->PSSetShader(mPixelShader, 0, 0);
-
-	RenderGame();
-}
-
 void Direct3D::Present()
 {
-	FOG_TRACE(mSwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
+	FOG_TRACE(mSwapChain->Present(0, 0));
 }
 
 
@@ -496,9 +487,9 @@ void Direct3D::Shotdown()
 	SAFE_RELEASE(mPixelShader);
 	SAFE_RELEASE(mRasterizerState);
 	SAFE_RELEASE(mVertexLayout);
-	SAFE_RELEASE(mVertexBuffer);
-	SAFE_RELEASE(mIndexBuffer);
 	SAFE_RELEASE(mDepthStencilView);
+	SAFE_RELEASE(mDepthStencilState);
+	SAFE_RELEASE(mDepthDisabledStencilState);
 	SAFE_RELEASE(mPerFrameBuffer);
 	SAFE_RELEASE(mPerObjectBuffer);
 

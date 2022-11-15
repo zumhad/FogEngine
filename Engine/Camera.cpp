@@ -4,12 +4,11 @@
 #include "Input.h"
 #include "Time.h"
 #include "Trace.h"
+#include "Application.h"
 
 using namespace DirectX;
 using namespace Math;
 using namespace Module;
-
-
 
 float Camera::mYaw;
 float Camera::mPitch;
@@ -17,9 +16,14 @@ float Camera::mRoll;
 float Camera::mRotationSmooth;
 float Camera::mMoveSmooth;
 
+Vector3 Camera::mPosition;
+Vector3 Camera::mRotation;
+Vector3 Camera::mTargetPosition;
+Vector3 Camera::mTargetRotation;
 OrthogonalTransform Camera::mToWorld;
 OrthogonalTransform Camera::mTargetToWorld;
 
+Matrix4 Camera::mWorld;
 Matrix4 Camera::mView;
 Matrix4 Camera::mProj;
 Matrix4 Camera::mViewProj;
@@ -27,10 +31,13 @@ Matrix4 Camera::mViewProj;
 Frustum Camera::mFrustumVS;
 Frustum Camera::mFrustumWS;
 
-float Camera::mVerticalFOV;
+float Camera::mFOV;
 float Camera::mAspectRatio;
-float Camera::mNearClip;
-float Camera::mFarClip;
+float Camera::mNearZ;
+float Camera::mFarZ;
+float Camera::mWidth;
+float Camera::mHeight;
+bool Camera::m3D;
 
 void Camera::LookAt(Vector3 pos)
 {
@@ -43,32 +50,39 @@ void Camera::LookAt(Vector3 pos)
 	mTargetToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
 }
 
-void Camera::SetPerspective(float verticalFovRadians, float aspectHeightOverWidth, float nearZClip, float farZClip)
+void CameraEngine::RestartMatrix()
 {
-	mVerticalFOV = verticalFovRadians * XM_PI / 180.0f;
-	mAspectRatio = aspectHeightOverWidth;
-	mNearClip = nearZClip;
-	mFarClip = farZClip;
+	float width, height, aspect;
+	if (Singlton.isGame)
+	{
+		width = (float)Singlton.game.width;
+		height = (float)Singlton.game.height;
+		aspect = width / height;
+	}
+	else
+	{
+		width = (float)Singlton.editor.width;
+		height = (float)Singlton.editor.height;
+		aspect = (float)Singlton.scene.width / (float)Singlton.scene.height;
+	}
 
-	UpdateProjMatrix();
+	mWidth = width;
+	mHeight = height;
+	mFOV = Singlton.camera.fov * XM_PI / 180.0f;
+	mAspectRatio = aspect;
+	mNearZ = Singlton.camera.nearZ;
+	mFarZ = Singlton.camera.farZ;
 }
 
 void Camera::UpdateProjMatrix()
 {
-    float Y = 1.0f / tanf(mVerticalFOV * 0.5f);
-    float X = Y * mAspectRatio;
-
-	float Q1 = mFarClip / (mFarClip - mNearClip);
-	float Q2 = -Q1 * mNearClip;
-
-    mProj = Matrix4(
-        Vector4(X, 0.0f, 0.0f, 0.0f),
-        Vector4(0.0f, Y, 0.0f, 0.0f),
-        Vector4(0.0f, 0.0f, Q1, 1.0f),
-        Vector4(0.0f, 0.0f, Q2, 0.0f)
-    );
-
-	mFrustumVS = Frustum(mProj);
+	if (m3D)
+	{
+		mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
+		mFrustumVS = Frustum(mProj);
+	}
+	else
+		mProj = XMMatrixOrthographicLH(mWidth, mHeight, mNearZ, mFarZ);
 }
 
 
@@ -77,85 +91,82 @@ void CameraEngine::Setup()
 	mRotationSmooth = Singlton.camera.rotationSmooth;
 	mMoveSmooth = Singlton.camera.moveSmooth;
 
-	Vector3 forward = Vector3::OneZ();
-	Vector3 right = Cross(Vector3::OneY(), forward);
-	Vector3 up = Cross(forward, right);
+	mPosition = Vector3::Zero();
+	mRotation = Vector3::Zero();
+	mTargetPosition = mPosition;
+	mTargetRotation = mRotation;
 
-	mPitch = ASin(forward.GetY());
-	mYaw = ATan2(forward.GetX(), forward.GetZ());
-	mRoll = 0;
+	mWorld = XMMatrixLookAtLH(Vector3(0, 0, -1), Vector3::Zero(), Vector3::OneY());
 
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mToWorld.SetTranslation(Vector3::Zero());
-
-	mTargetToWorld = mToWorld;
+	RestartMatrix();
+	Set3D(true);
 }
 
 void Camera::SetRotation(Vector3 rotation)
 {
-	mPitch = rotation.GetX(); mYaw = rotation.GetY(); mRoll = rotation.GetZ();
-
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mTargetToWorld = mToWorld;
+	mRotation = rotation;
+	mTargetRotation = mRotation;
 }
-
 
 void Camera::SetRotationX(float x)
 { 
-	mPitch = x; 
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mTargetToWorld = mToWorld;
-}
-void Camera::SetRotationY(float y)
-{ 
-	mYaw = y; 
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mTargetToWorld = mToWorld;
-}
-void Camera::SetRotationZ(float z) 
-{ 
-	mRoll = z; 
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mTargetToWorld = mToWorld;
+	mRotation.SetX(x);
+	mTargetRotation.SetX(x);
 }
 
+void Camera::SetRotationY(float y)
+{ 
+	mRotation.SetY(y);
+	mTargetRotation.SetY(y);
+}
+
+void Camera::SetRotationZ(float z) 
+{ 
+	mRotation.SetZ(z);
+	mTargetRotation.SetZ(z);
+}
 
 void Camera::SetRotation(float x, float y, float z)
 {
-	mPitch = x; mYaw = y; mRoll = z;
-
-	mToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
-	mTargetToWorld = mToWorld;
+	mRotation = Vector3(x, y, z);
+	mTargetRotation = mRotation;
 }
 
 void Camera::Rotate(float x, float y, float z)
 {
-	mPitch += x; mYaw += y; mRoll += z;
+	mTargetRotation += Vector3(x, y, z);
+}
 
-	mTargetToWorld.SetRotation(XMQuaternionRotationRollPitchYaw(-mPitch, mYaw, mRoll));
+void Camera::SetPosition(Vector3 position)
+{
+	mPosition = position;
+	mTargetPosition = mPosition;
 }
 
 void Camera::MoveLocal(float x, float y, float z)
 {
-	Vector3 offset = Vector3(XMVector3Rotate(Vector3(x, y, z) * Time::DeltaTime(), mTargetToWorld.GetRotation()));
+	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(mRotation);
+	Vector3 offset = Vector3(XMVector3Rotate(Vector3(x, y, z) * Time::DeltaTime(), q));
 
-	mTargetToWorld.SetTranslation(offset + mTargetToWorld.GetTranslation());
+	mTargetPosition += offset;
 }
 
 void Camera::MoveGlobal(float x, float y, float z)
 {
 	Vector3 offset = Vector3(x, y, z) * Time::DeltaTime();
 
-	mTargetToWorld.SetTranslation(offset + mTargetToWorld.GetTranslation());
+	mTargetPosition += offset;
 }
 
 void CameraEngine::Update(float dt)
 {
-	mToWorld.SetRotation(Slerp(mToWorld.GetRotation(), mTargetToWorld.GetRotation(), dt * mRotationSmooth));
-	mToWorld.SetTranslation(Lerp(mToWorld.GetTranslation(), mTargetToWorld.GetTranslation(), dt * mMoveSmooth));
+	mPosition = Lerp(mPosition, mTargetPosition, dt * mMoveSmooth);
+	mRotation = Lerp(mRotation, mTargetRotation, dt * mRotationSmooth);
 
-	mView = Matrix4(~mToWorld);
-	mViewProj = mProj * mView;
+	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(mRotation);
+	Vector3 dir = XMVector3Rotate(Vector3::OneZ(), q);
+	Vector3 up = XMVector3Rotate(Vector3::OneY(), q);
 
-	mFrustumWS = mToWorld * mFrustumVS;
+	mView = XMMatrixLookToLH(mPosition, dir, up);
+	mFrustumWS = OrthogonalTransform(q, mPosition) * mFrustumVS;
 }

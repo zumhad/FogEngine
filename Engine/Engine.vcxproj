@@ -171,6 +171,7 @@
     <ClCompile Include="BoundingPlane.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Control.cpp" />
     <ClCompile Include="Cube.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="dxerr.cpp" />
     <ClCompile Include="Frustum.cpp" />
+    <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
@@ -185,6 +187,7 @@
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Plane.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Time.cpp" />
   </ItemGroup>
@@ -197,6 +200,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraEngine.h" />
+    <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Cube.h" />
     <ClInclude Include="CustomFile.h" />
@@ -213,6 +217,7 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Functions.h" />
     <ClCompile Include="GenerateFiles.cpp" />
+    <ClInclude Include="GUI.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Matrix4.h" />
     <ClInclude Include="Input.h" />
@@ -226,6 +231,7 @@
     <ClInclude Include="Properties.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Scalar.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Time.h" />
     <ClInclude Include="Trace.h" />
@@ -244,6 +250,11 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.5</ShaderModel>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS</EntryPointName>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\GUIShader.hlsl">
+      <FileType>Document</FileType>
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
