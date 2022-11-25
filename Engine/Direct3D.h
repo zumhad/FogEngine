@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core.h"
-#include "MathHelper.h"
 #include "Light.h"
 #include "CustomFile.h"
 #include "PathHelper.h"
@@ -9,7 +8,7 @@
 #include "LightHelper.h"
 
 #include <d3d11_4.h>
-#include <directxmath.h>
+#include <DirectXMath.h>
 
 class FOG_API Direct3D
 {
@@ -79,8 +78,8 @@ struct PerFrameBuffer
 
 struct PerObjectBuffer
 {
-	DirectX::XMMATRIX world;
-	DirectX::XMMATRIX worldInvTranspose;
-	DirectX::XMMATRIX worldViewProj;
+	DirectX::XMFLOAT4X4 world;
+	DirectX::XMFLOAT4X4 worldInvTranspose;
+	DirectX::XMFLOAT4X4 worldViewProj;
 	Material material;
 };

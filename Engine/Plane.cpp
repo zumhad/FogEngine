@@ -3,23 +3,29 @@
 #include "Trace.h"
 #include "Direct3D.h"
 
+using namespace DirectX;
+
 Plane::Plane(Plane& plane)
 {
+    using namespace DirectX::SimpleMath;
+
     position = plane.position;
     rotation = plane.rotation;
     scale = plane.scale;
     lighting = plane.lighting;
     material = plane.material;
 
-    mTexture = new Texture;
+    //mTexture = new Texture;
 
-    Vector3 min = position;
-    min.SetX(min.GetX() - scale.GetX());
-    min.SetZ(min.GetZ() - scale.GetZ());
-    Vector3 max = position;
-    max.SetX(max.GetX() + scale.GetX());
-    max.SetZ(max.GetZ() + scale.GetZ());
-    bb = BoundingBox(min, max);
+    XMFLOAT3 min = position;
+    min.x = min.x - scale.x;
+    min.y = min.y - scale.y;
+    min.z = min.z - scale.z;
+    XMFLOAT3 max = position;
+    max.x = max.x - scale.x;
+    max.y = max.y - scale.y;
+    max.z = max.z - scale.z;
+    mBB = BoundingBox(position, scale);
 
     Vertex vertices[] =
     {
@@ -66,7 +72,7 @@ void Plane::Bind()
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
     Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-    mTexture->Bind();
+    //mTexture->Bind();
 
     Direct3D::DeviceContext()->DrawIndexed(12, 0, 0);
 }
@@ -78,21 +84,21 @@ Plane::~Plane()
     SAFE_DELETE(mTexture);
 }
 
-Matrix4& Plane::GetWorldMatrix()
+DirectX::XMMATRIX Plane::GetWorldMatrix()
 {
-    mQRotation = DirectX::XMQuaternionRotationRollPitchYaw(-rotation.GetX(), -rotation.GetY(), rotation.GetZ());
-    mWorld = DirectX::XMMatrixAffineTransformation(scale, Quaternion::Identity(), mQRotation, position);
+    XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation) * (XM_PI / 180.0));
+    XMMATRIX m = DirectX::XMMatrixAffineTransformation(XMLoadFloat3(&scale), XMVectorSet(0, 0, 0, 1), q, XMLoadFloat3(&position));
+    XMStoreFloat4x4(&mWorld, m);
 
-    return mWorld;
+    return m;
 }
 
-Matrix4& Plane::GetWorldInvTransposeMatrix()
+DirectX::XMMATRIX Plane::GetWorldInvTransposeMatrix()
 {
-    DirectX::XMMATRIX A = mWorld;
-    A.r[3] = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    XMMATRIX m = XMLoadFloat4x4(&mWorld);
+    m.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    m = XMMatrixTranspose(XMMatrixInverse(0, m));
+    XMStoreFloat4x4(&mWorldInvTranspose, m);
 
-    DirectX::XMVECTOR det = DirectX::XMMatrixDeterminant(A);
-    mWorldInvTranspose = DirectX::XMMatrixTranspose(XMMatrixInverse(&det, A));
-
-    return mWorldInvTranspose;
+    return m;
 }

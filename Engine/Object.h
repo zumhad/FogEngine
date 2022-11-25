@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Core.h"
-#include "MathHelper.h"
+
+#include <d3d11.h>
+#include <DirectXMath.h>
 
 enum class TypeObject
 {
@@ -9,7 +11,8 @@ enum class TypeObject
 	Object,
 	DirectionalLight,
 	PointLight,
-	Plane
+	Plane,
+	Model
 };
 
 

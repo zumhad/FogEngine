@@ -3,7 +3,7 @@
 #include "Definitions.h"
 #include "Devices.h"
 #include "Direct3D.h"
-#include "Time.h"
+#include "TimerEngine.h"
 #include "CameraEngine.h"
 #include "GUI.h"
 
@@ -73,16 +73,16 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
     {
         case WM_PAINT:
         {
-            if (app.mTime->LockFPS())
+            if (TimeEngine::LockFPS())
             {
-                app.mTime->Tick();
+                TimeEngine::Tick();
 
                 app.mMouse->Update();
 
                 if (Singlton.foo.update)
                     Singlton.foo.update();
 
-                CameraEngine::Update(Module::Time::DeltaTime());
+                CameraEngine::Update(Time::DeltaTime());
                 
                 if (app.mIsGame)
                     Direct3D::DrawGame();
@@ -214,7 +214,6 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (app.mStarted && !app.mIsGame)
             {
-                CameraEngine::RestartMatrix();
                 Direct3D::ResizeEditor();
                 app.InitBuffers();
             }

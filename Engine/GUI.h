@@ -1,24 +1,15 @@
 #pragma once
 
 #include "Core.h"
-
 #include "Button.h"
-
-
 
 class FOG_API GUI
 {
 public:
 	template<typename T>
-	static void Add(T& b)
-	{
-		T* t = new T(b);
+	static void Add(T& b);
 
-		mArr.Add(t);
-		mSize++;
-	}
-
-	static Control& Get(int index) { return *(mArr[index]); }
+	static Control& Get(int index);
 	static int Size() { return mSize; }
 
 	static void Shotdown();
@@ -39,6 +30,15 @@ private:
 
 struct ConstantBuffer
 {
-	DirectX::XMMATRIX worldViewProj;
+	DirectX::XMFLOAT4X4 worldViewProj;
 	DirectX::XMFLOAT4 material;
 };
+
+template<typename T>
+void GUI::Add(T& b)
+{
+	T* t = new T(b);
+
+	mArr.Add(t);
+	mSize++;
+}

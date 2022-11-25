@@ -3,7 +3,7 @@
 #include "Core.h"
 
 #include "Input.h"
-#include "Time.h"
+#include "Timer.h"
 
 
 class FOG_API Application
@@ -14,7 +14,7 @@ public:
     static void SetSceneY(int y);
     static void SetSceneWidth(int width);
     static void SetSceneHeight(int height);
-    static void SetSceneColor(int red, int green, int blue);
+    static void SetSceneColor(float r, float g, float b);
     static void MoveSceneX(int x);
     static void MoveSceneY(int y);
 
@@ -34,7 +34,6 @@ protected:
     static void InitBuffers();
 
 protected:
-    static Module::Time* mTime;
     static Module::Keyboard* mKeyboard;
     static Module::Mouse* mMouse;
 

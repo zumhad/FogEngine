@@ -8,6 +8,7 @@
 #include "Cube.h"
 #include "Plane.h"
 #include "Light.h"
+#include "Model.h"
 
 #include <shellapi.h>
 
@@ -21,6 +22,7 @@ void Setting()\n\
 	Singlton.foo.start = MyStart;\n\
 	Singlton.isGame = true;\n\
 	Singlton.cursorShow = false;\n\
+	Singlton.game.color = { 1, 1, 1 };\n\
 }\n\
 #include \"ApplicationEngine.h\"\n\
 CREATE_APPLICATION(Setting)";
@@ -74,7 +76,9 @@ void Application::SaveProject()
 void MyStart()\n\
 {\n\
 Cube cube;\n\
-DirectionalLight light;\n\
+DirectionalLight dir;\n\
+PointLight point;\n\
+Model model;\n\
 Plane plane;\n";
 
 
@@ -97,14 +101,42 @@ Plane plane;\n";
 			continue;
 		}
 
+		if (type == TypeObject::Model)
+		{
+			Model& model = (Model&)obj;
+			h += L"model.name = L\"" + model.name + L"\";\n";
+			h += L"model.material.ambient = " + String::ToStr(model.material.ambient) + L";\n";
+			h += L"model.material.diffuse = " + String::ToStr(model.material.diffuse) + L";\n";
+			h += L"model.material.specular = " + String::ToStr(model.material.specular) + L";\n";
+			h += L"model.position = " + String::ToStr(model.position) + L";\n";
+			h += L"model.rotation = " + String::ToStr(model.rotation) + L";\n";
+			h += L"model.scale = " + String::ToStr(model.scale) + L";\n";
+			h += L"model.lighting = " + String::ToStr(model.lighting) + L";\n";
+			h += L"ObjectManager::Add(model);\n";
+			continue;
+		}
+
+		if (type == TypeObject::PointLight)
+		{
+			PointLight& point = (PointLight&)obj;
+			h += L"point.att = " + String::ToStr(point.att) + L";\n";
+			h += L"point.ambient = " + String::ToStr(point.ambient) + L";\n";
+			h += L"point.diffuse = " + String::ToStr(point.diffuse) + L";\n";
+			h += L"point.position = " + String::ToStr(point.position) + L";\n";
+			h += L"point.range = " + String::ToStr(point.range) + L";\n";
+			h += L"point.specular = " + String::ToStr(point.specular) + L";\n";
+			h += L"ObjectManager::Add(point);\n";
+			continue;
+		}
+
 		if (type == TypeObject::DirectionalLight)
 		{
-			DirectionalLight& light = (DirectionalLight&)obj;
-			h += L"light.ambient = " + String::ToStr(light.ambient) + L";\n";
-			h += L"light.direction = " + String::ToStr(light.direction) + L";\n";
-			h += L"light.diffuse = " + String::ToStr(light.diffuse) + L";\n";
-			h += L"light.specular = " + String::ToStr(light.specular) + L";\n";
-			h += L"ObjectManager::Add(light);\n";
+			DirectionalLight& dir = (DirectionalLight&)obj;
+			h += L"dir.ambient = " + String::ToStr(dir.ambient) + L";\n";
+			h += L"dir.direction = " + String::ToStr(dir.direction) + L";\n";
+			h += L"dir.diffuse = " + String::ToStr(dir.diffuse) + L";\n";
+			h += L"dir.specular = " + String::ToStr(dir.specular) + L";\n";
+			h += L"ObjectManager::Add(dir);\n";
 			continue;
 		}
 		
@@ -142,7 +174,8 @@ Plane plane;\n";
 	copyPath += L"Project\\build";
 	wsystem(copyPath);
 
-	String path = Singlton.path;
-	path += L"Project\\BuildTool.exe";
+	String path = L"cd ";
+	path += Singlton.path;
+	path += L"Project & BuildTool.exe";
 	wsystem(path);
 }

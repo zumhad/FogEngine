@@ -33,7 +33,7 @@
     <ClCompile Include="PathHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Time.cpp">
+    <ClCompile Include="Timer.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Cube.cpp">
@@ -60,15 +60,6 @@
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>stuff</Filter>
     </ClCompile>
-    <ClCompile Include="BoundingBox.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="BoundingPlane.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="Frustum.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="CustomFile.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -85,6 +76,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Button.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -122,13 +116,7 @@
     <ClInclude Include="Engine.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Functions.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Input.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix3.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Object.h">
@@ -137,19 +125,10 @@
     <ClInclude Include="PathHelper.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Quaternion.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Scalar.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Time.h">
+    <ClInclude Include="Timer.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Trace.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Cube.h">
@@ -173,32 +152,11 @@
     <ClInclude Include="Properties.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="MathHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DDSTextureLoader.h">
       <Filter>stuff</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix4.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingBox.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="BoundingPlane.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Frustum.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectHelper.h">
-      <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="CustomFile.h">
       <Filter>include</Filter>
@@ -219,6 +177,12 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Shader.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerEngine.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

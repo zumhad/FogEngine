@@ -3,14 +3,14 @@
 #include "Core.h"
 #include "Object.h"
 #include "Texture.h"
-#include "BoundingBox.h"
 
+#include <DirectXCollision.h>
 
 class FOG_API Cube : public Object
 {
 public:
 	TypeObject GetType() override { return TypeObject::Cube; }
-	BoundingBox& GetBoundingBox() { return bb; }
+	DirectX::BoundingBox& GetBoundingBox() { return mBB; }
 
 	Cube() {};
 	Cube(Cube& cube);
@@ -18,23 +18,21 @@ public:
 
 	void Bind();
 
-	Matrix4& GetWorldMatrix();
-	Matrix4& GetWorldInvTransposeMatrix();
+	DirectX::XMMATRIX GetWorldMatrix();
+	DirectX::XMMATRIX GetWorldInvTransposeMatrix();
 
 public:
 	Material material;
 	bool lighting = true;
 
-	Vector3 scale = Vector3::Identity();
-	Vector3 position = Vector3::Zero();
-	Vector3 rotation = Vector3::Zero();
-
+	DirectX::XMFLOAT3 scale = { 1,1,1 };
+	DirectX::XMFLOAT3 position = { 0,0,0 };
+	DirectX::XMFLOAT3 rotation = { 0,0,0 };
 private:
-	Quaternion mQRotation;
-	Matrix4 mWorld = Matrix4::Identity();
-	Matrix4 mWorldInvTranspose;
+	DirectX::XMFLOAT4X4 mWorld;
+	DirectX::XMFLOAT4X4 mWorldInvTranspose;
 
-	BoundingBox bb;
+	DirectX::BoundingBox mBB;
 	Texture* mTexture = 0;
 	ID3D11Buffer* mVertexBuffer = 0;
 	ID3D11Buffer* mIndexBuffer = 0;

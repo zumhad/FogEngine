@@ -14,8 +14,7 @@
 #include "Cube.h"
 #include "Light.h"
 #include "Plane.h"
-
-using Module::Time;
+#include "Model.h"
 
 
 #define CREATE_APPLICATION(x)\

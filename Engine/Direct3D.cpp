@@ -10,6 +10,7 @@
 #include "CustomFile.h"
 #include "GUI.h"
 #include "Shader.h"
+#include "Model.h"
 
 #include <d3dcompiler.h>
 #include <directxcolors.h>
@@ -53,20 +54,20 @@ void Direct3D::Setup()
 {
 	Initialize();
 
-	mEditorColor[0] = GetRValue(Singlton.editor.color) / 255.0f;
-	mEditorColor[1] = GetGValue(Singlton.editor.color) / 255.0f;
-	mEditorColor[2] = GetBValue(Singlton.editor.color) / 255.0f;
-	mEditorColor[3] = 1.0f;
+	mEditorColor[0] = Singlton.editor.color.R();
+	mEditorColor[1] = Singlton.editor.color.G();
+	mEditorColor[2] = Singlton.editor.color.B();
+	mEditorColor[3] = Singlton.editor.color.A();
 
-	mSceneColor[0] = GetRValue(Singlton.scene.color) / 255.0f;
-	mSceneColor[1] = GetGValue(Singlton.scene.color) / 255.0f;
-	mSceneColor[2] = GetBValue(Singlton.scene.color) / 255.0f;
-	mSceneColor[3] = 1.0f;
+	mSceneColor[0] = Singlton.scene.color.R();
+	mSceneColor[1] = Singlton.scene.color.G();
+	mSceneColor[2] = Singlton.scene.color.B();
+	mSceneColor[3] = Singlton.scene.color.A();
 
-	mGameColor[0] = GetRValue(Singlton.game.color) / 255.0f;
-	mGameColor[1] = GetGValue(Singlton.game.color) / 255.0f;
-	mGameColor[2] = GetBValue(Singlton.game.color) / 255.0f;
-	mGameColor[3] = 1.0f;
+	mGameColor[0] = Singlton.game.color.R();
+	mGameColor[1] = Singlton.game.color.G();
+	mGameColor[2] = Singlton.game.color.B();
+	mGameColor[3] = Singlton.game.color.A();
 }
 
 void Direct3D::ResizeScene()
@@ -377,7 +378,6 @@ void Direct3D::DrawGame()
 	frameBuffer.directionalCount = 0;
 	frameBuffer.pointCount = 0;
 
-
 	for (int i = 0, d = 0, p = 0; i < ObjectManager::Size(); i++)
 	{
 		TypeObject type = ObjectManager::Get(i).GetType();
@@ -394,9 +394,7 @@ void Direct3D::DrawGame()
 
 			frameBuffer.directionalLight[d++] = light;
 			frameBuffer.directionalCount++;
-			frameBuffer.cameraPosW = CameraEngine::GetPosition();
-
-			//if (count == frameBuffer.dirCount) break;
+			XMStoreFloat3(&(frameBuffer.cameraPosW), CameraEngine::GetPosition());
 		}
 
 		if (type == TypeObject::PointLight)
@@ -413,7 +411,7 @@ void Direct3D::DrawGame()
 
 			frameBuffer.pointLight[p++] = light;
 			frameBuffer.pointCount++;
-			frameBuffer.cameraPosW = CameraEngine::GetPosition();
+			XMStoreFloat3(&(frameBuffer.cameraPosW), CameraEngine::GetPosition());
 		}
 	}
 
@@ -431,16 +429,20 @@ void Direct3D::DrawGame()
 		{
 			Cube& obj = (Cube&)ObjectManager::Get(i);
 
-			BoundingBox bb = obj.GetBoundingBox();
+			BoundingBox& bb = obj.GetBoundingBox();
 			if (!CameraEngine::AABB(bb)) continue;
 
-			static PerObjectBuffer objectBuffer;
-			objectBuffer.world = XMMatrixTranspose(obj.GetWorldMatrix());
-			objectBuffer.worldInvTranspose = obj.GetWorldInvTransposeMatrix();
-			objectBuffer.worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
-			objectBuffer.material = obj.material;
+			static PerObjectBuffer buffer;
+			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
+			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
+			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
 
-			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &objectBuffer, 0, 0);
+			XMStoreFloat4x4(&(buffer.world), world);
+			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
+			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
+			buffer.material = obj.material;
+
+			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
 			mDeviceContext->VSSetConstantBuffers(1, 1, &mPerObjectBuffer);
 			mDeviceContext->PSSetConstantBuffers(1, 1, &mPerObjectBuffer);
 
@@ -457,10 +459,41 @@ void Direct3D::DrawGame()
 			BoundingBox bb = obj.GetBoundingBox();
 			if (!CameraEngine::AABB(bb)) continue;
 
-			PerObjectBuffer buffer;
-			buffer.world = XMMatrixTranspose(obj.GetWorldMatrix());
-			buffer.worldInvTranspose = obj.GetWorldInvTransposeMatrix();
-			buffer.worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+			static PerObjectBuffer buffer;
+			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
+			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
+			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+
+			XMStoreFloat4x4(&(buffer.world), world);
+			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
+			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
+			buffer.material = obj.material;
+
+			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
+			mDeviceContext->VSSetConstantBuffers(1, 1, &mPerObjectBuffer);
+			mDeviceContext->PSSetConstantBuffers(1, 1, &mPerObjectBuffer);
+
+			obj.Bind();
+
+			objs++;
+			continue;
+		}
+
+		if (type == TypeObject::Model)
+		{
+			Model& obj = (Model&)ObjectManager::Get(i);
+
+			BoundingBox bb = obj.GetBoundingBox();
+			if (!CameraEngine::AABB(bb)) continue;
+
+			static PerObjectBuffer buffer;
+			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
+			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
+			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+
+			XMStoreFloat4x4(&(buffer.world), world);
+			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
+			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
 			buffer.material = obj.material;
 
 			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
@@ -473,6 +506,8 @@ void Direct3D::DrawGame()
 			continue;
 		}
 	}
+
+	OutputDebugString(String::ToStr(objs) + L"\n");
 }
 
 void Direct3D::Present()

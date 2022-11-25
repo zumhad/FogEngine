@@ -3,6 +3,7 @@
 #include "Trace.h"
 #include "Direct3D.h"
 
+using namespace DirectX;
 
 Cube::Cube(Cube& cube)
 {
@@ -12,49 +13,49 @@ Cube::Cube(Cube& cube)
     lighting = cube.lighting;
     material = cube.material;
     
-    mTexture = new Texture;
+    //mTexture = new Texture;
 
-    Vector3 min = position;
-    min.SetX(min.GetX() - scale.GetX());
-    min.SetY(min.GetY() - scale.GetY());
-    min.SetZ(min.GetZ() - scale.GetZ());
-    Vector3 max = position;
-    max.SetX(max.GetX() + scale.GetX());
-    max.SetY(max.GetY() + scale.GetY());
-    max.SetZ(max.GetZ() + scale.GetZ());
-    bb = BoundingBox(min, max);
+    XMFLOAT3 min = position;
+    min.x = min.x - scale.x;
+    min.y = min.y - scale.y;
+    min.z = min.z - scale.z;
+    XMFLOAT3 max = position;
+    max.x = max.x - scale.x;
+    max.y = max.y - scale.y;
+    max.z = max.z - scale.z;
+    mBB = BoundingBox(position, scale);
 
     Vertex vertices[] =
     {
-        { Vector3(-1.0f, 1.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), {0,0}, },
-        { Vector3(1.0f, 1.0f, -1.0f), Vector3(0.0f, 1.0f, 0.0f), { 0,1 }, },
-        { Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f), { 1,1 },},
-        { Vector3(-1.0f, 1.0f, 1.0f), Vector3(0.0f, 1.0f, 0.0f), { 1,0 },},
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), {0,0}, },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), { 0,1 }, },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), { 1,1 },},
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), { 1,0 },},
 
-        { Vector3(-1.0f, -1.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f), {0,0}, },
-        { Vector3(1.0f, -1.0f, -1.0f), Vector3(0.0f, -1.0f, 0.0f), { 1,0 }, },
-        { Vector3(1.0f, -1.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f), { 1,1 },},
-        { Vector3(-1.0f, -1.0f, 1.0f), Vector3(0.0f, -1.0f, 0.0f), { 0,1 },},
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), {0,0}, },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), { 1,0 }, },
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), { 1,1 },},
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), { 0,1 },},
 
-        { Vector3(-1.0f, -1.0f, 1.0f), Vector3(-1.0f, 0.0f, 0.0f), {0,1}, },
-        { Vector3(-1.0f, -1.0f, -1.0f), Vector3(-1.0f, 0.0f, 0.0f), { 1,1 }, },
-        { Vector3(-1.0f, 1.0f, -1.0f), Vector3(-1.0f, 0.0f, 0.0f), { 1,0 },},
-        { Vector3(-1.0f, 1.0f, 1.0f), Vector3(-1.0f, 0.0f, 0.0f), { 0,0 },},
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), {0,1}, },
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), { 1,1 }, },
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), { 1,0 },},
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), { 0,0 },},
 
-        { Vector3(1.0f, -1.0f, 1.0f), Vector3(1.0f, 0.0f, 0.0f), {0,1}, },
-        { Vector3(1.0f, -1.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f), { 1,1 }, },
-        { Vector3(1.0f, 1.0f, -1.0f), Vector3(1.0f, 0.0f, 0.0f), { 1,0 },},
-        { Vector3(1.0f, 1.0f, 1.0f), Vector3(1.0f, 0.0f, 0.0f), { 0,0 },},
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), {0,1}, },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), { 1,1 }, },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), { 1,0 },},
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), { 0,0 },},
 
-        { Vector3(-1.0f, -1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f) , {0,1}, },
-        { Vector3(1.0f, -1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f), { 1,1 }, },
-        { Vector3(1.0f, 1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f), { 1,0 },},
-        { Vector3(-1.0f, 1.0f, -1.0f), Vector3(0.0f, 0.0f, -1.0f), { 0,0 },},
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f) , {0,1}, },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), { 1,1 }, },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), { 1,0 },},
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), { 0,0 },},
 
-        { Vector3(-1.0f, -1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), {0,1}, },
-        { Vector3(1.0f, -1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 1,1 }, },
-        { Vector3(1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 1,0 },},
-        { Vector3(-1.0f, 1.0f, 1.0f), Vector3(0.0f, 0.0f, 1.0f), { 0,0 },},
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), {0,1}, },
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), { 1,1 }, },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), { 1,0 },},
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), { 0,0 },},
     };
 
     D3D11_BUFFER_DESC bd = {};
@@ -86,6 +87,7 @@ Cube::Cube(Cube& cube)
         22,20,21,
         23,20,22
     };
+
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = sizeof(WORD) * 36;
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -109,26 +111,26 @@ void Cube::Bind()
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
     Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
-    mTexture->Bind();
+    //mTexture->Bind();
 
     Direct3D::DeviceContext()->DrawIndexed(36, 0, 0);
 }
 
-Matrix4& Cube::GetWorldMatrix()
+XMMATRIX Cube::GetWorldMatrix()
 {
-    mQRotation = DirectX::XMQuaternionRotationRollPitchYaw(-rotation.GetX(), -rotation.GetY(), rotation.GetZ());
-    mWorld = DirectX::XMMatrixAffineTransformation(scale, Quaternion::Identity(), mQRotation, position);
+    XMVECTOR q = DirectX::XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&rotation) * (XM_PI / 180.0));
+    XMMATRIX m = DirectX::XMMatrixAffineTransformation(XMLoadFloat3(&scale), XMVectorSet(0,0,0,1), q, XMLoadFloat3(&position));
+    XMStoreFloat4x4(&mWorld, m);
 
-    return mWorld;
+    return m;
 }
 
-Matrix4& Cube::GetWorldInvTransposeMatrix()
+XMMATRIX Cube::GetWorldInvTransposeMatrix()
 {
-    DirectX::XMMATRIX A = mWorld;
-    A.r[3] = DirectX::XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    XMMATRIX m = XMLoadFloat4x4(&mWorld);
+    m.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    m = XMMatrixTranspose(XMMatrixInverse(0, m));
+    XMStoreFloat4x4(&mWorldInvTranspose, m);
 
-    DirectX::XMVECTOR det = DirectX::XMMatrixDeterminant(A);
-    mWorldInvTranspose = DirectX::XMMatrixTranspose(XMMatrixInverse(&det, A));
-
-    return mWorldInvTranspose;
+    return m;
 }

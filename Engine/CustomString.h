@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core.h"
-#include "MathHelper.h"
 
+#include <DirectXMath.h>
 
 class FOG_API String
 {
@@ -28,10 +28,10 @@ public:
 	static bool IsInt(const WCHAR* str);
 	static int FindStr(const WCHAR* dest, const WCHAR* str);
 	static String ToStr(int value);
-	static String ToStr(Vector3 v);
+	static String ToStr(DirectX::FXMVECTOR v);
+	static String ToStr(DirectX::XMFLOAT3 v);
+	static String ToStr(DirectX::XMFLOAT4 v);
 	static String ToStr(float f);
-	static String ToStr(Vector4 v);
-	static String ToStr(Scalar f);
 	int Length() { return mSize; }
 	const WCHAR* Str() { return mStr; }
 	CHAR* ToUTF8();

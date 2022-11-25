@@ -79,11 +79,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
+    <IncludePath>$(SolutionDir)Libs\Debug\include;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)Libs\Debug\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Release\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
+    <IncludePath>$(SolutionDir)Libs\Release\include;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)Libs\Release\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -122,6 +126,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\Project\include\;..\Engine\;..\Engine\Assets\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -140,15 +145,16 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>..\Project\include\;..\Engine\;..\Engine\Assets\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)Build\Release\Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>wmainCRTStartup</EntryPointSymbol>
       <Profile>true</Profile>
+      <AdditionalDependencies>$(SolutionDir)Build\Release\Engine.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -165,6 +171,5 @@
     <ClInclude Include="Foo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

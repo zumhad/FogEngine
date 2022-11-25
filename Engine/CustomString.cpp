@@ -3,6 +3,8 @@
 #include <cwchar>
 #include <cstdlib>
 
+using namespace DirectX;
+
 String::~String()
 { 
 	SAFE_DELETE_ARR(mStr);
@@ -98,12 +100,6 @@ String String::operator+= (const String& str)
 	return *this;
 }
 
-String String::ToStr(Vector4 v)
-{
-	String res = L"{" + ToStr(v.GetX()) + L"," + ToStr(v.GetY()) + L"," + ToStr(v.GetZ()) + L"," + ToStr(v.GetW()) + L"}";
-	return res;
-}
-
 String String::ToStr(float f)
 {
 	WCHAR buffer[50];
@@ -114,20 +110,24 @@ String String::ToStr(float f)
 	return res;
 }
 
-String String::ToStr(Scalar s)
+String String::ToStr(FXMVECTOR v)
 {
-	WCHAR buffer[50];
-	swprintf(buffer, 50, L"%f", float(s));
+	XMFLOAT4 f;
+	XMStoreFloat4(&f, v);
 
-	String res = buffer;
-	res += L"f";
-
+	String res = L"{" + ToStr(f.x) + L"," + ToStr(f.y) + L"," + ToStr(f.z) + L"," + ToStr(f.w) + L"}";
 	return res;
 }
 
-String String::ToStr(Vector3 v)
+String String::ToStr(DirectX::XMFLOAT3 v)
 {
-	String res = L"{" + ToStr(v.GetX()) + L"," + ToStr(v.GetY()) + L"," + ToStr(v.GetZ()) + L"}";
+	String res = L"{" + ToStr(v.x) + L"," + ToStr(v.y) + L"," + ToStr(v.z) + L"}";
+	return res;
+}
+
+String String::ToStr(DirectX::XMFLOAT4 v)
+{
+	String res = L"{" + ToStr(v.x) + L"," + ToStr(v.y) + L"," + ToStr(v.z) + L"," + ToStr(v.w) + L"}";
 	return res;
 }
 

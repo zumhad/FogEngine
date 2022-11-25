@@ -1,8 +1,11 @@
 #include "GUI.h"
 
+#include "Application.h"
 #include "Trace.h"
 #include "Shader.h"
 #include "CameraEngine.h"
+
+using namespace DirectX;
 
 Array<Control*> GUI::mArr;
 int GUI::mSize = 0;
@@ -45,6 +48,16 @@ void GUI::Setup()
 	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, nullptr, &mBuffer));
 }
 
+Control& GUI::Get(int i)
+{ 
+	if (i + 1 > mSize)
+		Application::Exit();
+
+	return *(mArr[i]); 
+}
+
+
+
 void GUI::Draw()
 {
 	CameraEngine::Set3D(false);
@@ -57,7 +70,10 @@ void GUI::Draw()
 	for (int i = 0; i < mSize; i++)
 	{
 		static ConstantBuffer buffer = {};
-		buffer.worldViewProj = ((Button*)mArr[i])->GetWorldMatrix() * CameraEngine::GetWorldMatrix() * CameraEngine::GetProjMatrix();
+
+		XMMATRIX worldViewProj = ((Button*)mArr[i])->GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+
+		XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
 		buffer.material = ((Button*)mArr[i])->color;
 
 		Direct3D::DeviceContext()->UpdateSubresource(mBuffer, 0, 0, &buffer, 0, 0);

@@ -2,8 +2,8 @@
 
 #include "Core.h"
 #include "CustomTypes.h"
-#include "MathHelper.h"
 
+#include <SimpleMath.h>
 
 #define MAX_DIRECTIONAL_LIGHT 16
 #define MAX_POINT_LIGHT 16
@@ -22,7 +22,7 @@ public:
 	{
 		int width = 0;
 		int height = 0;
-		Color color = 0;
+		DirectX::SimpleMath::Color color;
 	} editor;
 
 	struct
@@ -31,14 +31,14 @@ public:
 		int y = 0;
 		int width = 0;
 		int height = 0;
-		Color color = 255;
+		DirectX::SimpleMath::Color color;
 	} scene;
 
 	struct
 	{
 		int width = 0;
 		int height = 0;
-		Color color = 255;
+		DirectX::SimpleMath::Color color;
 	} game;
 
 	struct

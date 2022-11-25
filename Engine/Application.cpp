@@ -4,7 +4,7 @@
 #include "Direct3D.h"
 #include "Devices.h"
 #include "Trace.h"
-#include "Time.h"
+#include "TimerEngine.h"
 #include "ObjectManager.h"
 #include "CameraEngine.h"
 #include "Input.h"
@@ -13,10 +13,10 @@
 #include <ctime>
 #include <shellapi.h>
 
+using namespace DirectX::SimpleMath;
 
 HWND ApplicationEngine::mHwnd = 0;
 
-Module::Time* Application::mTime = 0;
 Module::Keyboard* Application::mKeyboard = 0;
 Module::Mouse* Application::mMouse = 0;
 
@@ -36,7 +36,7 @@ void ApplicationEngine::InitWindow()
     GetModuleFileName(0, exePath, MAX_PATH);   // get icon
     HICON hIcon = ExtractIcon(0, exePath, 0);  //
 
-    String::Strcpy(Singlton.path, exePath, 0, String::FindStr(exePath, L"\\Build"));
+    String::Strcpy(Singlton.path, exePath, 0, String::FindStr(exePath, L"\\FogEngine") + String::Strlen(L"\\FogEngine"));
 
     WNDCLASSEX wce{};
     wce.cbSize = sizeof(WNDCLASSEX);
@@ -100,8 +100,8 @@ void ApplicationEngine::CheckDebug()
 void ApplicationEngine::InitModules()
 {
     Direct3D::Setup();
+    TimeEngine::Setup();
     mMouse = new Module::Mouse();
-    mTime = new Module::Time;
     mKeyboard = new Module::Keyboard;
     CameraEngine::Setup();
     GUI::Setup();
@@ -109,7 +109,7 @@ void ApplicationEngine::InitModules()
 
 void Application::InitBuffers()
 {
-    CameraEngine::Update(Module::Time::DeltaTime());
+    CameraEngine::Update(Time::DeltaTime());
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -131,7 +131,7 @@ int ApplicationEngine::Run()
     InitApp();
 
     ShowWindow(mHwnd, SW_MAXIMIZE);
-    mTime->Reset(); //start timer
+    TimeEngine::Reset(); //start timer
 
     MSG msg = { 0 };
     while (WM_QUIT != msg.message)
@@ -197,7 +197,6 @@ ApplicationEngine::~ApplicationEngine() //exit
     Direct3D::Shotdown();
 
     SAFE_DELETE(mKeyboard);
-    SAFE_DELETE(mTime);
     SAFE_DELETE(mMouse);
 }
 
@@ -216,7 +215,7 @@ void Application::SetSceneX(int x)
 {
     if (mIsGame) return;
 
-    Singlton.scene.x = (int)Math::Max(0.0f, (float)x);
+    Singlton.scene.x = std::max(0, x);
 
     Direct3D::ResizeScene();
     InitBuffers();
@@ -226,7 +225,7 @@ void Application::SetSceneY(int y)
 {
     if (mIsGame) return;
 
-    Singlton.scene.y = (int)Math::Max(0.0f, (float)y);
+    Singlton.scene.y = std::max(0, y);
 
     Direct3D::ResizeScene();
     InitBuffers();
@@ -236,7 +235,7 @@ void Application::SetSceneWidth(int width)
 {
     if (mIsGame) return;
 
-    Singlton.scene.width = (int)Math::Max(0.0f, (float)width);
+    Singlton.scene.width = std::max(0, width);
 
     Direct3D::ResizeScene();
     InitBuffers();
@@ -246,7 +245,7 @@ void Application::SetSceneHeight(int height)
 {
     if (mIsGame) return;
 
-    Singlton.scene.height = (int)Math::Max(0.0f, (float)height);
+    Singlton.scene.height = std::max(0, height);
 
     Direct3D::ResizeScene();
     InitBuffers();
@@ -287,6 +286,6 @@ int Application::GetSceneHeight() { return Singlton.scene.height; }
 bool Application::IsAppPaused() { return mPaused; }
 bool Application::GetCursorEnabled() { return mMouse->GetState(); }
 
-void Application::SetSceneColor(int red, int green, int blue) { Singlton.scene.color = { red, green, blue }; }
+void Application::SetSceneColor(float r, float g, float b) { Singlton.scene.color = Color(r, g, b); }
 
 void Application::Exit() { PostQuitMessage(0); }

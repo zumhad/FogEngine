@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Core.h"
-
 #include "Object.h"
 
+#include <SimpleMath.h>
 
 class FOG_API DirectionalLight : public Object
 {
@@ -11,10 +11,10 @@ public:
 	TypeObject GetType() override { return TypeObject::DirectionalLight; }
 
 public:
-	Vector4 ambient = { 0,0,0,0 };
-	Vector4 diffuse = { 1,1,1,1 };
-	Vector4 specular = { 1,1,1,50 };
-	Vector3 direction = { 0,-1,0 };
+	DirectX::SimpleMath::Color ambient = { 0.0f, 0.0f, 0.0f, 0.0f };
+	DirectX::SimpleMath::Color diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::SimpleMath::Color specular = { 1.0f, 1.0f, 1.0f, 50.0f };
+	DirectX::XMFLOAT3 direction = { 0.0f, -1.0f, 0.0f };
 
 private:
 	static int mCount;
@@ -26,13 +26,13 @@ public:
 	TypeObject GetType() override { return TypeObject::PointLight; }
 
 public:
-	Vector4 ambient = { 0.0f ,0.0f, 0.0f, 1.0f };
-	Vector4 diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Vector4 specular = { 0.0f, 0.0f, 0.0f, 0.0f };
+	DirectX::SimpleMath::Color ambient = { 0.0f ,0.0f, 0.0f, 1.0f };
+	DirectX::SimpleMath::Color diffuse = { 1.0f, 1.0f, 1.0f, 1.0f };
+	DirectX::SimpleMath::Color specular = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-	Vector3 position = { 0.0f, 0.0f, 0.0f };
-	float range = 50.0f;
-	Vector3 att = { 0.0f, 0.3f, 0.0f };
+	DirectX::XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+	float range = 500.0f;
+	DirectX::XMFLOAT3 att = { 0.0f, 0.3f, 0.0f };
 
 private:
 	static int mCount;

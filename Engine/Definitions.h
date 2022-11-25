@@ -23,8 +23,3 @@
 
 #define EXT L"fog"
 #define DOT_EXT L"." EXT
-
-#define RGBA(r,g,b,a) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)|(((DWORD)(BYTE)(a))<<24)))
-#define SetRValue(c, r) (c = ((COLORREF)((c & 0x00FFFF00) | ((BYTE)(r)))))
-#define SetGValue(c, g) (c = ((COLORREF)((c & 0x00FF00FF) | ((BYTE)(g) << 8))))
-#define SetBValue(c, b) (c = ((COLORREF)((c & 0x0000FFFF) | ((BYTE)(b) << 16))))

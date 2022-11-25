@@ -1,7 +1,6 @@
 #pragma once
-#include <vector>
 
-#include "Application.h"
+#include "Core.h"
 #include "Object.h"
 #include "Properties.h"
 #include "Light.h"
@@ -19,7 +18,6 @@ public:
 
     static int Size() { return mSize; }
     static Object& Get(int i);
-
 
 private:
     static int mSize;

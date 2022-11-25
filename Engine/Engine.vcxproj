@@ -81,11 +81,17 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
+    <LibraryPath>$(SolutionDir)Libs\Debug\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\Debug\include;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)Libs\Debug\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Release\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
+    <LibraryPath>$(SolutionDir)Libs\Release\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\Release\include;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(SolutionDir)Libs\Release\include;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -124,6 +130,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>Assets\;</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -148,6 +155,7 @@
       <AdditionalIncludeDirectories>Assets\;</AdditionalIncludeDirectories>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -167,8 +175,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="BoundingBox.cpp" />
-    <ClCompile Include="BoundingPlane.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Control.cpp" />
@@ -178,25 +184,23 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="dxerr.cpp" />
-    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="Time.cpp" />
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Engine\dxerr.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="ApplicationEngine.h" />
-    <ClInclude Include="BoundingBox.h" />
-    <ClInclude Include="BoundingPlane.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraEngine.h" />
@@ -212,31 +216,23 @@
     <ClInclude Include="DeviceInput.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="Direct3D.h" />
-    <ClInclude Include="DirectHelper.h" />
     <ClInclude Include="Engine.h" />
-    <ClInclude Include="Frustum.h" />
-    <ClInclude Include="Functions.h" />
     <ClCompile Include="GenerateFiles.cpp" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="LightHelper.h" />
-    <ClInclude Include="Matrix4.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="MathHelper.h" />
-    <ClInclude Include="Matrix3.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="PathHelper.h" />
     <ClInclude Include="Plane.h" />
     <ClInclude Include="Properties.h" />
-    <ClInclude Include="Quaternion.h" />
-    <ClInclude Include="Scalar.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
-    <ClInclude Include="Time.h" />
+    <ClInclude Include="Timer.h" />
+    <ClInclude Include="TimerEngine.h" />
     <ClInclude Include="Trace.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="Vector.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\light.hlsli" />
@@ -258,6 +254,5 @@
     </None>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>
