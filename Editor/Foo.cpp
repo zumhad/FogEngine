@@ -2,64 +2,13 @@
 #include "Main.h"
 
 
-
-class Vector3
-{
-public:
-	Vector3(float x = 0.0f, float y = 0.0f, float z = 0.0f)
-	{
-		this->x = x;
-		this->y = y;
-		this->z = z;
-	}
-
-	operator DirectX::XMFLOAT3()
-	{
-		return DirectX::XMFLOAT3(x, y, z);
-	}
-
-	operator DirectX::XMVECTOR()
-	{
-		return DirectX::XMVectorSet(x, y, z, 1);
-	}
-
-public:
-	float x, y, z;
-};
-
-class Vector4
-{
-public:
-	Vector4(float x = 0.0f, float y = 0.0f, float z = 0.0f, float w = 0.0f)
-	{
-		this->x = x;
-		this->y = y;
-		this->z = z;
-		this->w = w;
-	}
-
-	operator DirectX::XMFLOAT4()
-	{
-		return DirectX::XMFLOAT4(x, y, z, w);
-	}
-
-	operator DirectX::XMVECTOR()
-	{
-		return DirectX::XMVectorSet(x, y, z, w);
-	}
-
-public:
-	float x, y, z, w;
-};
-
-
 void MyUpdate()
 {
-	static bool isMoveScene = false;
-	if (Input::IsMouseDown(MOUSE_LEFT) && !Application::CursorInScene())
-		isMoveScene = true;
-	if (Input::IsMouseUp(MOUSE_LEFT))
-		isMoveScene = false;
+	//static bool isMoveScene = false;
+	//if (Input::IsMouseDown(MOUSE_LEFT) && !Application::CursorInScene())
+	//	isMoveScene = true;
+	//if (Input::IsMouseUp(MOUSE_LEFT))
+	//	isMoveScene = false;
 	//
 	// MOVE SCENE FOR MOUSE //
 	//
@@ -70,17 +19,17 @@ void MyUpdate()
 		else
 			Application::SetSceneX(Singlton.editor.width - Application::GetSceneWidth());
 
-		
+
 
 		if (Input::GetCursorY() + Application::GetSceneHeight() > Singlton.editor.height)
 			Application::SetSceneY(Singlton.editor.height - Application::GetSceneHeight());
 		else if (Input::GetCursorY() < Singlton.captionHeight)
 			Application::SetSceneY(Singlton.captionHeight);
-		else 
+		else
 			Application::SetSceneY(Input::GetCursorY());
 	}*/
 
-	if (Input::IsKeyDown(KEY_T))
+	/*if (Input::IsKeyDown(KEY_T))
 	{
 		ObjectManager::Clear();
 	}
@@ -108,37 +57,68 @@ void MyUpdate()
 	if (Input::IsKeyDown(KEY_Q))
 	{
 		Application::RestartShader();
+	}*/
+
+	if (Input::Down(KEY_ESCAPE))
+	{
+		Application::Exit();
 	}
+
+	if (Input::Down(KEY_Q))
+	{
+		Cursor::SetVisible(!Cursor::GetVisible());
+	}
+}
+
+void fpstest()
+{
+	static int count = 0;
+	static bool test = true;
+
+	if (count == 50)
+	{
+		if (test)
+		{
+			Singlton.fpsMax = 300;
+		}
+		else
+		{
+			Singlton.fpsMax = 50;
+		}
+
+		test = !test;
+		count = 0;
+	}
+	count++;
 }
 
 void Update()
 {
-	if (Camera::GetRotateX() > 3.14 / 2.0)
-		Camera::SetRotationX(3.14 / 2.0);
-	else if (Camera::GetRotateX() < -3.14 / 2.0f)
-		Camera::SetRotationX(-3.14 / 2.0f);
+	float moveSpeed = 10.0f;
+	float rotationSpeed = 150.0f;
 
-	float mouseSpeed = 0.001f;
-	float yaw = Input::GetMouseAxis(MOUSE_X) * mouseSpeed;
-	float pitch = Input::GetMouseAxis(MOUSE_Y) * mouseSpeed;
+	float rotate = (float)Input::Press(KEY_D) - (float)Input::Press(KEY_A);
+	rotate *= rotationSpeed * Time::DeltaTime();
 
-	float zMove = Input::IsKeyPress(KEY_W) * 1.0f - Input::IsKeyPress(KEY_S) * 1.0f; zMove *= 30.0f;
-	float xMove = Input::IsKeyPress(KEY_D) * 1.0f - Input::IsKeyPress(KEY_A) * 1.0f; xMove *= 30.0f;
+	float move = (float)Input::Press(KEY_W) - (float)Input::Press(KEY_S);
+	move *= moveSpeed;
 
-	if (xMove || zMove) Camera::MoveLocal(xMove, 0.0f, zMove);
+	Mesh& model = (Mesh&)ObjectManager::Get(1);
 
-	Camera::Rotate(pitch, yaw, 0.0f);
+	static Vector3 vel = Vector3(0, 0, 0);
+	static Vector3 currenVel = Vector3(0, 0, 0);
+	currenVel = Vector3::SmoothDamp(currenVel, model.GetDirection() * move, vel, 0.1f);
+
+	model.Move(currenVel * Time::DeltaTime());
+	model.Rotate(Vector3(0, rotate, 0));
+
+	static Vector3 vel1 = Vector3(0, 0, 0);
+	static Vector3 currenVel1 = Vector3(0, 0, 0);
+	currenVel1 = Vector3::SmoothDamp(currenVel1, model.GetDirection() * move, vel1, 0.2f);
+
+	Camera::Move(currenVel1 * Time::DeltaTime());
 
 	MyUpdate();
-}
-
-void foo1()
-{
-	Cube cube;
-
-	cube.material.diffuse = Vector4(1, 1, 1, 1);
-	cube.position = Vector3((rand() % 10 - 5) * 2, -1, (rand() % 10 - 5) * 2);
-	ObjectManager::Add(cube);
 }
 
 void foo2()
@@ -148,50 +128,54 @@ void foo2()
 
 void Start()
 {
-	Camera::SetPosition(Vector3(0, 5, 0));
+	Camera::SetRotationX(30);
+	Camera::SetPosition(Vector3(0, 3, -5));
 
 	Button b;
+	b.action = foo2;
 	b.width = 200;
 	b.height = 50;
 	b.x = 1000;
-	b.y = 200;
-	b.color = { 1,0,0 };
+	b.y = 0;
+	b.color = Color(1.0f, 0.0f, 0.0f);
 	GUI::Add(b);
 
+	DirectionalLight dl;
+	//ObjectManager::Add(dl);
+
 	PointLight l;
-	l.diffuse = { 0.5, 0.2, 0.1, 1 };
-	l.position = { 0, 20, 10 };
-	l.att = { 0, 0.1, 0 };
-	l.specular = { 1,1,1, 50 };
+	l.color = Color(1.0f, 1.0f, 1.0f);
+	l.position = Vector3(0.0f, 50.0f, 0.0f);
+	l.power = 3.0f;
+	l.range = 60;
 	ObjectManager::Add(l);
 
-	Model m;
-	m.name = L"FinalBaseMesh.obj";
-	m.material.specular = { 1, 1, 1, 50 };
-	ObjectManager::Add(m);
+	Mesh m1;
+	m1.name = L"sphere.obj";
+	m1.SetPosition(Vector3(0, 1, 0));
+	m1.material.specular = { 1, 1, 1, 10 };
+	m1.material.diffuse = { 1,0,0,1 };
+	ObjectManager::Add(m1);
 
-	Plane p;
-	p.scale = { 10, 1, 10 };
-	ObjectManager::Add(p);
+
+	Mesh m2;
+	m2.name = L"plane.obj";
+	m2.SetScale(Vector3(1000, 1, 1000));
+	ObjectManager::Add(m2);
+
 }
 
 
 
 void Setting()
 {
-	Singlton.isGame = false;
-	Singlton.cursorShow = true;
-	Singlton.scene.color = { 0.7, 0.7, 0.7 };
-	Singlton.editor.color = { 1, 1, 1 };
+	Singlton.isGame = true;
+	Singlton.cursorShow = false; 
+	Singlton.scene.color = Color(0.7f, 0.7f, 0.7f);
+	Singlton.editor.color = Color(1, 1, 1);
 	Singlton.foo.start = Start;
 	Singlton.foo.update = Update;
-	/*Singlton.game.width = 800;
-	Singlton.game.height = 600;
-	Singlton.resolution.width = 800;
-	Singlton.resolution.height = 600;
-	Singlton.fpsMax = 0;
-	Singlton.foo.update = Update;
-	Singlton.scene.height = 800;
+	//Singlton.fpsMax = 50;
 	Singlton.camera.rotationSmooth = 500;
-	Singlton.camera.moveSmooth = 1000;*/
+	Singlton.camera.moveSmooth = 1000;
 }

@@ -52,6 +52,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -78,7 +79,7 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LinkIncremental>true</LinkIncremental>
+    <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
     <LibraryPath>$(SolutionDir)Libs\Debug\lib;$(LibraryPath)</LibraryPath>
@@ -92,6 +93,7 @@
     <LibraryPath>$(SolutionDir)Libs\Release\lib;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir)Libs\Release\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(SolutionDir)Libs\Release\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -131,11 +133,13 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>Assets\;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
     <FxCompile>
@@ -156,13 +160,14 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <Profile>true</Profile>
@@ -177,62 +182,72 @@
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="Color.cpp" />
     <ClCompile Include="Control.cpp" />
-    <ClCompile Include="Cube.cpp" />
+    <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
-    <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="Direct3D.cpp" />
-    <ClCompile Include="dxerr.cpp" />
+    <ClCompile Include="FrustumCulling.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
-    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="PathHelper.cpp" />
-    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Trace.cpp" />
+    <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Vector4.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Engine\dxerr.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="ApplicationEngine.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraEngine.h" />
+    <ClInclude Include="Color.h" />
     <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
-    <ClInclude Include="Cube.h" />
+    <ClInclude Include="Cursor.h" />
     <ClInclude Include="CustomFile.h" />
     <ClInclude Include="CustomString.h" />
     <ClInclude Include="CustomTypes.h" />
-    <ClInclude Include="CustomArray.h" />
-    <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="DeviceInput.h" />
     <ClInclude Include="Devices.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
     <ClCompile Include="GenerateFiles.cpp" />
+    <ClInclude Include="FrustumCulling.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="InputEngine.h" />
+    <ClInclude Include="InputHelper.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
-    <ClInclude Include="Model.h" />
+    <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="PathHelper.h" />
-    <ClInclude Include="Plane.h" />
     <ClInclude Include="Properties.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="TimerEngine.h" />
     <ClInclude Include="Trace.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Vector4.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\light.hlsli" />
@@ -247,6 +262,7 @@
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS</EntryPointName>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GUIShader.hlsl">

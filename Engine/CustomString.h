@@ -2,7 +2,9 @@
 
 #include "Core.h"
 
-#include <DirectXMath.h>
+#include "CustomTypes.h"
+#include "Vector3.h"
+#include "Color.h"
 
 class FOG_API String
 {
@@ -28,8 +30,9 @@ public:
 	static bool IsInt(const WCHAR* str);
 	static int FindStr(const WCHAR* dest, const WCHAR* str);
 	static String ToStr(int value);
+	static String ToStr(Vector3 v);
+	static String ToStr(Color c);
 	static String ToStr(DirectX::FXMVECTOR v);
-	static String ToStr(DirectX::XMFLOAT3 v);
 	static String ToStr(DirectX::XMFLOAT4 v);
 	static String ToStr(float f);
 	int Length() { return mSize; }
@@ -40,13 +43,13 @@ public:
 	String operator+= (const String& str);
 	String& operator= (const String& str);
 
-	friend String operator+ (const String& str1, const String& str2);
-	friend String operator+ (const WCHAR* str1, const String& str2);
+	friend FOG_API String operator+ (const String& str1, const String& str2);
+	friend FOG_API String operator+ (const WCHAR* str1, const String& str2);
 
 private:
 	WCHAR* mStr = 0;
 	int mSize = 0;
 };
 
-String operator+ (const String& str1, const String& str2);
-String operator+ (const WCHAR* str1, const String& str2);
+//String operator+ (const String& str1, const String& str2);
+//String operator+ (const WCHAR* str1, const String& str2);

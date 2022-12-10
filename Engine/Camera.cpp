@@ -1,28 +1,21 @@
-#include "Camera.h"
 #include "CameraEngine.h"
 
-#include "Input.h"
-#include "Time.h"
 #include "Trace.h"
 #include "Application.h"
+#include "Properties.h"
+#include "MathHelper.h"
+#include "FrustumCulling.h"
 
 #include <cmath>
 
 using namespace DirectX;
-using namespace Module;
 
-float Camera::mRotationSmooth;
-float Camera::mMoveSmooth;
 
-XMFLOAT3 Camera::mPosition;
-XMFLOAT3 Camera::mRotation;
-XMFLOAT3 Camera::mTargetPosition;
-XMFLOAT3 Camera::mTargetRotation;
+Vector3 Camera::mPosition;
+Vector3 Camera::mRotation;
 
-XMFLOAT4X4 Camera::mView;
-XMFLOAT4X4 Camera::mProj;
-
-BoundingFrustum Camera::mFrustum;
+Matrix Camera::mView;
+Matrix Camera::mProj;
 
 float Camera::mFOV;
 float Camera::mAspectRatio;
@@ -35,16 +28,33 @@ bool Camera::m3D;
 void CameraEngine::Set3D(bool var) 
 { 
 	m3D = var; 
-	Update(Time::DeltaTime()); 
+	Update(); 
 }
 
-void Camera::LookAt(FXMVECTOR pos)
+void Camera::LookAt(Vector3 pos)
 {
 	pos;
 	return;
 }
 
-void CameraEngine::Update()
+void Camera::RotateAround(float y, Vector3 pos)
+{
+	Rotate(XMFLOAT3(0,y,0));
+
+	XMVECTOR target = pos;
+	XMVECTOR cam = mPosition;
+	XMVECTOR rot = Vector3::ConvertToRadians(mRotation);
+
+	float len = XMVectorGetX(XMVector3Length(target - cam));
+
+	XMVECTOR dir = XMVectorSet(0, 0, 1, 1) * len;
+	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(rot);
+	dir = XMVector3Rotate(dir, q);
+
+	mPosition = target - dir;
+}
+
+void CameraEngine::UpdateProperties()
 {
 	float width, height, aspect;
 	if (Singlton.isGame)
@@ -71,113 +81,83 @@ void CameraEngine::Update()
 
 void CameraEngine::Setup()
 {
-	mRotationSmooth = Singlton.camera.rotationSmooth;
-	mMoveSmooth = Singlton.camera.moveSmooth;
-
-	mPosition = XMFLOAT3(0, 0, 0);
-	mRotation = XMFLOAT3(0, 0, 0);
-	mTargetPosition = mPosition;
-	mTargetRotation = mRotation;
+	mPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	mRotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
 	m3D = true;
 }
 
-void Camera::SetRotation(FXMVECTOR rotation, bool smooth)
+void Camera::SetRotation(Vector3 rotation)
 {
-	XMStoreFloat3(&mTargetRotation, rotation);
-	if(!smooth) mRotation = mTargetRotation;
+	mRotation = rotation;
 }
 
-void Camera::SetRotation(float x, float y, float z, bool smooth)
+void Camera::SetRotation(float x, float y, float z)
 {
-	mTargetRotation = XMFLOAT3(x, y, z);
-	if (!smooth) mRotation = mTargetRotation;
+	mRotation = XMFLOAT3(x, y, z);
 }
 
-void Camera::SetRotationX(float x, bool smooth)
+void Camera::SetRotationX(float x)
 { 
-	mTargetRotation.x = x;
-	if (!smooth) mRotation.x = x;
+	mRotation.x = x;
 }
 
-void Camera::SetRotationY(float y, bool smooth)
+void Camera::SetRotationY(float y)
 { 
-	mTargetRotation.y = y;
-	if (!smooth) mRotation.y = y;
+	mRotation.y = y;
 }
 
-void Camera::SetRotationZ(float z, bool smooth)
+void Camera::SetRotationZ(float z)
 { 
-	mTargetRotation.z = z;
-	if (!smooth) mRotation.z = z;
+	mRotation.z = z;
 }
 
-void Camera::SetPosition(FXMVECTOR position, bool smooth)
+void Camera::SetPosition(Vector3 position)
 {
-	XMStoreFloat3(&mTargetPosition, position);
-	if (!smooth) mPosition = mTargetPosition;
+	mPosition = position;
 }
 
-void Camera::SetPosition(float x, float y, float z, bool smooth)
+void Camera::SetPosition(float x, float y, float z)
 {
-	mTargetPosition = XMFLOAT3(x, y, z);
-	if (!smooth) mPosition = mTargetPosition;
+	mPosition = XMFLOAT3(x, y, z);
 }
 
-void Camera::SetPositionX(float x, bool smooth)
+void Camera::SetPositionX(float x)
 {
-	mTargetPosition.x = x;
-	if (!smooth) mPosition.x = x;
+	mPosition.x = x;
 }
 
-void Camera::SetPositionY(float y, bool smooth)
+void Camera::SetPositionY(float y)
 {
-	mTargetPosition.y = y;
-	if (!smooth) mPosition.y = y;
+	mPosition.y = y;
 }
 
-void Camera::SetPositionZ(float z, bool smooth)
+void Camera::SetPositionZ(float z)
 {
-	mTargetPosition.z = z;
-	if (!smooth) mPosition.z = z;
+	mPosition.z = z;
 }
 
-void Camera::Rotate(float x, float y, float z)
+void Camera::Rotate(Vector3 f)
 {
-	XMVECTOR v = XMVectorSet(x, y, z, 1) + XMLoadFloat3(&mTargetRotation);
-	XMStoreFloat3(&mTargetRotation, v);
+	mRotation += f;
 }
 
-void Camera::MoveLocal(float x, float y, float z)
+void Camera::Move(Vector3 f)
 {
-	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(XMLoadFloat3(&mRotation));
-	XMVECTOR offset = XMVector3Rotate(XMVectorSet(x, y, z, 1) * Time::DeltaTime(), q);
-	XMVECTOR v = XMLoadFloat3(&mTargetPosition) + offset;
-
-	XMStoreFloat3(&mTargetPosition, v);
+	mPosition += f;
 }
 
-void Camera::MoveGlobal(float x, float y, float z)
+void CameraEngine::Update()
 {
-	XMVECTOR offset = XMVectorSet(x, y, z, 1) * Time::DeltaTime();
-	XMVECTOR v = XMLoadFloat3(&mTargetPosition) + offset;
+	UpdateProperties();
 
-	XMStoreFloat3(&mTargetPosition, v);
-}
+	if (mRotation.x > 90.0f)
+		mRotation.x = 90.0f;
+	if (mRotation.x < -90.0f)
+		mRotation.x = -90.0f;
 
-void CameraEngine::Update(float dt)
-{
-	Update();
-
-	XMVECTOR position = XMLoadFloat3(&mPosition);
-	XMVECTOR targetPosition = XMLoadFloat3(&mTargetPosition);
-	XMVECTOR rotation = XMLoadFloat3(&mRotation);
-	XMVECTOR targetRotation = XMLoadFloat3(&mTargetRotation);
-
-	position = XMVectorLerp(position, targetPosition, std::pow(0.9f, dt * mMoveSmooth));
-	rotation = XMVectorLerp(rotation, targetRotation, std::pow(0.9f, dt * mRotationSmooth));
-	XMStoreFloat3(&mPosition, position);
-	XMStoreFloat3(&mRotation, rotation);
+	XMVECTOR position = mPosition;
+	XMVECTOR rotation = Vector3::ConvertToRadians(mRotation);
 
 	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(rotation);
 	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 1), q);
@@ -189,18 +169,17 @@ void CameraEngine::Update(float dt)
 	{
 		proj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
 		view = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
-		XMStoreFloat4x4(&mProj, proj);
-		XMStoreFloat4x4(&mView, view);
+		mProj = proj;
+		mView = view;
 
-		mFrustum = BoundingFrustum(proj);
-		mFrustum.Transform(mFrustum, XMMatrixInverse(0, view));
+		FrustumCulling::Update(view, proj);
 	}
 	else
 	{
 		proj = XMMatrixOrthographicLH(mWidth, mHeight, mNearZ, mFarZ);
 		view = XMMatrixLookAtLH(XMVectorSet(0, 0, -1, 1), XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 1));
-		XMStoreFloat4x4(&mProj, proj);
-		XMStoreFloat4x4(&mView, view);
+		mProj = proj;
+		mView = view;
 	}
 }
 

@@ -1,50 +1,44 @@
 #pragma once
 
 #include "Core.h"
-#include "Properties.h"
+
+#include "Matrix.h"
+#include "Vector3.h"
 
 #include <DirectXMath.h>
-#include <DirectXCollision.h>
 
 class FOG_API Camera
 {
 public:
-	static void SetPosition(DirectX::FXMVECTOR position, bool smooth = true);
-	static void SetPosition(float x, float y, float z, bool smooth = true);
-	static void SetPositionX(float x, bool smooth = true);
-	static void SetPositionY(float y, bool smooth = true);
-	static void SetPositionZ(float z, bool smooth = true);
+	static void SetPosition(Vector3 position);
+	static void SetPosition(float x, float y, float z);
+	static void SetPositionX(float x);
+	static void SetPositionY(float y);
+	static void SetPositionZ(float z);
 
-	static void SetRotation(DirectX::FXMVECTOR rotation, bool smooth = true);
-	static void SetRotation(float x, float y, float z, bool smooth = true);
-	static void SetRotationX(float x, bool smooth = true);
-	static void SetRotationY(float y, bool smooth = true);
-	static void SetRotationZ(float z, bool smooth = true);
+	static void SetRotation(Vector3 rotation);
+	static void SetRotation(float x, float y, float z);
+	static void SetRotationX(float x);
+	static void SetRotationY(float y);
+	static void SetRotationZ(float z);
 
-	static void LookAt(DirectX::FXMVECTOR pos);
-	static void MoveLocal(float x, float y, float z);
-	static void MoveGlobal(float x, float y, float z);
-	static void Rotate(float x, float y, float z);
+	static void RotateAround(float y, Vector3 pos);
+	static void LookAt(Vector3 pos);
+	static void Move(Vector3 v);
+	static void Rotate(Vector3 v);
 	static float GetRotateX() { return mRotation.x; };
 	static float GetRotateY() { return mRotation.y; };
 	static float GetRotateZ() { return mRotation.z; };
 
-	static DirectX::XMVECTOR GetPosition() { return XMLoadFloat3(&mPosition); }
-	static DirectX::XMVECTOR GetRotation() { return XMLoadFloat3(&mRotation); }
+	static Vector3 GetPosition() { return mPosition; }
+	static Vector3 GetRotation() { return mRotation; }
 
 protected:
-	static float mRotationSmooth;
-	static float mMoveSmooth;
+	static Vector3 mPosition;
+	static Vector3 mRotation;
 
-	static DirectX::XMFLOAT3 mPosition;
-	static DirectX::XMFLOAT3 mRotation;
-	static DirectX::XMFLOAT3 mTargetPosition;
-	static DirectX::XMFLOAT3 mTargetRotation;
-
-	static DirectX::XMFLOAT4X4 mView;
-	static DirectX::XMFLOAT4X4 mProj;
-
-	static DirectX::BoundingFrustum mFrustum;
+	static Matrix mView;
+	static Matrix mProj;
 
 	static float mWidth;
 	static float mHeight;

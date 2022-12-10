@@ -1,7 +1,9 @@
 #include "CustomString.h"
 
+#include <Windows.h>
 #include <cwchar>
 #include <cstdlib>
+
 
 using namespace DirectX;
 
@@ -73,7 +75,7 @@ String& String::operator= (const String& str)
 	return *this;
 }
 
-String operator+ (const String& str1, const String& str2)
+FOG_API String operator+ (const String& str1, const String& str2)
 {
 	int len = str1.mSize + str2.mSize;
 	wchar_t* buff = new wchar_t[len + 1];
@@ -87,7 +89,7 @@ String operator+ (const String& str1, const String& str2)
 	return res;
 }
 
-String operator+ (const WCHAR* str1, const String& str2)
+FOG_API String operator+ (const WCHAR* str1, const String& str2)
 {
 	String res = String(str1) + str2;
 	return res;
@@ -110,18 +112,24 @@ String String::ToStr(float f)
 	return res;
 }
 
+String String::ToStr(Vector3 v)
+{
+	String res = L"{" + ToStr(v.x) + L"," + ToStr(v.y) + L"," + ToStr(v.z) + L"}";
+	return res;
+}
+
+String String::ToStr(Color c)
+{
+	String res = L"{" + ToStr(c.r) + L"," + ToStr(c.g) + L"," + ToStr(c.b) + L"," + ToStr(c.a) + L"}";
+	return res;
+}
+
 String String::ToStr(FXMVECTOR v)
 {
 	XMFLOAT4 f;
 	XMStoreFloat4(&f, v);
 
 	String res = L"{" + ToStr(f.x) + L"," + ToStr(f.y) + L"," + ToStr(f.z) + L"," + ToStr(f.w) + L"}";
-	return res;
-}
-
-String String::ToStr(DirectX::XMFLOAT3 v)
-{
-	String res = L"{" + ToStr(v.x) + L"," + ToStr(v.y) + L"," + ToStr(v.z) + L"}";
 	return res;
 }
 

@@ -1,240 +1,122 @@
-#include "Input.h"
+#include "InputEngine.h"
 
-#include "Application.h"
+#include "ApplicationEngine.h"
+#include "TimerEngine.h"
 #include "Trace.h"
-#include "Devices.h"
-#include "Properties.h"
 
+IDirectInput8A* Input::mInput;
+IDirectInputDevice8A* Input::mMouse;
+IDirectInputDevice8A* Input::mKeyboard;
 
-Module::Keyboard* Input::mKeyboard = 0;
-Module::Mouse* Input::mMouse = 0;
+DIMOUSESTATE2 Input::mMouseState;
+unsigned char Input::mKeyboardState[KeyInput::COUNT_KEY];
 
-namespace Module
+bool Input::mButtons[2][KeyInput::COUNT_KEY];
+float Input::mHoldDuration[KeyInput::COUNT_KEY];
+float Input::mAnalogs[MouseInput::COUNT_MOUSE];
+bool Input::mVisible;
+
+void InputEngine::Setup()
 {
-	Keyboard::Keyboard()
+	mInput = 0;
+	mMouse = 0;
+	mKeyboard = 0;
+
+	memset(&mMouseState, 0, sizeof(DIMOUSESTATE2));
+	memset(&mKeyboardState, 0, sizeof(mKeyboardState));
+	memset(&mHoldDuration, 0, sizeof(mHoldDuration));
+
+	memset(mButtons[1], 0, sizeof(mButtons[1]));
+	memset(mButtons[0], 0, sizeof(mButtons[0]));
+	memset(mAnalogs, 0, sizeof(mAnalogs));
+
+	FOG_TRACE(DirectInput8Create(GetModuleHandle(0), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&mInput, 0));
+
+	FOG_TRACE(mInput->CreateDevice(GUID_SysMouse, &mMouse, 0));
+	FOG_TRACE(mMouse->SetDataFormat(&c_dfDIMouse2));
+	//s_Mouse->SetCooperativeLevel(ApplicationEngine::GetHWND(), DISCL_FOREGROUND | DISCL_EXCLUSIVE);
+
+	FOG_TRACE(mInput->CreateDevice(GUID_SysKeyboard, &mKeyboard, nullptr));
+	FOG_TRACE(mKeyboard->SetDataFormat(&c_dfDIKeyboard));
+	//mKeyboard->SetCooperativeLevel(ApplicationEngine::GetHWND(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
+
+	DIPROPDWORD dipdw{};
+	dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+	dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+	dipdw.diph.dwObj = 0;
+	dipdw.diph.dwHow = DIPH_DEVICE;
+	dipdw.dwData = 10;
+	mKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
+}
+
+
+void InputEngine::Update()
+{
+	memcpy(mButtons[1], mButtons[0], sizeof(mButtons[0]));
+	memset(mButtons[0], 0, sizeof(mButtons[0]));
+	memset(mAnalogs, 0, sizeof(mAnalogs));
+
+	FOG_TRACE(mMouse->Acquire());
+	FOG_TRACE(mMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mMouseState));
+	FOG_TRACE(mKeyboard->Acquire());
+	FOG_TRACE(mKeyboard->GetDeviceState(sizeof(mKeyboardState), mKeyboardState));
+
+	for (uint32_t i = 0; i < 256; ++i)
 	{
-		Input::SetKeyboard(this);
+		mButtons[0][i] = (mKeyboardState[i] & 0x80) != 0;
 	}
 
-	Mouse::Mouse()
+	for (uint32_t i = 0; i < 8; ++i)
 	{
-		Input::SetMouse(this);
-
-		SetEnabled(Singlton.cursorShow);
-		SetState(Singlton.cursorShow);
-		SetCapture(Singlton.isGame);
-		Initialize();
+		if (mMouseState.rgbButtons[i] > 0) mButtons[0][MOUSE_LEFT + i] = true;
 	}
 
-	void Keyboard::KeyDown(short key)
-	{
-		mKeysPress[key] = true;
-		mKeysDown[key] = true;
-		mIsKeyDown = true;
-	}
+	mAnalogs[MOUSE_X] = (float)mMouseState.lX * 0.0018f;
+	mAnalogs[MOUSE_Y] = (float)mMouseState.lY * 0.0018f;
 
-	void Mouse::KeyDown(short mouse)
-	{
-		mKeysPress[mouse] = true;
-		mKeysDown[mouse] = true;
-	}
+	if (mMouseState.lZ > 0)
+		mAnalogs[MOUSE_SCROLL] = 1.0f;
+	else if (mMouseState.lZ < 0)
+		mAnalogs[MOUSE_SCROLL] = -1.0f;
 
-	
-	void Keyboard::KeyUp(short key)
+	for (uint32_t i = 0; i < 256; ++i)
 	{
-		if (mKeysPress[key])
+		if (mButtons[0][i])
 		{
-			mKeysPress[key] = false;
-			mKeysUp[key] = true;
-			mIsKeyUp = true;
+			if (!mButtons[1][i])
+				mHoldDuration[i] = 0.0f;
+			else
+				mHoldDuration[i] += Time::DeltaTime();
 		}
 	}
-
-	void Mouse::KeyUp(short mouse)
-	{
-		if (mKeysPress[mouse])
-		{
-			mKeysPress[mouse] = false;
-			mKeysUp[mouse] = true;
-		}
-	}
-
-
-	void Mouse::ResetKeysPress()
-	{
-		for (short i = 0; i < 2; i++)
-			KeyUp(i);
-	}
-
-
-	void Keyboard::ResetKeysPress()
-	{
-		for (short i = 0; i < 256; i++)
-		{
-			KeyUp(i);
-		}
-	}
-
-	void Keyboard::ResetKeys()
-	{
-		ZeroMemory(mKeysDown, 256);
-		ZeroMemory(mKeysUp, 256);
-	}
-
-	bool Keyboard::IsKeyPress(short key)
-	{
-		return mKeysPress[key];
-	}
-
-	bool Keyboard::IsKeyDown(short key)
-	{
-		if (mKeysDown[key])
-		{
-			mKeysDown[key] = false;
-			return true;
-		}
-		return false;
-	}
-
-	bool Keyboard::IsKeyUp(short key)
-	{
-		if (mKeysUp[key])
-		{
-			mKeysUp[key] = false;
-			return true;
-		}
-		return false;
-	}
-
-	void Mouse::ResetKeys()
-	{
-		ZeroMemory(mKeysDown, 2);
-		ZeroMemory(mKeysUp, 2);
-	}
-
-	bool Mouse::IsMousePress(short key)
-	{
-		return mKeysPress[key];
-	}
-
-	bool Mouse::IsMouseDown(short key)
-	{
-		return mKeysDown[key];
-	}
-
-	bool Mouse::IsMouseUp(short key)
-	{
-		return mKeysUp[key];
-	}
-
-
-	void Mouse::Initialize()
-	{
-		SetZeroAxis();
-
-		FOG_TRACE(DirectInput8Create(GetModuleHandle(0), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&this->mDirectInput, 0));
-
-		FOG_TRACE(mDirectInput->CreateDevice(GUID_SysMouse, &mMouseDevice, nullptr));
-		FOG_TRACE(mMouseDevice->SetDataFormat(&c_dfDIMouse2));
-		//FOG_TRACE(mMouseDevice->SetCooperativeLevel(Edit::GetHWND(), DISCL_FOREGROUND | DISCL_EXCLUSIVE)); //off cursor
-	}
-
-	void Mouse::Update()
-	{
-		mMouseDevice->Acquire();
-		mMouseDevice->GetDeviceState(sizeof(DIMOUSESTATE2), &mMouseState);
-
-		SetZeroAxis();
-
-		if (Application::IsAppPaused())
-		{
-			mAxis[MOUSE_X] = 0;
-			mAxis[MOUSE_Y] = 0;
-		}
-		else
-		{
-			mAxis[MOUSE_X] = (float)mMouseState.lX;
-			mAxis[MOUSE_Y] = (float)mMouseState.lY;
-		}
-
-
-		/*if (mMouseState.lZ > 0)
-			mAxis[GameInput::MouseScroll] = 1.0f;
-		else if (s_MouseState.lZ < 0)
-			s_Analogs[GameInput::MouseScroll] = -1.0f;*/
-	}
-
-	float Mouse::GetMouseAxis(MouseAxis ma)
-	{
-		if (mCapture)
-			return mAxis[ma];
-		else
-			return 0.0f;
-	}
-
-	void Mouse::SetZeroAxis()
-	{
-		ZeroMemory(mAxis, sizeof(mAxis));
-	}
-
-	void Mouse::SetZeroInput()
-	{
-		ZeroMemory(&mMouseState, sizeof(mMouseState));
-	}
 }
 
-bool Input::IsMouseDown(short mouse)
+bool Input::IsDown()
 {
-	return mMouse->IsMouseDown(mouse);
+	return mButtons[0] != 0;
 }
 
-bool Input::IsMouseUp(short mouse)
+bool Input::Press(KeyInput di)
 {
-	return mMouse->IsMouseUp(mouse);
+	return mButtons[0][di];
 }
 
-bool Input::IsMousePress(short mouse)
+bool Input::Down(KeyInput di)
 {
-	return mMouse->IsMousePress(mouse);
+	return mButtons[0][di] && !mButtons[1][di];
 }
 
-
-bool Input::IsKeyPress(short key)
+bool Input::Up(KeyInput di)
 {
-	return mKeyboard->IsKeyPress(key);
+	return !mButtons[0][di] && mButtons[1][di];
 }
 
-bool Input::IsKeyDown(short key)
+float Input::GetTimeAxis(KeyInput di)
 {
-	return mKeyboard->IsKeyDown(key);
+	return mHoldDuration[di];
 }
 
-bool Input::IsKeyUp(short key)
+float Input::GetAxis(MouseInput ai)
 {
-	return mKeyboard->IsKeyUp(key);
-}
-
-void Input::SetKeyboard(Module::Keyboard* keyboard)
-{
-	mKeyboard = keyboard;
-}
-
-float Input::GetMouseAxis(MouseAxis ma)
-{
-	return mMouse->GetMouseAxis(ma);
-}
-
-void Input::SetMouse(Module::Mouse* mouse)
-{
-	mMouse = mouse;
-}
-
-short Input::GetCursorX()
-{ 
-	return mMouse->GetX(); 
-}
-
-short Input::GetCursorY()
-{
-	return mMouse->GetY();
+	return mAnalogs[ai];
 }

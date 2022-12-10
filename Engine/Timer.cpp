@@ -1,4 +1,3 @@
-#include "Timer.h"
 #include "TimerEngine.h"
 
 #include "Properties.h"
@@ -81,7 +80,7 @@ bool TimeEngine::LockFPS()
 {
 	if (Singlton.fpsMax <= 0) return true;
 
-	static const float maxPeriod = 1.0f / Singlton.fpsMax;
+	const float maxPeriod = 1.0f / Singlton.fpsMax;
 	static float elipsedTime = 0.0f;
 
 	long long currTime;

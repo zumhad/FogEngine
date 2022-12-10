@@ -1,5 +1,7 @@
 #include "Button.h"
 
+#include "Properties.h"
+
 using namespace DirectX;
 
 Button::Button(Button& obj)
@@ -58,12 +60,10 @@ void Button::Bind()
 	Direct3D::DeviceContext()->DrawIndexed(6, 0, 0);
 }
 
-XMMATRIX Button::GetWorldMatrix()
+Matrix Button::GetWorldMatrix()
 {
 	int newX = Singlton.editor.width / -2 + x + width / 2;
 	int newY = Singlton.editor.height / 2 - y - height / 2;
-
-	//XMMatrixAffineTransformation2D();
 
 	XMMATRIX m = XMMatrixScaling((float)width, (float)height, 0.0f) * XMMatrixTranslation((float)newX, (float)newY, 0.0f);
 

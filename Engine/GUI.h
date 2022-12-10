@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Core.h"
+
 #include "Button.h"
+
+#include <vector>
 
 class FOG_API GUI
 {
@@ -10,22 +13,17 @@ public:
 	static void Add(T& b);
 
 	static Control& Get(int index);
-	static int Size() { return mSize; }
+	static int Size();
 
 	static void Shotdown();
 	static void Setup();
 	static void Draw();
-	static void Click(int x, int y);
-	static bool ClickTest(int x, int y);
+	static bool Click();
+	static bool ClickTest();
 
 private:
-	static Array<Control*> mArr;
-	static int mSize;
-
-	static ID3D11VertexShader* mVertexShader;
-	static ID3D11PixelShader* mPixelShader;
-	static ID3D11InputLayout* mVertexLayout;
-	static ID3D11Buffer* mBuffer;
+	struct Data;
+	static Data* mData;
 };
 
 struct ConstantBuffer
@@ -34,11 +32,5 @@ struct ConstantBuffer
 	DirectX::XMFLOAT4 material;
 };
 
-template<typename T>
-void GUI::Add(T& b)
-{
-	T* t = new T(b);
-
-	mArr.Add(t);
-	mSize++;
-}
+template FOG_API void GUI::Add<Control>(Control&);
+template FOG_API void GUI::Add<Button>(Button&);

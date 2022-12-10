@@ -8,6 +8,6 @@
 
 #include "Definitions.h"
 
-#include "CustomTypes.h"
-#include "CustomString.h"
-#include "CustomArray.h"
+#include <windows.h>
+
+#pragma warning(disable : 26812)

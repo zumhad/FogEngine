@@ -16,34 +16,25 @@ struct Material
 
 struct DirectionalLight
 {
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-    float3 Direction;
-    float pad;
+    float4 Color;
+    float3 Direction; float pad;
 };
 
 struct PointLight
 {
-    float4 Ambient;
-    float4 Diffuse;
-    float4 Specular;
-
+    float4 Color;
     float3 Position;
     float Range;
-
-    float3 Att;
-    float pad;
+    float Power; float3 pad;
 };
 
 cbuffer cbPerFrame : register(b0)
 {
-    DirectionalLight gDirLight[MAX_DIRECTIONAL_LIGHT];
     PointLight gPointLight[16];
+    DirectionalLight gDirLight[16];
     float3 gCameraPosW;
     int gDirCount;
-    int gPointCount;
-    float pad[3];
+    int gPointCount; float3 pad;
 };
 
 cbuffer cbPerObject : register(b1)
@@ -75,129 +66,67 @@ VS_OUTPUT VS(VS_INPUT input)
     VS_OUTPUT output;
 
     output.PosW = mul(float4(input.PosL, 1.0f), gWorld).xyz;
-    output.NormalW = mul(input.NormalL, (float3x3)gWorldInvTranspose);
+    output.NormalW = mul(float4(input.NormalL, 1.0f), gWorldInvTranspose).xyz;
     output.PosH = mul(gWorldViewProj, float4(input.PosL, 1.0f));
 
     return output;
 }
 
 
-
-void ComputeDirectionalLight(Material mat, DirectionalLight L,
-    float3 normal, float3 toEye,
-    out float4 ambient,
-    out float4 diffuse,
-    out float4 spec)
+void FSchlick(inout float3 specular, inout float3 diffuse, float3 lightDir, float3 halfVec)
 {
-    // Initialize outputs.
-    ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
-
-    // The light vector aims opposite the direction the light rays travel.
-    float3 lightVec = -L.Direction;
-
-    // Add ambient term.
-    ambient = mat.Ambient * L.Ambient;
-
-    // Add diffuse and specular term, provided the surface is in 
-    // the line of site of the light.
-
-    float diffuseFactor = dot(lightVec, normal);
-
-    // Flatten to avoid dynamic branching.
-    [flatten]
-    if (diffuseFactor > 0.0f)
-    {
-        float3 v = reflect(-lightVec, normal);
-        float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
-
-        diffuse = diffuseFactor * mat.Diffuse * L.Diffuse;
-        spec = specFactor * mat.Specular * L.Specular;
-    }
+    float fresnel = pow(1.0 - saturate(dot(lightDir, halfVec)), 5.0);
+    specular = lerp(specular, 1, fresnel);
+    diffuse = lerp(diffuse, 0, fresnel);
 }
 
-void ComputePointLight(Material mat, PointLight L, float3 pos, float3 normal, float3 toEye,
-    out float4 ambient, out float4 diffuse, out float4 spec)
+float3 ApplyLightCommon(Material material, float3 normal, float3 viewDir, float3 lightDir, float3 lightColor)
 {
-    // Initialize outputs.
-    ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 halfVec = normalize(lightDir - viewDir);
+    float nDotH = saturate(dot(halfVec, normal));
 
-    // The vector from the surface to the light.
-    float3 lightVec = L.Position - pos;
+    FSchlick(material.Diffuse.xyz, material.Specular.xyz, lightDir, halfVec);
 
-    // The distance from surface to light.
-    float d = length(lightVec);
+    float specularMask = 1.0f;
+    float specularFactor = specularMask * pow(nDotH, material.Specular.w) * (material.Specular.w + 2.0f) / 8.0f;
 
-    // Range test.
-    if (d > L.Range)
-        return;
+    float nDotL = saturate(dot(normal, lightDir));
 
-    // Normalize the light vector.
-    lightVec /= d;
-
-    // Ambient term.
-    ambient = mat.Ambient * L.Ambient;
-
-    // Add diffuse and specular term, provided the surface is in 
-    // the line of site of the light.
-
-    float diffuseFactor = dot(lightVec, normal);
-
-    // Flatten to avoid dynamic branching.
-    [flatten]
-    if (diffuseFactor > 0.0f)
-    {
-        float3 v = reflect(-lightVec, normal);
-        float specFactor = pow(max(dot(v, toEye), 0.0f), mat.Specular.w);
-
-        diffuse = diffuseFactor * mat.Diffuse * L.Diffuse;
-        spec = specFactor * mat.Specular * L.Specular;
-    }
-
-    // Attenuate
-    float att = 1.0f / dot(L.Att, float3(1.0f, d, d * d));
-
-    diffuse *= att;
-    spec *= att;
+    return nDotL * lightColor * (material.Diffuse.xyz + specularFactor * material.Specular.xyz);
 }
+
+float3 ApplyPointLight(Material material, PointLight light, float3 normal, float3 viewDir, float3 worldPos)
+{
+    float lightRangeSq = light.Range * light.Range;
+    float3 lightDir = light.Position - worldPos;
+    float lightDistSq = dot(lightDir, lightDir);
+    float invLightDist = rsqrt(lightDistSq);
+    lightDir *= invLightDist;
+
+    float distanceFalloff = saturate(light.Power * (1.0f - (lightDistSq / lightRangeSq)));
+
+    return distanceFalloff * ApplyLightCommon(material, normal, viewDir, lightDir, light.Color.xyz);
+}
+
 
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
-    input.NormalW = normalize(input.NormalW);
-    float3 toCameraW = normalize(gCameraPosW - input.PosW);
+    float3 normal = normalize(input.NormalW);
+    float3 viewDir = normalize(input.PosW - gCameraPosW);
+    float3 worldPos = input.PosW;
 
-    float4 ambient = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    float4 diffuse = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    float4 spec = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float3 color = float3(0.0f, 0.0f, 0.0f);
 
-    [unroll]
     for (int i = 0; i < gDirCount; i++)
     {
-        float4 A, D, S;
-        ComputeDirectionalLight(gMaterial, gDirLight[i], input.NormalW, toCameraW, A, D, S);
-
-        ambient += A;
-        diffuse += D;
-        spec += S;
+        color += float3(0.0f, 0.5f, 0.0f);
     }
 
-    [unroll]
     for (int j = 0; j < gPointCount; j++)
     {
-        float4 A, D, S;
-        ComputePointLight(gMaterial, gPointLight[j], input.PosW, input.NormalW, toCameraW, A, D, S);
-
-        ambient += A;
-        diffuse += D;
-        spec += S;
+        color += ApplyPointLight(gMaterial, gPointLight[j], normal, viewDir, worldPos);
     }
 
-    float4 litColor = ambient + diffuse + spec;
-    litColor.a = gMaterial.Diffuse.a;
-
-    return litColor;
+    return float4(color, 1.0f);
 }

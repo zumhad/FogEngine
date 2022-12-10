@@ -1,5 +1,7 @@
 #include "CustomFile.h"
 
+#include <cstdio>
+
 File::File(String name, FileOpenMode mode) : mFile(INVALID_HANDLE_VALUE)
 {
     Open(name, mode);

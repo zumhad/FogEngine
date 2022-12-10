@@ -36,29 +36,17 @@
     <ClCompile Include="Timer.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Cube.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Light.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="ObjectManager.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Plane.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="dxerr.cpp">
-      <Filter>stuff</Filter>
-    </ClCompile>
     <ClCompile Include="GenerateFiles.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="DDSTextureLoader.cpp">
-      <Filter>stuff</Filter>
     </ClCompile>
     <ClCompile Include="CustomFile.cpp">
       <Filter>src</Filter>
@@ -78,14 +66,28 @@
     <ClCompile Include="Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Model.cpp">
+    <ClCompile Include="Mesh.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Trace.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp" />
+    <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Vector4.cpp" />
+    <ClCompile Include="Cursor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelper.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="FrustumCulling.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Engine\dxerr.h">
-      <Filter>stuff</Filter>
-    </ClInclude>
     <ClInclude Include="Application.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -131,16 +133,10 @@
     <ClInclude Include="Trace.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Cube.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Light.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="ObjectManager.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Plane.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="CameraEngine.h">
@@ -155,16 +151,10 @@
     <ClInclude Include="Texture.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DDSTextureLoader.h">
-      <Filter>stuff</Filter>
-    </ClInclude>
     <ClInclude Include="CustomFile.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="LightHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomArray.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Button.h">
@@ -179,10 +169,30 @@
     <ClInclude Include="Shader.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
+    <ClInclude Include="Mesh.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="TimerEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="InputEngine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h" />
+    <ClInclude Include="Vector3.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vector4.h" />
+    <ClInclude Include="Cursor.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h" />
+    <ClInclude Include="InputHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="FrustumCulling.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
@@ -196,5 +206,6 @@
     <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
     </None>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

@@ -7,18 +7,17 @@
 #include "TimerEngine.h"
 #include "ObjectManager.h"
 #include "CameraEngine.h"
-#include "Input.h"
+#include "InputEngine.h"
 #include "GUI.h"
+#include "Cursor.h"
+#include "FrustumCulling.h"
 
 #include <ctime>
 #include <shellapi.h>
+#include <crtdbg.h>
+#include <algorithm>
 
-using namespace DirectX::SimpleMath;
-
-HWND ApplicationEngine::mHwnd = 0;
-
-Module::Keyboard* Application::mKeyboard = 0;
-Module::Mouse* Application::mMouse = 0;
+HWND Application::mHwnd = 0;
 
 bool Application::mIsGame = false;
 bool Application::mMinimized = false;
@@ -27,8 +26,11 @@ bool Application::mResizing = false;
 bool Application::mPaused = false;
 bool Application::mStarted = false;
 
-void Application::RestartShader() { Direct3D::InitializeShader(); }
-
+ApplicationEngine& ApplicationEngine::Get()
+{ 
+    static ApplicationEngine app;
+    return app;
+}
 
 void ApplicationEngine::InitWindow()
 {
@@ -65,7 +67,7 @@ void ApplicationEngine::InitWindow()
         style = WS_POPUP | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
     }
 
-    mHwnd = CreateWindowEx(0, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, this);
+    mHwnd = CreateWindowEx(0, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
 
     if(!mIsGame)
         SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
@@ -74,14 +76,13 @@ void ApplicationEngine::InitWindow()
 
 void ApplicationEngine::InitApp()
 {
-    mIsGame = Singlton.isGame;
+    srand((unsigned int)time(0));   // true random
+
+    CheckDebug();
+    DefaultProp();
 
     InitWindow();
     InitModules();
-
-    srand((unsigned int)time(0));   // true random
-    if (!mMouse->GetEnabled())
-        ShowCursor(false);
 
     if (Singlton.foo.start)
         Singlton.foo.start();
@@ -99,30 +100,27 @@ void ApplicationEngine::CheckDebug()
 
 void ApplicationEngine::InitModules()
 {
+    InputEngine::Setup();
     Direct3D::Setup();
     TimeEngine::Setup();
-    mMouse = new Module::Mouse();
-    mKeyboard = new Module::Keyboard;
     CameraEngine::Setup();
     GUI::Setup();
+    ObjectManager::Setup();
+    FrustumCulling::Setup();
 }
 
 void Application::InitBuffers()
 {
-    CameraEngine::Update(Time::DeltaTime());
+    CameraEngine::Update();
 
 	for (int i = 0; i < 2; i++)
 	{
 		if (mIsGame)
-		{
 			Direct3D::DrawGame();
-			Direct3D::Present();
-		}
 		else
-		{
 			Direct3D::DrawEngine();
-			Direct3D::Present();
-		}
+
+        Direct3D::Present();
 	}
 }
 
@@ -130,43 +128,42 @@ int ApplicationEngine::Run()
 {
     InitApp();
 
+    Cursor::SetVisible(Singlton.cursorShow);
     ShowWindow(mHwnd, SW_MAXIMIZE);
     TimeEngine::Reset(); //start timer
 
     MSG msg = { 0 };
-    while (WM_QUIT != msg.message)
-    {
-        if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
-    }
+	while (WM_QUIT != msg.message)
+	{
+		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 
     return (int)msg.wParam;
 }
 
-void ApplicationEngine::SetCursorState(bool var)
+bool Application::CursorInScene()
 {
-    if (mMouse->GetState() != var)
-    {
-        mMouse->SetState(var);
-        if (mStarted) ShowCursor(var);
-    }
-}
+    int x = Cursor::GetPosition(CURSOR_X);
+    int y = Cursor::GetPosition(CURSOR_Y);
+    POINT p = { x, y };
 
-bool ApplicationEngine::CursorInScene()
-{
-    POINT p;
-    GetCursorPos(&p);
-    ScreenToClient(mHwnd, &p);
+    int left = GetSceneX();
+    int top = GetSceneY();
+    int right = GetSceneX() + GetSceneWidth();
+    int bootom = GetSceneX() + GetSceneHeight();
 
-    RECT r = { Singlton.scene.x, Singlton.scene.y, Singlton.scene.x + Singlton.scene.width, Singlton.scene.y + Singlton.scene.height };
+    RECT r = { left, top, right, bootom };
     return PtInRect(&r, p);
 }
 
 void ApplicationEngine::DefaultProp()
 {
+    mIsGame = Singlton.isGame;
+
     Singlton.game.width = GetSystemMetrics(SM_CXSCREEN);
     Singlton.game.height = GetSystemMetrics(SM_CYSCREEN);
 
@@ -174,7 +171,7 @@ void ApplicationEngine::DefaultProp()
     Singlton.resolution.height = Singlton.game.height;
 
     RECT rect{};
-    SystemParametersInfoW(SPI_GETWORKAREA, 0, &rect, 0);
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
     Singlton.editor.width = rect.right - rect.left;
     Singlton.editor.height = rect.bottom - rect.top;
 
@@ -184,31 +181,16 @@ void ApplicationEngine::DefaultProp()
 }
 
 
-ApplicationEngine::~ApplicationEngine() //exit
+void ApplicationEngine::Shotdown() //exit
 {
-    if (!mMouse->GetEnabled())
-        ShowCursor(true);
-
     DestroyWindow(mHwnd);
     UnregisterClass(APP_CLASS, 0);
 
+    FrustumCulling::Shotdown();
+    ObjectManager::Shotdown();
     GUI::Shotdown();
     ObjectManager::Shotdown();
     Direct3D::Shotdown();
-
-    SAFE_DELETE(mKeyboard);
-    SAFE_DELETE(mMouse);
-}
-
-void Application::SetCursorEnabled(bool var)
-{
-    mMouse->SetEnabled(var);
-
-    if (mMouse->GetState() != var)
-    {
-        mMouse->SetState(var);
-        if (mStarted) ShowCursor(var);
-    }
 }
 
 void Application::SetSceneX(int x)
@@ -266,26 +248,57 @@ void Application::MoveSceneY(int y)
     SetSceneY(Singlton.scene.y + y);
 }
 
-
-bool Application::CursorInScene()
-{
-    if (Input::GetCursorX() <= GetSceneX() + GetSceneWidth() &&
-        Input::GetCursorX() >= GetSceneX() &&
-        Input::GetCursorY() <= GetSceneY() + GetSceneHeight() &&
-        Input::GetCursorY() >= GetSceneY())
-        return true;
-
-    return false;
-}
-
 int Application::GetSceneX() { return Singlton.scene.x; }
 int Application::GetSceneY() { return Singlton.scene.y; }
 int Application::GetSceneWidth() { return Singlton.scene.width; }
 int Application::GetSceneHeight() { return Singlton.scene.height; }
 
 bool Application::IsAppPaused() { return mPaused; }
-bool Application::GetCursorEnabled() { return mMouse->GetState(); }
 
 void Application::SetSceneColor(float r, float g, float b) { Singlton.scene.color = Color(r, g, b); }
 
 void Application::Exit() { PostQuitMessage(0); }
+
+void ApplicationEngine::AdjustMaxClient(RECT& rect)
+{
+    WINDOWPLACEMENT placement = {};
+    GetWindowPlacement(mHwnd, &placement);
+
+    if (placement.showCmd != SW_MAXIMIZE) return;
+
+    HMONITOR monitor = MonitorFromWindow(mHwnd, MONITOR_DEFAULTTONULL);
+
+    MONITORINFO monitor_info{};
+    monitor_info.cbSize = sizeof(monitor_info);
+
+    if (!GetMonitorInfoW(monitor, &monitor_info)) return;
+
+    rect = monitor_info.rcWork;
+}
+
+LRESULT ApplicationEngine::HitTest()
+{
+    static int xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static int yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    int x = Cursor::GetPosition(CURSOR_X);
+    int y = Cursor::GetPosition(CURSOR_Y);
+
+    int result =
+        BIT_1 * (x < xBorder) |
+        BIT_2 * (x >= (Singlton.editor.width - xBorder)) |
+        BIT_3 * (y < (xBorder)) |
+        BIT_4 * (y >= (Singlton.editor.height - yBorder));
+
+    switch (result)
+    {
+        case BIT_1: return HTLEFT;
+        case BIT_2: return HTRIGHT;
+        case BIT_3: return HTTOP;
+        case BIT_4: return HTBOTTOM;
+        case BIT_3 | BIT_1: return HTTOPLEFT;
+        case BIT_3 | BIT_2: return HTTOPRIGHT;
+        case BIT_4 | BIT_1: return HTBOTTOMLEFT;
+        case BIT_4 | BIT_2: return HTBOTTOMRIGHT;
+        default: return ((y <= Singlton.captionHeight) ? HTCAPTION : HTCLIENT);
+    }
+}

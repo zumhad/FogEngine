@@ -10,14 +10,12 @@
 #include "CustomFile.h"
 #include "GUI.h"
 #include "Shader.h"
-#include "Model.h"
+#include "Mesh.h"
+#include "FrustumCulling.h"
 
 #include <d3dcompiler.h>
 #include <directxcolors.h>
 #include <dxgidebug.h>
-
-#include "Cube.h"
-#include "Plane.h"
 
 using namespace DirectX;
 
@@ -28,11 +26,6 @@ ID3D11DeviceContext1* Direct3D::mDeviceContext1 = 0;
 IDXGISwapChain* Direct3D::mSwapChain = 0;
 IDXGISwapChain1* Direct3D::mSwapChain1 = 0;
 ID3D11RenderTargetView* Direct3D::mRenderTargetView = 0;
-ID3D11VertexShader* Direct3D::mVertexShader = 0;
-ID3D11PixelShader* Direct3D::mPixelShader = 0;
-ID3D11InputLayout* Direct3D::mVertexLayout = 0;
-ID3D11Buffer* Direct3D::mPerFrameBuffer = 0;
-ID3D11Buffer* Direct3D::mPerObjectBuffer = 0;
 ID3D11RasterizerState* Direct3D::mRasterizerState = 0;
 ID3D11DepthStencilView* Direct3D::mDepthStencilView = 0;
 ID3D11DepthStencilState* Direct3D::mDepthDisabledStencilState = 0;
@@ -48,26 +41,24 @@ float Direct3D::mSceneColor[4] = { 0 };
 float Direct3D::mGameColor[4] = { 0 };
 
 
-
-
 void Direct3D::Setup()
 {
 	Initialize();
 
-	mEditorColor[0] = Singlton.editor.color.R();
-	mEditorColor[1] = Singlton.editor.color.G();
-	mEditorColor[2] = Singlton.editor.color.B();
-	mEditorColor[3] = Singlton.editor.color.A();
+	mEditorColor[0] = Singlton.editor.color.r;
+	mEditorColor[1] = Singlton.editor.color.g;
+	mEditorColor[2] = Singlton.editor.color.b;
+	mEditorColor[3] = Singlton.editor.color.a;
 
-	mSceneColor[0] = Singlton.scene.color.R();
-	mSceneColor[1] = Singlton.scene.color.G();
-	mSceneColor[2] = Singlton.scene.color.B();
-	mSceneColor[3] = Singlton.scene.color.A();
+	mSceneColor[0] = Singlton.scene.color.r;
+	mSceneColor[1] = Singlton.scene.color.g;
+	mSceneColor[2] = Singlton.scene.color.b;
+	mSceneColor[3] = Singlton.scene.color.a;
 
-	mGameColor[0] = Singlton.game.color.R();
-	mGameColor[1] = Singlton.game.color.G();
-	mGameColor[2] = Singlton.game.color.B();
-	mGameColor[3] = Singlton.game.color.A();
+	mGameColor[0] = Singlton.game.color.r;
+	mGameColor[1] = Singlton.game.color.g;
+	mGameColor[2] = Singlton.game.color.b;
+	mGameColor[3] = Singlton.game.color.a;
 }
 
 void Direct3D::ResizeScene()
@@ -94,7 +85,7 @@ void Direct3D::ResizeEditor()
 	int width = Singlton.editor.width;
 	int height = Singlton.editor.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
 	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
 	FOG_ASSERT(pBackBuffer2);
@@ -147,11 +138,11 @@ void Direct3D::ResizeGame()
 	int width = Singlton.resolution.width;
 	int height = Singlton.resolution.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(1, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, 0));
+	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
 	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
 	FOG_ASSERT(pBackBuffer2);
-	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, nullptr, &mRenderTargetView));
+	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, 0, &mRenderTargetView));
 	SAFE_RELEASE(pBackBuffer2);
 
 	D3D11_TEXTURE2D_DESC descDepth = {};
@@ -167,7 +158,7 @@ void Direct3D::ResizeGame()
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
 	ID3D11Texture2D* depthStencil = 0;
-	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, nullptr, &depthStencil));
+	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, 0, &depthStencil));
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
 	descDSV.Format = descDepth.Format;
@@ -184,50 +175,6 @@ void Direct3D::ResizeGame()
 	mGameViewport.Height = (float)Singlton.resolution.height;
 }
 
-void Direct3D::InitializeShader()
-{
-	SAFE_RELEASE(mVertexShader);
-	SAFE_RELEASE(mVertexLayout);
-	SAFE_RELEASE(mPixelShader);
-
-	String shaderPath;
-	PathHelper::GetAssetsPath(shaderPath);
-	shaderPath += L"shader.hlsl";
-
-	String includePath;
-	PathHelper::GetAssetsPath(includePath);
-	includePath += L"light.hlsli";
-
-    String s = L"#define MAX_DIRECTIONAL_LIGHT " + String::ToStr(MAX_DIRECTIONAL_LIGHT);
-	File include(includePath, FileOpenMode::Write);
-	CHAR* utf8 = s.ToUTF8();
-	include.Write(utf8, s.Length());
-	delete[] utf8;
-	include.Close();
-
-	// Vertex Shader
-	ID3DBlob* pVSBlob = nullptr;
-	CompileShaderFromFile(shaderPath, "VS", "vs_5_0", &pVSBlob);
-	FOG_TRACE(mDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), 0, &mVertexShader));
-
-	// Input Layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	FOG_TRACE(mDevice->CreateInputLayout(layout, ARRAYSIZE(layout), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &mVertexLayout));
-	SAFE_RELEASE(pVSBlob);
-	mDeviceContext->IASetInputLayout(mVertexLayout);
-
-	// Pixel Shader
-	ID3DBlob* pPSBlob = nullptr;
-	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
-	FOG_TRACE(mDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &mPixelShader));
-	SAFE_RELEASE(pPSBlob);
-}
-
 void Direct3D::Initialize()
 {
 	UINT createDeviceFlags = 0;
@@ -238,8 +185,6 @@ void Direct3D::Initialize()
 
 	D3D_FEATURE_LEVEL featureLevels[] =
 	{
-		D3D_FEATURE_LEVEL_12_1,
-		D3D_FEATURE_LEVEL_12_0,
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
@@ -269,20 +214,36 @@ void Direct3D::Initialize()
 	scd.SampleDesc.Count = 1;
 	scd.SampleDesc.Quality = 0;
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-	scd.BufferCount = 1;
+	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	scd.BufferCount = 2;
+	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
 	//scd.Scaling = DXGI_SCALING_STRETCH;
 	//scd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-	//scd.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT;
 
-	DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
-	fsSwapChainDesc.Windowed = true;
+	DXGI_SWAP_CHAIN_DESC desc{};
+	desc.BufferDesc.RefreshRate.Numerator = 200;
+	desc.BufferDesc.RefreshRate.Numerator = 1;
+	desc.SampleDesc.Count = 1;
+	desc.SampleDesc.Quality = 0;
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	desc.BufferCount = 2;
+	desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+	desc.Windowed = true;
+	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.OutputWindow = ApplicationEngine::GetHWND();
 
-	FOG_TRACE(dxgiFactory2->CreateSwapChainForHwnd(mDevice, ApplicationEngine::mHwnd, &scd, &fsSwapChainDesc, 0, &mSwapChain1));
-	FOG_TRACE(mSwapChain1->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
+	//DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
+	//fsSwapChainDesc.Windowed = true;
+
+	dxgiFactory->CreateSwapChain(mDevice, &desc, &mSwapChain);
+
+	//FOG_TRACE(dxgiFactory2->CreateSwapChainForHwnd(mDevice, ApplicationEngine::GetHWND(), &scd, &fsSwapChainDesc, 0, &mSwapChain1));
+	//OG_TRACE(mSwapChain1->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
 	SAFE_RELEASE(dxgiFactory2);
 
-	FOG_TRACE(dxgiFactory->MakeWindowAssociation(ApplicationEngine::mHwnd, DXGI_MWA_NO_ALT_ENTER));
+	FOG_TRACE(dxgiFactory->MakeWindowAssociation(ApplicationEngine::GetHWND(), DXGI_MWA_NO_ALT_ENTER));
 	SAFE_RELEASE(dxgiFactory);
 
 	if (Singlton.isGame)
@@ -295,16 +256,6 @@ void Direct3D::Initialize()
 	rd.FillMode = D3D11_FILL_SOLID;
 	rd.CullMode = D3D11_CULL_BACK;
 	FOG_TRACE(mDevice->CreateRasterizerState(&rd, &mRasterizerState));
-
-	InitializeShader();
-
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(PerFrameBuffer);
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	mDevice->CreateBuffer(&bd, nullptr, &mPerFrameBuffer);
-	bd.ByteWidth = sizeof(PerObjectBuffer);
-	mDevice->CreateBuffer(&bd, nullptr, &mPerObjectBuffer);
 
 	D3D11_DEPTH_STENCIL_DESC dsd = {};
 	dsd.DepthEnable = false;
@@ -358,8 +309,8 @@ void Direct3D::DrawGame()
 {
 	if (Singlton.isGame)
 	{
-		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 		mDeviceContext->RSSetViewports(1, &mGameViewport);
+		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 		mDeviceContext->ClearRenderTargetView(mRenderTargetView, mGameColor);
 		mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
@@ -369,169 +320,22 @@ void Direct3D::DrawGame()
 		mDeviceContext1->ClearView(mRenderTargetView, mSceneColor, &mSceneRect, 1);
 	}
 
-	mDeviceContext->IASetInputLayout(mVertexLayout);
-	mDeviceContext->VSSetShader(mVertexShader, 0, 0);
-	mDeviceContext->PSSetShader(mPixelShader, 0, 0);
-
-
-	static PerFrameBuffer frameBuffer;
-	frameBuffer.directionalCount = 0;
-	frameBuffer.pointCount = 0;
-
-	for (int i = 0, d = 0, p = 0; i < ObjectManager::Size(); i++)
-	{
-		TypeObject type = ObjectManager::Get(i).GetType();
-
-		if (type == TypeObject::DirectionalLight)
-		{
-			DirectionalLight& obj = (DirectionalLight&)ObjectManager::Get(i);
-
-			DirectionalLightBuffer light;
-			light.ambient = obj.ambient;
-			light.diffuse = obj.diffuse;
-			light.specular = obj.specular;
-			light.direction = obj.direction;
-
-			frameBuffer.directionalLight[d++] = light;
-			frameBuffer.directionalCount++;
-			XMStoreFloat3(&(frameBuffer.cameraPosW), CameraEngine::GetPosition());
-		}
-
-		if (type == TypeObject::PointLight)
-		{
-			PointLight& obj = (PointLight&)ObjectManager::Get(i);
-
-			PointLightBuffer light;
-			light.ambient = obj.ambient;
-			light.diffuse = obj.diffuse;
-			light.specular = obj.specular;
-			light.position = obj.position;
-			light.range = obj.range;
-			light.att = obj.att;
-
-			frameBuffer.pointLight[p++] = light;
-			frameBuffer.pointCount++;
-			XMStoreFloat3(&(frameBuffer.cameraPosW), CameraEngine::GetPosition());
-		}
-	}
-
-
-	mDeviceContext->UpdateSubresource(mPerFrameBuffer, 0, 0, &frameBuffer, 0, 0);
-	mDeviceContext->PSSetConstantBuffers(0, 1, &mPerFrameBuffer);
-
-
-	int objs = 0;
-	for (int i = 0; i < ObjectManager::Size(); i++)
-	{
-		TypeObject type = ObjectManager::Get(i).GetType();
-
-		if (type == TypeObject::Cube)
-		{
-			Cube& obj = (Cube&)ObjectManager::Get(i);
-
-			BoundingBox& bb = obj.GetBoundingBox();
-			if (!CameraEngine::AABB(bb)) continue;
-
-			static PerObjectBuffer buffer;
-			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
-			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
-			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
-
-			XMStoreFloat4x4(&(buffer.world), world);
-			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
-			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
-			buffer.material = obj.material;
-
-			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
-			mDeviceContext->VSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-			mDeviceContext->PSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-
-			obj.Bind();
-
-			objs++;
-			continue;
-		}
-
-		if (type == TypeObject::Plane)
-		{
-			Plane& obj = (Plane&)ObjectManager::Get(i);
-
-			BoundingBox bb = obj.GetBoundingBox();
-			if (!CameraEngine::AABB(bb)) continue;
-
-			static PerObjectBuffer buffer;
-			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
-			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
-			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
-
-			XMStoreFloat4x4(&(buffer.world), world);
-			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
-			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
-			buffer.material = obj.material;
-
-			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
-			mDeviceContext->VSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-			mDeviceContext->PSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-
-			obj.Bind();
-
-			objs++;
-			continue;
-		}
-
-		if (type == TypeObject::Model)
-		{
-			Model& obj = (Model&)ObjectManager::Get(i);
-
-			BoundingBox bb = obj.GetBoundingBox();
-			if (!CameraEngine::AABB(bb)) continue;
-
-			static PerObjectBuffer buffer;
-			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
-			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
-			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
-
-			XMStoreFloat4x4(&(buffer.world), world);
-			XMStoreFloat4x4(&(buffer.worldInvTranspose), worldInvTranspose);
-			XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
-			buffer.material = obj.material;
-
-			mDeviceContext->UpdateSubresource(mPerObjectBuffer, 0, 0, &buffer, 0, 0);
-			mDeviceContext->VSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-			mDeviceContext->PSSetConstantBuffers(1, 1, &mPerObjectBuffer);
-
-			obj.Bind();
-
-			objs++;
-			continue;
-		}
-	}
-
-	OutputDebugString(String::ToStr(objs) + L"\n");
+	ObjectManager::Draw();
 }
 
 void Direct3D::Present()
 {
-	FOG_TRACE(mSwapChain->Present(0, 0));
+	FOG_TRACE(mSwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
 }
 
 
 void Direct3D::Shotdown()
 {
-	SAFE_RELEASE(mVertexShader);
-	SAFE_RELEASE(mPixelShader);
 	SAFE_RELEASE(mRasterizerState);
-	SAFE_RELEASE(mVertexLayout);
 	SAFE_RELEASE(mDepthStencilView);
 	SAFE_RELEASE(mDepthStencilState);
 	SAFE_RELEASE(mDepthDisabledStencilState);
-	SAFE_RELEASE(mPerFrameBuffer);
-	SAFE_RELEASE(mPerObjectBuffer);
 
-	if (mSwapChain)
-	{
-		mSwapChain->SetFullscreenState(false, 0);
-	}
 	SAFE_RELEASE(mSwapChain);
 	SAFE_RELEASE(mSwapChain1);
 

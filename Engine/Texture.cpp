@@ -2,8 +2,11 @@
 
 #include "Trace.h"
 #include "Direct3D.h"
-#include "DDSTextureLoader.h"
 #include "PathHelper.h"
+
+#include <DDSTextureLoader.h>
+
+using namespace DirectX;
 
 Texture::~Texture()
 {
@@ -15,8 +18,9 @@ Texture::Texture()
 {
     String path;
     PathHelper::GetEditorPath(path);
+    path += L"img.dds";
 
-    FOG_TRACE(DirectX::CreateDDSTextureFromFile(Direct3D::Device(), path+L"img.dds", nullptr, &mTexture));
+    FOG_TRACE(CreateDDSTextureFromFile(Direct3D::Device(), path, 0, &mTexture));
 
     D3D11_SAMPLER_DESC sampDesc = {};
     sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;

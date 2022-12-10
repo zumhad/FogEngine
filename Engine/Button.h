@@ -5,6 +5,8 @@
 #include "Direct3D.h"
 #include "Trace.h"
 #include "Control.h"
+#include "Color.h"
+#include "Matrix.h"
 
 struct VertexBuf
 {
@@ -20,12 +22,12 @@ public:
 	Button(Button& obj);
 	~Button();
 
-	DirectX::XMMATRIX GetWorldMatrix();
+	Matrix GetWorldMatrix();
 	void Bind();
 	void Action();
 
 public:
-	DirectX::SimpleMath::Color color;
+	Color color;
 	int x = 0, y = 0;
 	int width = 0, height = 0;
 	void (*action)() = 0;

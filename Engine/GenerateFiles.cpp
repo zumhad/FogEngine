@@ -1,18 +1,17 @@
 #include "Application.h"
 
+#include "CustomString.h"
 #include "ObjectManager.h"
 #include "PathHelper.h"
 #include "Properties.h"
 #include "Camera.h"
-
-#include "Cube.h"
-#include "Plane.h"
 #include "Light.h"
-#include "Model.h"
+#include "Mesh.h"
 
 #include <shellapi.h>
+#include <stdio.h>
 
-#pragma warning(disable : 6387)
+//#pragma warning(disable : 6387)
 
 String mainStr = L"\
 #include \"Engine.h\"\n\
@@ -75,42 +74,25 @@ void Application::SaveProject()
 	h = L"\
 void MyStart()\n\
 {\n\
-Cube cube;\n\
 DirectionalLight dir;\n\
 PointLight point;\n\
-Model model;\n\
-Plane plane;\n";
-
+Model model;\n";
 
 	for (int i = 0; i < ObjectManager::Size(); i++)
 	{
 		Object& obj = ObjectManager::Get(i);
 		TypeObject type = obj.GetType();
 
-		if (type == TypeObject::Cube)
+		if (type == TypeObject::Mesh)
 		{
-			Cube& cube = (Cube&)obj;
-			h += L"cube.material.ambient = " + String::ToStr(cube.material.ambient) + L";\n";
-			h += L"cube.material.diffuse = " + String::ToStr(cube.material.diffuse) + L";\n";
-			h += L"cube.material.specular = " + String::ToStr(cube.material.specular) + L";\n";
-			h += L"cube.position = " + String::ToStr(cube.position) + L";\n";
-			h += L"cube.rotation = " + String::ToStr(cube.rotation) + L";\n";
-			h += L"cube.scale = " + String::ToStr(cube.scale) + L";\n";
-			h += L"cube.lighting = " + String::ToStr(cube.lighting) + L";\n";
-			h += L"ObjectManager::Add(cube);\n";
-			continue;
-		}
-
-		if (type == TypeObject::Model)
-		{
-			Model& model = (Model&)obj;
+			Mesh& model = (Mesh&)obj;
 			h += L"model.name = L\"" + model.name + L"\";\n";
 			h += L"model.material.ambient = " + String::ToStr(model.material.ambient) + L";\n";
 			h += L"model.material.diffuse = " + String::ToStr(model.material.diffuse) + L";\n";
 			h += L"model.material.specular = " + String::ToStr(model.material.specular) + L";\n";
-			h += L"model.position = " + String::ToStr(model.position) + L";\n";
-			h += L"model.rotation = " + String::ToStr(model.rotation) + L";\n";
-			h += L"model.scale = " + String::ToStr(model.scale) + L";\n";
+			h += L"model.position = " + String::ToStr(model.GetPosition()) + L";\n";
+			h += L"model.rotation = " + String::ToStr(model.GetRotation()) + L";\n";
+			h += L"model.scale = " + String::ToStr(model.GetScale()) + L";\n";
 			h += L"model.lighting = " + String::ToStr(model.lighting) + L";\n";
 			h += L"ObjectManager::Add(model);\n";
 			continue;
@@ -119,12 +101,10 @@ Plane plane;\n";
 		if (type == TypeObject::PointLight)
 		{
 			PointLight& point = (PointLight&)obj;
-			h += L"point.att = " + String::ToStr(point.att) + L";\n";
-			h += L"point.ambient = " + String::ToStr(point.ambient) + L";\n";
-			h += L"point.diffuse = " + String::ToStr(point.diffuse) + L";\n";
+			h += L"point.power = " + String::ToStr(point.power) + L";\n";
+			h += L"point.color = " + String::ToStr(point.color) + L";\n";
 			h += L"point.position = " + String::ToStr(point.position) + L";\n";
 			h += L"point.range = " + String::ToStr(point.range) + L";\n";
-			h += L"point.specular = " + String::ToStr(point.specular) + L";\n";
 			h += L"ObjectManager::Add(point);\n";
 			continue;
 		}
@@ -132,25 +112,9 @@ Plane plane;\n";
 		if (type == TypeObject::DirectionalLight)
 		{
 			DirectionalLight& dir = (DirectionalLight&)obj;
-			h += L"dir.ambient = " + String::ToStr(dir.ambient) + L";\n";
+			h += L"dir.color = " + String::ToStr(dir.color) + L";\n";
 			h += L"dir.direction = " + String::ToStr(dir.direction) + L";\n";
-			h += L"dir.diffuse = " + String::ToStr(dir.diffuse) + L";\n";
-			h += L"dir.specular = " + String::ToStr(dir.specular) + L";\n";
 			h += L"ObjectManager::Add(dir);\n";
-			continue;
-		}
-		
-		if (type == TypeObject::Plane)
-		{
-			Plane& plane = (Plane&)obj;
-			h += L"plane.material.ambient = " + String::ToStr(plane.material.ambient) + L";\n";
-			h += L"plane.material.diffuse = " + String::ToStr(plane.material.diffuse) + L";\n";
-			h += L"plane.material.specular = " + String::ToStr(plane.material.specular) + L";\n";
-			h += L"plane.position = " + String::ToStr(plane.position) + L";\n";
-			h += L"plane.rotation = " + String::ToStr(plane.rotation) + L";\n";
-			h += L"plane.scale = " + String::ToStr(plane.scale) + L";\n";
-			h += L"plane.lighting = " + String::ToStr(plane.lighting) + L";\n";
-			h += L"ObjectManager::Add(plane);\n";
 			continue;
 		}
 	}

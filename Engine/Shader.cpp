@@ -2,8 +2,10 @@
 
 #include "PathHelper.h"
 #include "CustomFile.h"
+#include "CustomString.h"
 
 #include <d3dcompiler.h>
+#include <cstdlib>
 
 void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {

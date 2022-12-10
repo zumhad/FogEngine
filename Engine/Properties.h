@@ -2,12 +2,10 @@
 
 #include "Core.h"
 #include "CustomTypes.h"
-
-#include <SimpleMath.h>
+#include "Color.h"
 
 #define MAX_DIRECTIONAL_LIGHT 16
 #define MAX_POINT_LIGHT 16
-
 
 class FOG_API Properties
 {
@@ -22,7 +20,7 @@ public:
 	{
 		int width = 0;
 		int height = 0;
-		DirectX::SimpleMath::Color color;
+		Color color;
 	} editor;
 
 	struct
@@ -31,14 +29,14 @@ public:
 		int y = 0;
 		int width = 0;
 		int height = 0;
-		DirectX::SimpleMath::Color color;
+		Color color;
 	} scene;
 
 	struct
 	{
 		int width = 0;
 		int height = 0;
-		DirectX::SimpleMath::Color color;
+		Color color;
 	} game;
 
 	struct

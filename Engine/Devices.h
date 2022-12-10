@@ -33,7 +33,7 @@ namespace Module
 		bool mIsKeyUp = false;
 	};
 
-	class Mouse
+	/*class Mouse
 	{
 	public:
 		Mouse();
@@ -82,5 +82,5 @@ namespace Module
 		bool mCapture = false;
 		bool mCursorEnabled;
 		bool mCursorState;
-	};
+	};*/
 }

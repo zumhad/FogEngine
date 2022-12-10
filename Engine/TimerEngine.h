@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core.h"
+
 #include "Timer.h"
 
 class FOG_API TimeEngine : public Time

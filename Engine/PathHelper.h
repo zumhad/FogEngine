@@ -2,6 +2,8 @@
 
 #include "Core.h"
 
+#include "CustomString.h"
+
 class PathHelper
 {
 public:

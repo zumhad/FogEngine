@@ -8,22 +8,19 @@
 class FOG_API ApplicationEngine : public Application
 {
 public:
-    ~ApplicationEngine();
-    int Run();
+    ApplicationEngine() {}
+    static int Run();
+    static void Shotdown();
+    static ApplicationEngine& Get();
 
-public:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-    void CheckDebug();
-    void DefaultProp();
-    void InitWindow();
-    void AdjustMaxClient(RECT& rect);
-    LRESULT HitTest();
-    void SetCursorState(bool var);
-    bool CursorInScene();
-    void InitApp();
-    void InitModules();
-
-public:
-    static HWND mHwnd;
+    static void CheckDebug();
+    static void DefaultProp();
+    static void InitWindow();
+    static void AdjustMaxClient(RECT& rect);
+    static LRESULT HitTest();
+    static void InitApp();
+    static void InitModules();
+    static HWND GetHWND() { return mHwnd; }
 };
