@@ -22,7 +22,6 @@ public:
 	static void SetRotationY(float y);
 	static void SetRotationZ(float z);
 
-	static void RotateAround(float y, Vector3 pos);
 	static void LookAt(Vector3 pos);
 	static void Move(Vector3 v);
 	static void Rotate(Vector3 v);
@@ -32,6 +31,7 @@ public:
 
 	static Vector3 GetPosition() { return mPosition; }
 	static Vector3 GetRotation() { return mRotation; }
+	static Vector3 GetDirection();
 
 protected:
 	static Vector3 mPosition;

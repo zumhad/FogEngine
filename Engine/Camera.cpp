@@ -5,8 +5,7 @@
 #include "Properties.h"
 #include "MathHelper.h"
 #include "FrustumCulling.h"
-
-#include <cmath>
+#include "Quaternion.h"
 
 using namespace DirectX;
 
@@ -31,27 +30,20 @@ void CameraEngine::Set3D(bool var)
 	Update(); 
 }
 
-void Camera::LookAt(Vector3 pos)
+Vector3 Camera::GetDirection()
 {
-	pos;
-	return;
+	XMVECTOR v = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
+	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(mRotation));
+
+	return XMVector3Rotate(v, q);
 }
 
-void Camera::RotateAround(float y, Vector3 pos)
+void Camera::LookAt(Vector3 pos)
 {
-	Rotate(XMFLOAT3(0,y,0));
+	Vector3 dir = Vector3::Normalize(pos - mPosition);
 
-	XMVECTOR target = pos;
-	XMVECTOR cam = mPosition;
-	XMVECTOR rot = Vector3::ConvertToRadians(mRotation);
-
-	float len = XMVectorGetX(XMVector3Length(target - cam));
-
-	XMVECTOR dir = XMVectorSet(0, 0, 1, 1) * len;
-	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(rot);
-	dir = XMVector3Rotate(dir, q);
-
-	mPosition = target - dir;
+	mRotation.x = -Math::ConvertToDegrees(Math::ASin(dir.y));
+	mRotation.y = Math::ConvertToDegrees(Math::ATan2(dir.x, dir.z));
 }
 
 void CameraEngine::UpdateProperties()

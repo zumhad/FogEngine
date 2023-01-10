@@ -64,9 +64,51 @@ void MyUpdate()
 		Application::Exit();
 	}
 
-	if (Input::Down(KEY_Q))
+	if (Input::Down(KEY_Z))
 	{
-		Cursor::SetVisible(!Cursor::GetVisible());
+		Mesh m1;
+		m1.name = L"sphere.obj";
+		ObjectManager::Add(m1);
+	}
+
+	if (Input::Down(KEY_X))
+	{
+		Mesh m1;
+		m1.name = L"box.obj";
+		ObjectManager::Add(m1);
+	}
+
+	if (Input::Down(KEY_C))
+	{
+		Mesh m1;
+		m1.name = L"plane.obj";
+		ObjectManager::Add(m1);
+	}
+
+	if (Input::Down(KEY_L))
+	{
+		PointLight light;
+		light.position.y = 5;
+		light.range = 10.0f;
+		light.power = 3.0f;
+		ObjectManager::Add(light);
+	}
+
+	if (ObjectManager::Size() <= 0) return;
+
+	Object& obj = ObjectManager::Get(ObjectManager::Size()-1);
+
+	if (obj.GetType() == TypeObject::Mesh)
+	{
+		Mesh& mesh = (Mesh&)obj;
+		
+		mesh.position.x += Input::Down(KEY_RIGHT) - Input::Down(KEY_LEFT);
+	}
+	else if (obj.GetType() == TypeObject::PointLight)
+	{
+		PointLight& light = (PointLight&)obj;
+
+		light.position.x += Input::Down(KEY_RIGHT) - Input::Down(KEY_LEFT);
 	}
 }
 
@@ -94,87 +136,72 @@ void fpstest()
 
 void Update()
 {
-	float moveSpeed = 10.0f;
-	float rotationSpeed = 150.0f;
+	float moveSpeed = 1.0f;
+	float rotationSpeed = 100.0f;
 
-	float rotate = (float)Input::Press(KEY_D) - (float)Input::Press(KEY_A);
-	rotate *= rotationSpeed * Time::DeltaTime();
+	static Vector3 pos = Vector3(0, 0, -5);
+	static Vector3 rot = Camera::GetRotation();
 
-	float move = (float)Input::Press(KEY_W) - (float)Input::Press(KEY_S);
+	float move = (float)Input::GetAxis(MOUSE_SCROLL);
 	move *= moveSpeed;
 
-	Mesh& model = (Mesh&)ObjectManager::Get(1);
+	pos.z += move;
 
-	static Vector3 vel = Vector3(0, 0, 0);
-	static Vector3 currenVel = Vector3(0, 0, 0);
-	currenVel = Vector3::SmoothDamp(currenVel, model.GetDirection() * move, vel, 0.1f);
+	static bool isMove = false;
+	if (Input::Down(MOUSE_LEFT) && Application::CursorInScene())
+	{
+		isMove = true;
+	}
 
-	model.Move(currenVel * Time::DeltaTime());
-	model.Rotate(Vector3(0, rotate, 0));
+	if (Input::Up(MOUSE_LEFT)) isMove = false;
 
-	static Vector3 vel1 = Vector3(0, 0, 0);
-	static Vector3 currenVel1 = Vector3(0, 0, 0);
-	currenVel1 = Vector3::SmoothDamp(currenVel1, model.GetDirection() * move, vel1, 0.2f);
+	if (isMove)
+	{
+		rot.y += Input::GetAxis(MOUSE_X) * rotationSpeed;
+		rot.x += Input::GetAxis(MOUSE_Y) * rotationSpeed;
+	}
 
-	Camera::Move(currenVel1 * Time::DeltaTime());
+	if (rot.x > 89.9f) rot.x = 89.9f;
+	if (rot.x < -89.9f) rot.x = -89.9f;
+
+	Vector3 targetPos = Vector3::Rotate(pos, Quaternion::Euler(rot.x, rot.y, 0));
+
+	Camera::SetPosition(targetPos);
+	Camera::LookAt(Vector3::Zero());
 
 	MyUpdate();
 }
 
-void foo2()
+void exit()
 {
 	Application::Exit();
 }
 
 void Start()
 {
-	Camera::SetRotationX(30);
-	Camera::SetPosition(Vector3(0, 3, -5));
+	Camera::SetRotationX(45);
 
-	Button b;
-	b.action = foo2;
-	b.width = 200;
-	b.height = 50;
-	b.x = 1000;
-	b.y = 0;
-	b.color = Color(1.0f, 0.0f, 0.0f);
-	GUI::Add(b);
-
-	DirectionalLight dl;
-	//ObjectManager::Add(dl);
-
-	PointLight l;
-	l.color = Color(1.0f, 1.0f, 1.0f);
-	l.position = Vector3(0.0f, 50.0f, 0.0f);
-	l.power = 3.0f;
-	l.range = 60;
-	ObjectManager::Add(l);
-
-	Mesh m1;
-	m1.name = L"sphere.obj";
-	m1.SetPosition(Vector3(0, 1, 0));
-	m1.material.specular = { 1, 1, 1, 10 };
-	m1.material.diffuse = { 1,0,0,1 };
-	ObjectManager::Add(m1);
-
-
-	Mesh m2;
-	m2.name = L"plane.obj";
-	m2.SetScale(Vector3(1000, 1, 1000));
-	ObjectManager::Add(m2);
-
+	Button but;
+	but.x = Singlton.editor.width - 50;
+	but.y = 0;
+	but.width = 50;
+	but.height = 50;
+	but.action = exit;
+	but.color = Color(1, 0, 0);
+	GUI::Add(but);
 }
 
 
 
 void Setting()
 {
-	Singlton.isGame = true;
-	Singlton.cursorShow = false; 
+	Singlton.isGame = false;
+	Singlton.cursorShow = true; 
 	Singlton.scene.color = Color(0.7f, 0.7f, 0.7f);
 	Singlton.editor.color = Color(1, 1, 1);
 	Singlton.foo.start = Start;
 	Singlton.foo.update = Update;
+	Singlton.scene.y = 60;
 	//Singlton.fpsMax = 50;
 	Singlton.camera.rotationSmooth = 500;
 	Singlton.camera.moveSmooth = 1000;

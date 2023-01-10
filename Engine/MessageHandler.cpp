@@ -10,14 +10,10 @@
 #include "Cursor.h"
 
 #include <windowsx.h>
-#include <string>
-
 
 
 LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    static ApplicationEngine& app = ApplicationEngine::Get();
-
     switch (msg)
     {
         case WM_PAINT:
@@ -27,13 +23,14 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
                 TimeEngine::Tick();
 
                 InputEngine::Update();
+                GUI::Click();
 
                 if (Singlton.foo.update)
                     Singlton.foo.update();
 
                 CameraEngine::Update();
 
-                if (app.mIsGame)
+                if (mIsGame)
                     Direct3D::DrawGame();
                 else
                     Direct3D::DrawEngine();
@@ -46,10 +43,10 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_MOVE:
         {
-            if (app.mStarted && !app.mIsGame)
+            if (mStarted && !mIsGame)
             {
                 Direct3D::ResizeEditor();
-                app.InitBuffers();
+                InitBuffers();
             }
 
             return 0;
@@ -57,7 +54,7 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_ERASEBKGND:
         {
-            if (app.mIsGame) break;
+            if (mIsGame) break;
             return 0;
         }
 
@@ -69,21 +66,21 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_NCHITTEST:
         {
-            if (!app.mStarted) break;
-            if (app.mIsGame) return HTCLIENT;
+            if (!mStarted) break;
+            if (mIsGame) return HTCLIENT;
             if (GUI::ClickTest()) return HTCLIENT;
 
-            return app.HitTest();
+            return HitTest();
         }
 
         case WM_NCCALCSIZE:
         {
-            if (app.mIsGame) break;
+            if (mIsGame) break;
 
             if (wparam)
             {
                 NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)(lparam);
-                app.AdjustMaxClient(params->rgrc[0]);
+                AdjustMaxClient(params->rgrc[0]);
 
                 return 0;
             }
@@ -92,21 +89,21 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_ENTERSIZEMOVE:
         {
-            app.mPaused = true;
-            app.mResizing = true;
+            mPaused = true;
+            mResizing = true;
             return 0;
         }
 
         case WM_EXITSIZEMOVE:
         {
-            app.mPaused = false;
-            app.mResizing = false;
+            mPaused = false;
+            mResizing = false;
             return 0;
         }
 
         case WM_SIZE:
         {
-            if (!app.mIsGame)
+            if (!mIsGame)
             {
                 Singlton.editor.width = GET_X_LPARAM(lparam);
                 Singlton.editor.height = GET_Y_LPARAM(lparam);
@@ -114,29 +111,29 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
             if (wparam == SIZE_MINIMIZED)
             {
-                app.mPaused = true;
-                app.mMinimized = true;
-                app.mMaximized = false;
+                mPaused = true;
+                mMinimized = true;
+                mMaximized = false;
             }
             else if (wparam == SIZE_MAXIMIZED)
             {
-                app.mPaused = false;
-                app.mMinimized = false;
-                app.mMaximized = true;
+                mPaused = false;
+                mMinimized = false;
+                mMaximized = true;
             }
             else if (wparam == SIZE_RESTORED)
             {
-                if (app.mMinimized)
+                if (mMinimized)
                 {
-                    app.mPaused = false;
-                    app.mMinimized = false;
+                    mPaused = false;
+                    mMinimized = false;
                 }
-                else if (app.mMaximized)
+                else if (mMaximized)
                 {
-                    app.mMaximized = false;
+                    mMaximized = false;
 
                 }
-                else if (app.mResizing) // move sizebar
+                else if (mResizing) // move sizebar
                 {
                 }
                 else // call foo()
@@ -144,10 +141,10 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
                 }
             }
 
-            if (app.mStarted && !app.mIsGame)
+            if (mStarted && !mIsGame)
             {
                 Direct3D::ResizeEditor();
-                app.InitBuffers();
+                InitBuffers();
             }
 
             return 0;
@@ -157,7 +154,7 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
         {
             if (LOWORD(wparam) == WA_INACTIVE)
             {
-                if (app.mStarted && app.mIsGame)
+                if (mStarted && mIsGame)
                 {
                     Singlton.cursorShow = Cursor::GetVisible();
                     Cursor::SetVisible(true);
@@ -165,18 +162,18 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
                     ShowWindow(hwnd, SW_MINIMIZE);
                 }
 
-                app.mPaused = true;
+                mPaused = true;
             }
             else
             {
-                if (app.mStarted && app.mIsGame)
+                if (mStarted && mIsGame)
                 {
                     Cursor::SetVisible(Singlton.cursorShow);
 
                     ShowWindow(hwnd, SW_MAXIMIZE);
                 }
 
-                app.mPaused = false;
+                mPaused = false;
             }
 
             return 0;
@@ -186,23 +183,9 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
         {
             ((MINMAXINFO*)lparam)->ptMinTrackSize.x = Singlton.scene.width;
             ((MINMAXINFO*)lparam)->ptMinTrackSize.y = Singlton.scene.height + Singlton.captionHeight;
+            ((MINMAXINFO*)lparam)->ptMaxTrackSize.x = Singlton.resolution.width;
+            ((MINMAXINFO*)lparam)->ptMaxTrackSize.y = Singlton.resolution.height;
 
-            return 0;
-        }
-
-        case WM_SYSKEYDOWN:
-        case WM_KEYDOWN:
-        {
-           // if (!(HIWORD(lparam) & KF_REPEAT)) //delete repeat messages
-                //app.mKeyboard->KeyDown((short)wparam);
-
-            return 0;
-        }
-
-        case WM_SYSKEYUP:
-        case WM_KEYUP:
-        {
-            //app.mKeyboard->KeyUp((short)wparam);
             return 0;
         }
     }

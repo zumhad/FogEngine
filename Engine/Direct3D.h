@@ -31,7 +31,6 @@ private:
 
 private:
 	static ID3D11Device* mDevice;
-	static ID3D11Device1* mDevice1;
 	static ID3D11DeviceContext* mDeviceContext;
 	static ID3D11DeviceContext1* mDeviceContext1;
 	static IDXGISwapChain* mSwapChain;

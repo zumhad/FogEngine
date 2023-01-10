@@ -7,6 +7,7 @@
 #include "Cursor.h"
 #include "CustomString.h"
 #include "PathHelper.h"
+#include "InputEngine.h"
 
 using namespace DirectX;
 using namespace std;
@@ -59,7 +60,7 @@ GUI::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), b
 	D3D11_BUFFER_DESC bd = { 0 };
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.ByteWidth = sizeof(ConstantBuffer);
+	bd.ByteWidth = sizeof(ObjectBuffer);
 	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, 0, &buffer));
 }
 
@@ -85,20 +86,25 @@ void GUI::Draw()
 	Direct3D::DeviceContext()->VSSetShader(mData->vertexShader, 0, 0);
 	Direct3D::DeviceContext()->PSSetShader(mData->pixelShader, 0, 0);
 
+	static ObjectBuffer buffer = {};
+
 	for (int i = 0; i < mData->size; i++)
 	{
-		static ConstantBuffer buffer = {};
+		TypeControl type = Get(i).GetType();
 
-		XMMATRIX worldViewProj = ((Button*)mData->v[i])->GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+		if (type == TypeControl::Button)
+		{
+			Button& button = (Button&)Get(i);
 
-		XMStoreFloat4x4(&(buffer.worldViewProj), worldViewProj);
-		buffer.material = ((Button*)mData->v[i])->color;
+			buffer.worldViewProj = button.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+			buffer.material = button.color;
 
-		Direct3D::DeviceContext()->UpdateSubresource(mData->buffer, 0, 0, &buffer, 0, 0);
-		Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, &mData->buffer);
-		Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, &mData->buffer);
+			Direct3D::DeviceContext()->UpdateSubresource(mData->buffer, 0, 0, &buffer, 0, 0);
+			Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, &mData->buffer);
+			Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, &mData->buffer);
 
-		((Button*)mData->v[i])->Bind();
+			button.Bind();
+		}
 	}
 
 	Direct3D::SetZBuffer(true);
@@ -112,7 +118,7 @@ bool GUI::ClickTest()
 
 	for (int i = 0; i < mData->size; i++)
 	{
-		Button& b = (Button&)mData->v[i];
+		Button& b = (Button&)Get(i);
 		bool isClick = (x >= b.x) * (x <= b.x + b.width) * (y >= b.y) * (y <= b.y + b.height);
 
 		if (isClick) return true;
@@ -121,24 +127,24 @@ bool GUI::ClickTest()
 	return false;
 }
 
-bool GUI::Click()
+void GUI::Click()
 {
+	if (!Input::Down(MOUSE_LEFT)) return;
+
 	int x = Cursor::GetPosition(CURSOR_X);
 	int y = Cursor::GetPosition(CURSOR_Y);
 
 	for (int i = 0; i < mData->size; i++)
 	{
-		Button& b = (Button&)mData->v[i];
+		Button& b = (Button&)Get(i);
 		bool isClick = (x >= b.x) * (x <= b.x + b.width) * (y >= b.y) * (y <= b.y + b.height);
 
 		if (isClick)
 		{
 			b.Action();
-			return true;
+			return;
 		}
 	}
-
-	return false;
 }
 
 int GUI::Size()
@@ -160,8 +166,10 @@ GUI::Data::~Data()
 
 	for (int i = 0; i < size; i++)
 	{
-		if (v[i]->GetType() == TypeControl::Control) delete (Control*)v[i];
-		if (v[i]->GetType() == TypeControl::Button) delete (Button*)v[i];
+		TypeControl type = v[i]->GetType();
+
+		if (type == TypeControl::Control) delete (Control*)v[i];
+		if (type == TypeControl::Button) delete (Button*)v[i];
 	}
 }
 

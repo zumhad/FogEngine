@@ -80,7 +80,7 @@ void FSchlick(inout float3 specular, inout float3 diffuse, float3 lightDir, floa
     diffuse = lerp(diffuse, 0, fresnel);
 }
 
-float3 ApplyLightCommon(Material material, float3 normal, float3 viewDir, float3 lightDir, float3 lightColor)
+float3 ApplyLight(Material material, float3 normal, float3 viewDir, float3 lightDir, float3 lightColor)
 {
     float3 halfVec = normalize(lightDir - viewDir);
     float nDotH = saturate(dot(halfVec, normal));
@@ -88,27 +88,31 @@ float3 ApplyLightCommon(Material material, float3 normal, float3 viewDir, float3
     FSchlick(material.Diffuse.xyz, material.Specular.xyz, lightDir, halfVec);
 
     float specularMask = 1.0f;
-    float specularFactor = specularMask * pow(nDotH, material.Specular.w) * (material.Specular.w + 2.0f) / 8.0f;
+    float specularFactor = specularMask * saturate(pow(nDotH, material.Specular.w)) * (material.Specular.w - 2.0f) / 8.0f;
 
     float nDotL = saturate(dot(normal, lightDir));
 
     return nDotL * lightColor * (material.Diffuse.xyz + specularFactor * material.Specular.xyz);
 }
 
+float3 ApplyDirectionLight(Material material, DirectionalLight light, float3 normal, float3 viewDir)
+{
+    return ApplyLight(material, normal, viewDir, -light.Direction, light.Color.xyz);
+}
+
 float3 ApplyPointLight(Material material, PointLight light, float3 normal, float3 viewDir, float3 worldPos)
 {
     float lightRangeSq = light.Range * light.Range;
     float3 lightDir = light.Position - worldPos;
-    float lightDistSq = dot(lightDir, lightDir);
-    float invLightDist = rsqrt(lightDistSq);
-    lightDir *= invLightDist;
+    float lightDist = length(lightDir);
+    lightDir /= lightDist;
 
-    float distanceFalloff = saturate(light.Power * (1.0f - (lightDistSq / lightRangeSq)));
+    float distToLightNorm = 1.0 - saturate(lightDist / light.Range);
+    float distanceFalloff = distToLightNorm * distToLightNorm * light.Power;
 
-    return distanceFalloff * ApplyLightCommon(material, normal, viewDir, lightDir, light.Color.xyz);
+    return distanceFalloff * ApplyLight(material, normal, viewDir, lightDir, light.Color.xyz);
+
 }
-
-
 
 float4 PS(VS_OUTPUT input) : SV_Target
 {
@@ -120,7 +124,7 @@ float4 PS(VS_OUTPUT input) : SV_Target
 
     for (int i = 0; i < gDirCount; i++)
     {
-        color += float3(0.0f, 0.5f, 0.0f);
+        color += ApplyDirectionLight(gMaterial, gDirLight[i], normal, viewDir);
     }
 
     for (int j = 0; j < gPointCount; j++)

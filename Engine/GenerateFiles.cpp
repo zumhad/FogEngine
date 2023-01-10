@@ -11,8 +11,6 @@
 #include <shellapi.h>
 #include <stdio.h>
 
-//#pragma warning(disable : 6387)
-
 String mainStr = L"\
 #include \"Engine.h\"\n\
 #include \"Main.h\"\n\

@@ -4,6 +4,8 @@
 
 #include <DirectXMath.h>
 
+class Quaternion;
+
 class FOG_API Vector3
 {
 public:
@@ -40,6 +42,10 @@ public:
     static const Vector3& Forward();
     static const Vector3& Backward();
 
+    static Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
+    static Vector3 Rotate(const Vector3& v, const Quaternion& q);
+    static Vector3 Normalize(const Vector3& v);
+    static Vector3 ConvertToDegrees(const Vector3& v);
     static Vector3 ConvertToRadians(const Vector3& v);
     static Vector3 SmoothDamp(const Vector3& current, Vector3 target, Vector3& currentVelocity, float smoothTime);
 

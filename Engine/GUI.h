@@ -18,7 +18,7 @@ public:
 	static void Shotdown();
 	static void Setup();
 	static void Draw();
-	static bool Click();
+	static void Click();
 	static bool ClickTest();
 
 private:
@@ -26,7 +26,7 @@ private:
 	static Data* mData;
 };
 
-struct ConstantBuffer
+struct ObjectBuffer
 {
 	DirectX::XMFLOAT4X4 worldViewProj;
 	DirectX::XMFLOAT4 material;

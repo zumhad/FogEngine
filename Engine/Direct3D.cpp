@@ -16,12 +16,13 @@
 #include <d3dcompiler.h>
 #include <directxcolors.h>
 #include <dxgidebug.h>
+#include <d2d1_3.h>
+#include <dwrite.h>
 
 using namespace DirectX;
 
 ID3D11Device* Direct3D::mDevice = 0;
 ID3D11DeviceContext* Direct3D::mDeviceContext = 0;
-ID3D11Device1* Direct3D::mDevice1 = 0;
 ID3D11DeviceContext1* Direct3D::mDeviceContext1 = 0;
 IDXGISwapChain* Direct3D::mSwapChain = 0;
 IDXGISwapChain1* Direct3D::mSwapChain1 = 0;
@@ -40,6 +41,13 @@ float Direct3D::mEditorColor[4] = { 0 };
 float Direct3D::mSceneColor[4] = { 0 };
 float Direct3D::mGameColor[4] = { 0 };
 
+
+ID2D1RenderTarget* md2dRenderTarget;
+ID2D1Factory3* md2dFactory;
+
+IDWriteFactory* mdWriteFactory;
+//IDWriteTextFormat* md2dTextFormat;
+ID2D1SolidColorBrush* md2dBlackBrush;
 
 void Direct3D::Setup()
 {
@@ -81,18 +89,27 @@ void Direct3D::ResizeEditor()
 {
 	SAFE_RELEASE(mRenderTargetView);
 	SAFE_RELEASE(mDepthStencilView);
+	SAFE_RELEASE(md2dRenderTarget);
 
 	int width = Singlton.editor.width;
 	int height = Singlton.editor.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+
 	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
-	FOG_ASSERT(pBackBuffer2);
-	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, nullptr, &mRenderTargetView));
-	SAFE_RELEASE(pBackBuffer2);
+	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, 0, &mRenderTargetView));
 
-	D3D11_TEXTURE2D_DESC descDepth = {};
+	D2D1_RENDER_TARGET_PROPERTIES properties{};
+	properties.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	properties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+	properties.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
+
+	IDXGISurface* surface;
+	FOG_TRACE(pBackBuffer2->QueryInterface(&surface));
+	FOG_TRACE(md2dFactory->CreateDxgiSurfaceRenderTarget(surface, &properties, &md2dRenderTarget));
+
+	D3D11_TEXTURE2D_DESC descDepth{};
 	descDepth.Width = width;
 	descDepth.Height = height;
 	descDepth.MipLevels = 1;
@@ -102,10 +119,8 @@ void Direct3D::ResizeEditor()
 	descDepth.SampleDesc.Quality = 0;
 	descDepth.Usage = D3D11_USAGE_DEFAULT;
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	descDepth.CPUAccessFlags = 0;
-	descDepth.MiscFlags = 0;
 	ID3D11Texture2D* depthStencil = 0;
-	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, nullptr, &depthStencil));
+	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, 0, &depthStencil));
 
 	// Create the depth stencil view
 	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
@@ -122,6 +137,9 @@ void Direct3D::ResizeEditor()
 	mEditorViewport.TopLeftY = 0.0f;
 	mEditorViewport.Width = (float)Singlton.editor.width;
 	mEditorViewport.Height = (float)Singlton.editor.height;
+
+	SAFE_RELEASE(surface);
+	SAFE_RELEASE(pBackBuffer2);
 }
 
 void Direct3D::ResizeEngine()
@@ -138,12 +156,11 @@ void Direct3D::ResizeGame()
 	int width = Singlton.resolution.width;
 	int height = Singlton.resolution.height;
 
-	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+	FOG_TRACE(mSwapChain->ResizeBuffers(0, width, height, DXGI_FORMAT_UNKNOWN, DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING));
+
 	ID3D11Texture2D* pBackBuffer2 = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer2)));
-	FOG_ASSERT(pBackBuffer2);
 	FOG_TRACE(mDevice->CreateRenderTargetView(pBackBuffer2, 0, &mRenderTargetView));
-	SAFE_RELEASE(pBackBuffer2);
 
 	D3D11_TEXTURE2D_DESC descDepth = {};
 	descDepth.Width = width;
@@ -173,14 +190,20 @@ void Direct3D::ResizeGame()
 	mGameViewport.TopLeftY = 0.0f;
 	mGameViewport.Width = (float)Singlton.resolution.width;
 	mGameViewport.Height = (float)Singlton.resolution.height;
+
+	SAFE_RELEASE(pBackBuffer2);
 }
 
 void Direct3D::Initialize()
 {
-	UINT createDeviceFlags = 0;
+	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	UINT dxgiFactoryFlags = 0;
+	D2D1_FACTORY_OPTIONS d2dFactoryOptions{};
 
 #ifdef _DEBUG
-	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
+	d3d11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	d2dFactoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 
 	D3D_FEATURE_LEVEL featureLevels[] =
@@ -191,39 +214,17 @@ void Direct3D::Initialize()
 		D3D_FEATURE_LEVEL_10_0,
 	};
 
-
-	FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, createDeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
-	IDXGIFactory1* dxgiFactory = 0;
 	IDXGIDevice* dxgiDevice = 0;
-	FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
-	IDXGIAdapter* adapter = 0;
-	FOG_TRACE(dxgiDevice->GetAdapter(&adapter));
-	SAFE_RELEASE(dxgiDevice);
-	FOG_TRACE(adapter->GetParent(IID_PPV_ARGS(&dxgiFactory)));
-	SAFE_RELEASE(adapter);
-
-	// Create swap chain
-	IDXGIFactory2* dxgiFactory2 = 0;
-	FOG_TRACE(dxgiFactory->QueryInterface(IID_PPV_ARGS(&dxgiFactory2)));
-
-	FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&mDevice1)));
+	FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, d3d11DeviceFlags, featureLevels, ARRAYSIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
 	FOG_TRACE(mDeviceContext->QueryInterface(IID_PPV_ARGS(&mDeviceContext1)));
+	FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
 
-	DXGI_SWAP_CHAIN_DESC1 scd = {};
-	scd.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	scd.SampleDesc.Count = 1;
-	scd.SampleDesc.Quality = 0;
-	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-	scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-	scd.BufferCount = 2;
-	scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
-	//scd.Scaling = DXGI_SCALING_STRETCH;
-	//scd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+	IDXGIFactory2* dxgiFactory = 0;
+	FOG_TRACE(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
 	DXGI_SWAP_CHAIN_DESC desc{};
-	desc.BufferDesc.RefreshRate.Numerator = 200;
-	desc.BufferDesc.RefreshRate.Numerator = 1;
+	desc.BufferDesc.RefreshRate.Numerator = 0;
+	desc.BufferDesc.RefreshRate.Numerator = 0;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
@@ -234,22 +235,43 @@ void Direct3D::Initialize()
 	desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc.OutputWindow = ApplicationEngine::GetHWND();
 
-	//DXGI_SWAP_CHAIN_FULLSCREEN_DESC fsSwapChainDesc = {};
-	//fsSwapChainDesc.Windowed = true;
-
-	dxgiFactory->CreateSwapChain(mDevice, &desc, &mSwapChain);
-
-	//FOG_TRACE(dxgiFactory2->CreateSwapChainForHwnd(mDevice, ApplicationEngine::GetHWND(), &scd, &fsSwapChainDesc, 0, &mSwapChain1));
-	//OG_TRACE(mSwapChain1->QueryInterface(IID_PPV_ARGS(&mSwapChain)));
-	SAFE_RELEASE(dxgiFactory2);
+	FOG_TRACE(dxgiFactory->CreateSwapChain(mDevice, &desc, &mSwapChain));
 
 	FOG_TRACE(dxgiFactory->MakeWindowAssociation(ApplicationEngine::GetHWND(), DXGI_MWA_NO_ALT_ENTER));
 	SAFE_RELEASE(dxgiFactory);
+
+	// direct2d // direct write
+	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &d2dFactoryOptions, (void**)&md2dFactory));
+	FOG_TRACE(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&mdWriteFactory));
+	SAFE_RELEASE(dxgiDevice);
+
 
 	if (Singlton.isGame)
 		ResizeGame();
 	else
 		ResizeEngine();
+
+
+	/*mdWriteFactory->CreateTextFormat(
+		L"Impact",                // Font family name.
+		NULL,                       // Font collection (NULL sets it to use the system font collection).
+		DWRITE_FONT_WEIGHT_LIGHT,
+		DWRITE_FONT_STYLE_NORMAL,
+		DWRITE_FONT_STRETCH_NORMAL,
+		16.0f,
+		L"en",
+		&md2dTextFormat
+	);*/
+	
+	//md2dTextFormat->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_CENTER);
+	//md2dTextFormat->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+
+	md2dRenderTarget->CreateSolidColorBrush(
+		D2D1::ColorF(D2D1::ColorF::Gray, 1.0f),
+		&md2dBlackBrush
+	);
+
+	//md2dDeviceContext->SetTextAntialiasMode(D2D1_TEXT_ANTIALIAS_MODE_GRAYSCALE);
 
 	D3D11_RASTERIZER_DESC rd = {};
 	rd.ScissorEnable = false;
@@ -297,22 +319,27 @@ void Direct3D::DrawEngine()
 
 void Direct3D::DrawEditor()
 {
-	mDeviceContext->RSSetViewports(1, &mEditorViewport);
-	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
-	mDeviceContext->ClearRenderTargetView(mRenderTargetView, mEditorColor);
-	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	//GUI::Draw();
 
-	GUI::Draw();
+	md2dRenderTarget->BeginDraw();
+	md2dRenderTarget->Clear(D2D1::ColorF(D2D1::ColorF::White, 1.0f));
+
+	D2D1_RECT_F rect = { 0,0,1920,50 };
+	md2dRenderTarget->FillRectangle(&rect, md2dBlackBrush);
+
+	FOG_TRACE(md2dRenderTarget->EndDraw());
 }
+
 
 void Direct3D::DrawGame()
 {
+	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
 	if (Singlton.isGame)
 	{
 		mDeviceContext->RSSetViewports(1, &mGameViewport);
-		mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
 		mDeviceContext->ClearRenderTargetView(mRenderTargetView, mGameColor);
-		mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	}
 	else
 	{
@@ -335,19 +362,15 @@ void Direct3D::Shotdown()
 	SAFE_RELEASE(mDepthStencilView);
 	SAFE_RELEASE(mDepthStencilState);
 	SAFE_RELEASE(mDepthDisabledStencilState);
-
 	SAFE_RELEASE(mSwapChain);
 	SAFE_RELEASE(mSwapChain1);
-
-	if (mDeviceContext)
-	{
-		mDeviceContext->ClearState();
-		mDeviceContext->Flush();
-	}
 	SAFE_RELEASE(mDeviceContext);
 	SAFE_RELEASE(mDeviceContext1);
 	SAFE_RELEASE(mRenderTargetView);
-
+	SAFE_RELEASE(md2dRenderTarget);
+	SAFE_RELEASE(md2dFactory);
+	SAFE_RELEASE(mdWriteFactory);
+	SAFE_RELEASE(md2dBlackBrush);
 
 #ifdef _DEBUG
 	ID3D11Debug* d3dDebug;
@@ -356,7 +379,6 @@ void Direct3D::Shotdown()
 	SAFE_RELEASE(d3dDebug);
 #endif
 	SAFE_RELEASE(mDevice);
-	SAFE_RELEASE(mDevice1);
 
 #ifdef _DEBUG
 	typedef HRESULT(__stdcall* fPtr)(const IID&, void**);

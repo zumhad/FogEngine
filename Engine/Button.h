@@ -18,7 +18,7 @@ class FOG_API Button : public Control
 public:
 	TypeControl GetType() override { return TypeControl::Button; }
 
-	Button() {}
+	Button();
 	Button(Button& obj);
 	~Button();
 
@@ -28,12 +28,12 @@ public:
 
 public:
 	Color color;
-	int x = 0, y = 0;
-	int width = 0, height = 0;
-	void (*action)() = 0;
+	int x, y;
+	int width, height;
+	void (*action)();
 
 private:
-	ID3D11Buffer* mVertexBuffer = 0;
-	ID3D11Buffer* mIndexBuffer = 0;
+	ID3D11Buffer* mVertexBuffer;
+	ID3D11Buffer* mIndexBuffer;
 };
 

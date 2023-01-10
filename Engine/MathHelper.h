@@ -2,22 +2,24 @@
 
 #include "Core.h"
 
-class Math
+class FOG_API Math
 {
 public:
-    static float Infinity() { return mInfinity; }
-    static float Epsilon() { return mEpsilon; }
     static float Sqrt(float f);
     static float Pow(float f, float p);
-    static float Max(float a, float b) { return a > b ? a : b; }
-    static float Clamp(float value, float min, float max)
-    {
-        if (value < min)
-            value = min;
-        else if (value > max)
-            value = max;
-        return value;
-    }
+    static float Infinity();
+    static float Epsilon();
+    static float Max(float a, float b);
+    static float Clamp(float value, float min, float max);
+    static float Floor(float f);
+    static float Repeat(float t, float length);
+    static float DeltaAngle(float current, float target);
+    static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime);
+    static float SmoothDamp(float current, float target, float& currentVelocity, float smoothTime);
+    static float ATan2(float a, float b);
+    static float ASin(float a);
+    static float ConvertToDegrees(float a);
+    static float ConvertToRadians(float a);
 
 private:
     static float mEpsilon;

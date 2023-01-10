@@ -4,6 +4,16 @@
 
 using namespace DirectX;
 
+Button::Button()
+{
+	x = 0; y = 0;
+	width = 0; height = 0;
+	action = 0;
+
+	mVertexBuffer = 0;
+	mIndexBuffer = 0;
+}
+
 Button::Button(Button& obj)
 {
 	x = obj.x;

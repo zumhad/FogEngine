@@ -2,6 +2,7 @@
 
 #include "MathHelper.h"
 #include "TimerEngine.h"
+#include "Quaternion.h"
 
 using namespace DirectX;
 
@@ -260,4 +261,24 @@ Vector3 Vector3::SmoothDamp(const Vector3& current, Vector3 target, Vector3& cur
     }
 
     return Vector3(output_x, output_y, output_z);
+}
+
+Vector3 Vector3::ConvertToDegrees(const Vector3& v)
+{
+    return v * (180.0f / XM_PI);
+}
+
+Vector3 Vector3::Normalize(const Vector3& v)
+{
+    return XMVector3Normalize(v);
+}
+
+Vector3 Vector3::Rotate(const Vector3& v, const Quaternion& q)
+{
+    return XMVector3Rotate(v, q);
+}
+
+Vector3 Vector3::Lerp(const Vector3& v1, const Vector3& v2, float t)
+{
+    return XMVectorLerp(v1, v2, t);
 }

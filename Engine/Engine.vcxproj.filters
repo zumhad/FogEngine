@@ -69,21 +69,34 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Color.cpp" />
     <ClCompile Include="Trace.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Vector3.cpp" />
-    <ClCompile Include="Vector2.cpp" />
-    <ClCompile Include="Vector4.cpp" />
     <ClCompile Include="Cursor.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="MathHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="FrustumCulling.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Color.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector3.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector4.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Quaternion.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -181,31 +194,43 @@
     <ClInclude Include="MathHelper.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Color.h" />
-    <ClInclude Include="Vector3.h" />
-    <ClInclude Include="Vector2.h" />
-    <ClInclude Include="Vector4.h" />
     <ClInclude Include="Cursor.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Matrix.h" />
     <ClInclude Include="InputHelper.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="FrustumCulling.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Quaternion.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector2.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector4.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\light.hlsli">
+    <None Include="Assets\GUIShader.hlsl">
       <Filter>stuff</Filter>
     </None>
-    <None Include="Assets\GUIShader.hlsl">
+    <None Include="Assets\light.hlsli">
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
     </None>
-    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

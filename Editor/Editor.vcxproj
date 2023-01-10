@@ -81,6 +81,7 @@
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
     <IncludePath>$(SolutionDir)Libs\Debug\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(SolutionDir)Libs\Debug\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>$(SolutionDir)Build\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -88,6 +89,7 @@
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir)Libs\Release\include;$(IncludePath)</IncludePath>
     <ExternalIncludePath>$(SolutionDir)Libs\Release\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>$(SolutionDir)Build\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -132,9 +134,9 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)Build\Debug\Engine.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>wmainCRTStartup</EntryPointSymbol>
       <Profile>false</Profile>
+      <AdditionalDependencies>Engine.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,7 +159,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>wmainCRTStartup</EntryPointSymbol>
       <Profile>true</Profile>
-      <AdditionalDependencies>$(SolutionDir)Build\Release\Engine.lib</AdditionalDependencies>
+      <AdditionalDependencies>Engine.lib;</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

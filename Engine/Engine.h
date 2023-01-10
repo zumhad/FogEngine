@@ -14,11 +14,14 @@
 #include "Light.h"
 #include "Mesh.h"
 #include "Cursor.h"
+#include "Quaternion.h"
 
 
 #define CREATE_APPLICATION(x)\
 int wmain()\
 {\
+	ApplicationEngine::CheckDebug();\
+	ApplicationEngine::DefaultProp();\
 	x();\
 	int exitCode = ApplicationEngine::Run();\
 	ApplicationEngine::Shotdown();\

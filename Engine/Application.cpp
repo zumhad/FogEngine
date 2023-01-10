@@ -64,22 +64,19 @@ void ApplicationEngine::InitWindow()
     {
         width = Singlton.editor.width;
         height = Singlton.editor.height;
-        style = WS_POPUP | WS_THICKFRAME | WS_CAPTION | WS_SYSMENU | WS_MAXIMIZEBOX | WS_MINIMIZEBOX;
+        style = WS_OVERLAPPEDWINDOW;
     }
 
     mHwnd = CreateWindowEx(0, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
 
-    if(!mIsGame)
-        SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+    //if(!mIsGame)
+        //SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 }
 
 
 void ApplicationEngine::InitApp()
 {
-    srand((unsigned int)time(0));   // true random
-
-    CheckDebug();
-    DefaultProp();
+    srand((unsigned int)time(0));
 
     InitWindow();
     InitModules();

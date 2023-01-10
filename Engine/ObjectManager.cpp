@@ -95,11 +95,11 @@ void ObjectManager::Draw()
 
 	for (int i = 0, d = 0, p = 0; i < mData->size; i++)
 	{
-		TypeObject type = mData->v[i]->GetType();
+		TypeObject type = Get(i).GetType();
 
 		if (type == TypeObject::DirectionalLight)
 		{
-			DirectionalLight& obj = (DirectionalLight&)ObjectManager::Get(i);
+			DirectionalLight& obj = (DirectionalLight&)Get(i);
 
 			DirectionalLightBuffer light{};
 			light.color = obj.color;
@@ -112,7 +112,7 @@ void ObjectManager::Draw()
 
 		if (type == TypeObject::PointLight)
 		{
-			PointLight& obj = (PointLight&)ObjectManager::Get(i);
+			PointLight& obj = (PointLight&)Get(i);
 
 			PointLightBuffer light{};
 			light.color = obj.color;
@@ -133,7 +133,7 @@ void ObjectManager::Draw()
 
 	for (int i = 0; i < mData->size; i++)
 	{
-		TypeObject type = mData->v[i]->GetType();
+		TypeObject type = Get(i).GetType();
 
 		if (type == TypeObject::Mesh)
 		{

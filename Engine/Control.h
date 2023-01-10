@@ -5,8 +5,7 @@
 enum class TypeControl
 {
 	Control,
-	Button,
-	Count
+	Button
 };
 
 class FOG_API Control
