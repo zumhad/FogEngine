@@ -163,7 +163,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Foo.cpp" />
     <ClCompile Include="Start.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -171,9 +170,6 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\Engine\Assets\main.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Foo.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

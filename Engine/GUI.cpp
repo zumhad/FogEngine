@@ -3,13 +3,19 @@
 #include "Application.h"
 #include "Trace.h"
 #include "Shader.h"
-#include "CameraEngine.h"
+#include "Camera.h"
 #include "Cursor.h"
 #include "CustomString.h"
 #include "PathHelper.h"
-#include "InputEngine.h"
+#include "Input.h"
+#include "Button.h"
+
+#include <d2d1_3.h>
+#include <dwrite.h>
+#include <vector>
 
 using namespace DirectX;
+using namespace D2D1;
 using namespace std;
 
 GUI::Data* GUI::mData = 0;
@@ -21,47 +27,30 @@ public:
 	~Data();
 
 public:
-	std::vector<Control*> v;
+	vector<Control*> v;
 	int size;
+	Control* focusControl;
 
-	ID3D11VertexShader* vertexShader;
-	ID3D11PixelShader* pixelShader;
-	ID3D11InputLayout* vertexLayout;
-	ID3D11Buffer* buffer;
-};
+	ID2D1RenderTarget* renderTarget;
+	ID2D1Factory3* factory;
+	IDWriteFactory* writeFactory;
+}; 
 
-
-GUI::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), buffer(0)
+GUI::Data::Data() : size(0), renderTarget(0), factory(0), writeFactory(0), focusControl(0)
 {
-	String shaderPath;
-	PathHelper::GetAssetsPath(shaderPath);
-	shaderPath += L"GUIShader.hlsl";
+	D2D1_FACTORY_OPTIONS factoryOptions{};
 
-	// Vertex Shader
-	ID3DBlob* pVSBlob = nullptr;
-	CompileShaderFromFile(shaderPath, "VS", "vs_5_0", &pVSBlob);
-	FOG_TRACE(Direct3D::Device()->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), 0, &vertexShader));
+#ifdef _DEBUG
+	factoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
+#endif
 
-	// Input Layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	FOG_TRACE(Direct3D::Device()->CreateInputLayout(layout, ARRAYSIZE(layout), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &vertexLayout));
-	SAFE_RELEASE(pVSBlob);
+	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&factory));
+	FOG_TRACE(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&writeFactory));
+}
 
-
-	// Pixel Shader
-	ID3DBlob* pPSBlob = nullptr;
-	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
-	FOG_TRACE(Direct3D::Device()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), 0, &pixelShader));
-	SAFE_RELEASE(pPSBlob);
-
-	D3D11_BUFFER_DESC bd = { 0 };
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.ByteWidth = sizeof(ObjectBuffer);
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, 0, &buffer));
+ID2D1RenderTarget* GUI::RenderTarget()
+{
+	return mData->renderTarget;
 }
 
 void GUI::Setup()
@@ -69,82 +58,113 @@ void GUI::Setup()
 	mData = new Data;
 }
 
+void GUI::Release()
+{
+	SAFE_RELEASE(mData->renderTarget);
+}
+
+void GUI::Resize()
+{
+	IDXGISurface* surface;
+	FOG_TRACE(Direct3D::SwapChain()->GetBuffer(0, IID_PPV_ARGS(&surface)));
+
+	D2D1_RENDER_TARGET_PROPERTIES properties{};
+	properties.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	properties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
+	properties.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
+
+	FOG_TRACE(mData->factory->CreateDxgiSurfaceRenderTarget(surface, &properties, &mData->renderTarget));
+	SAFE_RELEASE(surface);
+}
+
 Control& GUI::Get(int i)
 { 
 	if (i + 1 > mData->size)
-		Application::Exit();
+		Application::Close();
 
 	return *(mData->v[i]);
 }
 
 void GUI::Draw()
 {
-	CameraEngine::Set3D(false);
-	Direct3D::SetZBuffer(false);
+	static D2D1_COLOR_F color;
 
-	Direct3D::DeviceContext()->IASetInputLayout(mData->vertexLayout);
-	Direct3D::DeviceContext()->VSSetShader(mData->vertexShader, 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mData->pixelShader, 0, 0);
+	Color c = Application::GetEditorColor();
+	color.r = c.r;
+	color.g = c.g;
+	color.b = c.b;
+	color.a = c.a;
 
-	static ObjectBuffer buffer = {};
+	mData->renderTarget->BeginDraw();
+	mData->renderTarget->Clear(color);
 
-	for (int i = 0; i < mData->size; i++)
+	int size = Size();
+	for (int i = 0; i < size; i++)
 	{
-		TypeControl type = Get(i).GetType();
+		Control& control = Get(i);
+		TypeControl type = control.GetType();
 
 		if (type == TypeControl::Button)
 		{
-			Button& button = (Button&)Get(i);
-
-			buffer.worldViewProj = button.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
-			buffer.material = button.color;
-
-			Direct3D::DeviceContext()->UpdateSubresource(mData->buffer, 0, 0, &buffer, 0, 0);
-			Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, &mData->buffer);
-			Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, &mData->buffer);
-
-			button.Bind();
+			Button& button = (Button&)control;
+			button.Draw();
 		}
 	}
 
-	Direct3D::SetZBuffer(true);
-	CameraEngine::Set3D(true);
+	FOG_TRACE(mData->renderTarget->EndDraw());
 }
 
-bool GUI::ClickTest()
+void GUI::Update()
 {
+	if (mData->focusControl)
+	{
+		mData->focusControl->SetFocus(false);
+		mData->focusControl = 0;
+	}
+
 	int x = Cursor::GetPosition(CURSOR_X);
 	int y = Cursor::GetPosition(CURSOR_Y);
 
-	for (int i = 0; i < mData->size; i++)
+	int size = Size();
+	for (int i = 0; i < size; i++)
 	{
-		Button& b = (Button&)Get(i);
-		bool isClick = (x >= b.x) * (x <= b.x + b.width) * (y >= b.y) * (y <= b.y + b.height);
+		Control& control = Get(i);
+		TypeControl type = control.GetType();
 
-		if (isClick) return true;
+		if (type == TypeControl::Button)
+		{
+			Button& b = (Button&)control;
+			bool isFocus = (x >= b.x) && (x <= b.x + b.width) && (y >= b.y) && (y <= b.y + b.height);
+
+			if (isFocus)
+			{
+				mData->focusControl = &control;
+				b.SetFocus(true);
+				break;
+			}
+			else
+				b.SetFocus(false);
+		}
 	}
 
-	return false;
-}
-
-void GUI::Click()
-{
 	if (!Input::Down(MOUSE_LEFT)) return;
 
-	int x = Cursor::GetPosition(CURSOR_X);
-	int y = Cursor::GetPosition(CURSOR_Y);
-
-	for (int i = 0; i < mData->size; i++)
+	if (mData->focusControl)
 	{
-		Button& b = (Button&)Get(i);
-		bool isClick = (x >= b.x) * (x <= b.x + b.width) * (y >= b.y) * (y <= b.y + b.height);
-
-		if (isClick)
+		Control& control = *(mData->focusControl);
+		Button& b = (Button&)control;
+		TypeControl type = b.GetType();
+		
+		if (type == TypeControl::Button)
 		{
 			b.Action();
-			return;
 		}
 	}
+}
+
+bool GUI::IsFocus()
+{
+	return mData->focusControl;
 }
 
 int GUI::Size()
@@ -159,10 +179,9 @@ void GUI::Shotdown()
 
 GUI::Data::~Data()
 {
-	SAFE_RELEASE(vertexShader);
-	SAFE_RELEASE(pixelShader);
-	SAFE_RELEASE(vertexLayout);
-	SAFE_RELEASE(buffer);
+	SAFE_RELEASE(renderTarget);
+	SAFE_RELEASE(factory);
+	SAFE_RELEASE(writeFactory);
 
 	for (int i = 0; i < size; i++)
 	{

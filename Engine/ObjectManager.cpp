@@ -7,7 +7,7 @@
 #include "Shader.h"
 #include "Trace.h"
 #include "Direct3D.h"
-#include "CameraEngine.h"
+#include "Camera.h"
 #include "FrustumCulling.h"
 #include "CustomFile.h"
 
@@ -107,7 +107,7 @@ void ObjectManager::Draw()
 
 			frameBuffer.directionalLight[d++] = light;
 			frameBuffer.directionalCount++;
-			frameBuffer.cameraPosW = CameraEngine::GetPosition();
+			frameBuffer.cameraPosW = Camera::GetPosition();
 		}
 
 		if (type == TypeObject::PointLight)
@@ -122,7 +122,7 @@ void ObjectManager::Draw()
 
 			frameBuffer.pointLight[p++] = light;
 			frameBuffer.pointCount++;
-			frameBuffer.cameraPosW = CameraEngine::GetPosition();
+			frameBuffer.cameraPosW = Camera::GetPosition();
 		}
 	}
 
@@ -144,7 +144,7 @@ void ObjectManager::Draw()
 
 			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
 			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
-			XMMATRIX worldViewProj = obj.GetWorldMatrix() * CameraEngine::GetViewMatrix() * CameraEngine::GetProjMatrix();
+			XMMATRIX worldViewProj = obj.GetWorldMatrix() * Camera::GetViewMatrix() * Camera::GetProjMatrix();
 
 			XMStoreFloat4x4(&buffer.world, world);
 			XMStoreFloat4x4(&buffer.worldInvTranspose, worldInvTranspose);
@@ -209,7 +209,7 @@ void ObjectManager::Clear()
 Object& ObjectManager::Get(int i)
 {
     if (i + 1 > mData->size)
-        Application::Exit();
+        Application::Close();
 
     return *(mData->v[i]);
 }

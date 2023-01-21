@@ -33,5 +33,4 @@ class FOG_API Object
 {
 public:
 	virtual TypeObject GetType() { return TypeObject::Object; }
-	virtual ~Object() {}
 };

@@ -1,7 +1,7 @@
-#include "InputEngine.h"
+#include "Input.h"
 
-#include "ApplicationEngine.h"
-#include "TimerEngine.h"
+#include "Application.h"
+#include "Timer.h"
 #include "Trace.h"
 
 IDirectInput8A* Input::mInput;
@@ -16,7 +16,7 @@ float Input::mHoldDuration[KeyInput::COUNT_KEY];
 float Input::mAnalogs[MouseInput::COUNT_MOUSE];
 bool Input::mVisible;
 
-void InputEngine::Setup()
+void Input::Setup()
 {
 	mInput = 0;
 	mMouse = 0;
@@ -50,7 +50,7 @@ void InputEngine::Setup()
 }
 
 
-void InputEngine::Update()
+void Input::Update()
 {
 	memcpy(mButtons[1], mButtons[0], sizeof(mButtons[0]));
 	memset(mButtons[0], 0, sizeof(mButtons[0]));
@@ -61,12 +61,14 @@ void InputEngine::Update()
 	FOG_TRACE(mKeyboard->Acquire());
 	FOG_TRACE(mKeyboard->GetDeviceState(sizeof(mKeyboardState), mKeyboardState));
 
-	for (uint32_t i = 0; i < 256; ++i)
+	if (Application::IsPaused()) return;
+
+	for (int i = 0; i < 256; ++i)
 	{
 		mButtons[0][i] = (mKeyboardState[i] & 0x80) != 0;
 	}
 
-	for (uint32_t i = 0; i < 8; ++i)
+	for (int i = 0; i < 8; ++i)
 	{
 		if (mMouseState.rgbButtons[i] > 0) mButtons[0][MOUSE_LEFT + i] = true;
 	}
@@ -79,7 +81,7 @@ void InputEngine::Update()
 	else if (mMouseState.lZ < 0)
 		mAnalogs[MOUSE_SCROLL] = -1.0f;
 
-	for (uint32_t i = 0; i < 256; ++i)
+	for (int i = 0; i < 256; ++i)
 	{
 		if (mButtons[0][i])
 		{
@@ -89,11 +91,6 @@ void InputEngine::Update()
 				mHoldDuration[i] += Time::DeltaTime();
 		}
 	}
-}
-
-bool Input::IsDown()
-{
-	return mButtons[0] != 0;
 }
 
 bool Input::Press(KeyInput di)

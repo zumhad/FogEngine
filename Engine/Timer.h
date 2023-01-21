@@ -2,12 +2,26 @@
 
 #include "Core.h"
 
+class Application;
+
 class FOG_API Time
 {
+	friend class Application;
+
 public:
 	static float DeltaTime();
 
-protected:
+private:
+	static void Setup();
+
+	static float TotalTime();
+	static void Reset();
+	static void Start();
+	static void Stop();
+	static void Tick();
+	static bool LockFPS();
+
+private:
 	static float mSecondsPerCount;
 	static float mDeltaTime;
 

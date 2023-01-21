@@ -3,7 +3,6 @@
 #include "CustomString.h"
 #include "ObjectManager.h"
 #include "PathHelper.h"
-#include "Properties.h"
 #include "Camera.h"
 #include "Light.h"
 #include "Mesh.h"
@@ -57,7 +56,7 @@ void Application::SaveProject()
 
 	FILE* mainFile = 0;
 	mainFile = _wfopen(filePath, L"w");
-	if (!mainFile) Application::Exit();
+	if (!mainFile) Application::Close();
 	fwprintf(mainFile, mainStr);
 	fclose(mainFile);
 
@@ -66,7 +65,7 @@ void Application::SaveProject()
 
 	FILE* headerFile = 0;
 	headerFile = _wfopen(filePath, L"w");
-	if (!headerFile) Application::Exit();
+	if (!headerFile) Application::Close();
 
 	String h;
 	h = L"\
@@ -125,19 +124,19 @@ Model model;\n";
 	fclose(headerFile);
 
 	String buildPath = L"mkdir ";
-	buildPath += Singlton.path;
+	buildPath += Application::GetPath();
 	buildPath += L"Project\\build";
 	wsystem(buildPath);
 
 	String copyPath = L"copy ";
-	copyPath += Singlton.path;
+	copyPath += Application::GetPath();
 	copyPath += L"Build\\Release\\Engine.dll ";
-	copyPath += Singlton.path;
+	copyPath += Application::GetPath();
 	copyPath += L"Project\\build";
 	wsystem(copyPath);
 
 	String path = L"cd ";
-	path += Singlton.path;
+	path += Application::GetPath();
 	path += L"Project & BuildTool.exe";
 	wsystem(path);
 }

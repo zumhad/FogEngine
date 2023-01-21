@@ -4,17 +4,24 @@
 
 #include "InputHelper.h"
 
+class Application;
+
 class FOG_API Input
 {
+    friend class Application;
+
 public:
-    static bool IsDown();
     static bool Press(KeyInput di);
     static bool Down(KeyInput di);
     static bool Up(KeyInput di);
     static float GetTimeAxis(KeyInput di);
     static float GetAxis(MouseInput ai);
 
-protected:
+private:
+    static void Setup();
+    static void Update();
+
+private:
 	static IDirectInput8A* mInput;
 	static IDirectInputDevice8A* mMouse;
     static IDirectInputDevice8A* mKeyboard;

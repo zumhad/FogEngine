@@ -1,28 +1,28 @@
 #include "PathHelper.h"
 
-#include "Properties.h"
 #include "CustomString.h"
+#include "Application.h"
 
 void PathHelper::GetAssetsPath(String& dest)
 {
-    dest = Singlton.path;
+    dest = Application::GetPath();
     dest += L"Engine\\Assets\\";
 }
 
 void PathHelper::GetEnginePath(String& dest)
 {
-    dest = Singlton.path;
+    dest = Application::GetPath();
     dest += L"Engine\\";
 }
 
 void PathHelper::GetProjectPath(String& dest)
 {
-    dest = Singlton.path;
+    dest = Application::GetPath();
     dest += L"Project\\";
 }
 
 void PathHelper::GetEditorPath(String& dest)
 {
-    dest = Singlton.path;
+    dest = Application::GetPath();
     dest += L"Editor\\";
 }

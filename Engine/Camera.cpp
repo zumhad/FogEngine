@@ -1,14 +1,11 @@
-#include "CameraEngine.h"
+#include "Camera.h"
 
 #include "Trace.h"
-#include "Application.h"
-#include "Properties.h"
 #include "MathHelper.h"
 #include "FrustumCulling.h"
 #include "Quaternion.h"
 
 using namespace DirectX;
-
 
 Vector3 Camera::mPosition;
 Vector3 Camera::mRotation;
@@ -20,15 +17,6 @@ float Camera::mFOV;
 float Camera::mAspectRatio;
 float Camera::mNearZ;
 float Camera::mFarZ;
-float Camera::mWidth;
-float Camera::mHeight;
-bool Camera::m3D;
-
-void CameraEngine::Set3D(bool var) 
-{ 
-	m3D = var; 
-	Update(); 
-}
 
 Vector3 Camera::GetDirection()
 {
@@ -46,38 +34,37 @@ void Camera::LookAt(Vector3 pos)
 	mRotation.y = Math::ConvertToDegrees(Math::ATan2(dir.x, dir.z));
 }
 
-void CameraEngine::UpdateProperties()
+void Camera::Setup(APPCLASS& app)
 {
+	mPosition = Vector3(0.0f, 0.0f, 0.0f);
+	mRotation = Vector3(0.0f, 0.0f, 0.0f);
+
 	float width, height, aspect;
-	if (Singlton.isGame)
+
+	if (Application::IsGame())
 	{
-		width = (float)Singlton.game.width;
-		height = (float)Singlton.game.height;
+		width = (float)app.game.width;
+		height = (float)app.game.height;
 		aspect = width / height;
 	}
 	else
 	{
-		width = (float)Singlton.editor.width;
-		height = (float)Singlton.editor.height;
-		aspect = (float)Singlton.scene.width / (float)Singlton.scene.height;
+		width = (float)app.scene.width;
+		height = (float)app.scene.height;
+		aspect = width / height;
 	}
 
-	mWidth = width;
-	mHeight = height;
-	mFOV = Singlton.camera.fov * XM_PI / 180.0f;
+	mFOV = app.camera.fov * XM_PI / 180.0f;
 	mAspectRatio = aspect;
-	mNearZ = Singlton.camera.nearZ;
-	mFarZ = Singlton.camera.farZ;
+	mNearZ = app.camera.nearZ;
+	mFarZ = app.camera.farZ;
 }
 
+void Camera::SetFOV(float fov) { mFOV = fov; }
 
-void CameraEngine::Setup()
-{
-	mPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	mRotation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+void Camera::SetNear(float nearZ) { mNearZ = nearZ; }
 
-	m3D = true;
-}
+void Camera::SetFar(float farZ) { mFarZ = farZ; }
 
 void Camera::SetRotation(Vector3 rotation)
 {
@@ -86,7 +73,7 @@ void Camera::SetRotation(Vector3 rotation)
 
 void Camera::SetRotation(float x, float y, float z)
 {
-	mRotation = XMFLOAT3(x, y, z);
+	mRotation = Vector3(x, y, z);
 }
 
 void Camera::SetRotationX(float x)
@@ -111,7 +98,7 @@ void Camera::SetPosition(Vector3 position)
 
 void Camera::SetPosition(float x, float y, float z)
 {
-	mPosition = XMFLOAT3(x, y, z);
+	mPosition = Vector3(x, y, z);
 }
 
 void Camera::SetPositionX(float x)
@@ -139,9 +126,20 @@ void Camera::Move(Vector3 f)
 	mPosition += f;
 }
 
-void CameraEngine::Update()
+void Camera::Update()
 {
-	UpdateProperties();
+	if (Application::IsGame())
+	{
+		float width = (float)Application::GetGameWidth();
+		float height = (float)Application::GetGameHeight();
+		mAspectRatio = width / height;
+	}
+	else
+	{
+		float width = (float)Application::GetSceneWidth();
+		float height = (float)Application::GetSceneHeight();
+		mAspectRatio = width / height;
+	}
 
 	if (mRotation.x > 90.0f)
 		mRotation.x = 90.0f;
@@ -157,21 +155,11 @@ void CameraEngine::Update()
 	
 	XMMATRIX proj, view;
 
-	if (m3D)
-	{
-		proj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
-		view = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
-		mProj = proj;
-		mView = view;
+	proj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
+	view = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
+	mProj = proj;
+	mView = view;
 
-		FrustumCulling::Update(view, proj);
-	}
-	else
-	{
-		proj = XMMatrixOrthographicLH(mWidth, mHeight, mNearZ, mFarZ);
-		view = XMMatrixLookAtLH(XMVectorSet(0, 0, -1, 1), XMVectorSet(0, 0, 0, 1), XMVectorSet(0, 1, 0, 1));
-		mProj = proj;
-		mView = view;
-	}
+	FrustumCulling::Update(view, proj);
 }
 

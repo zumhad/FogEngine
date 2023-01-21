@@ -5,11 +5,24 @@
 #include <d3d11_4.h>
 #include <DirectXMath.h>
 
+class Application;
+class GUI;
+class Mesh;
+class ObjectManager;
+class Texture;
+
 class FOG_API Direct3D
 {
-public:
+	friend class Application;
+	friend class GUI;
+	friend class Mesh;
+	friend class ObjectManager;
+	friend class Texture;
+
+private:
 	static void Setup();
 	static void Shotdown();
+	static void Initialize();
 
 	static void DrawGame();
 	static void DrawEngine();
@@ -21,20 +34,15 @@ public:
 	static void ResizeEngine();
 	static void ResizeGame();
 
-	static void SetZBuffer(bool var);
-
+	static IDXGISwapChain* SwapChain() { return mSwapChain; }
 	static ID3D11Device* Device() { return mDevice; }
 	static ID3D11DeviceContext* DeviceContext() { return mDeviceContext; }
-
-private:
-	static void Initialize();
 
 private:
 	static ID3D11Device* mDevice;
 	static ID3D11DeviceContext* mDeviceContext;
 	static ID3D11DeviceContext1* mDeviceContext1;
 	static IDXGISwapChain* mSwapChain;
-	static IDXGISwapChain1* mSwapChain1;
 	static ID3D11RenderTargetView* mRenderTargetView;
 	static ID3D11RasterizerState* mRasterizerState;
 	static ID3D11DepthStencilView* mDepthStencilView;
@@ -46,7 +54,4 @@ private:
 	static D3D11_VIEWPORT mEditorViewport;
 
 	static RECT mSceneRect;
-	static float mEditorColor[4];
-	static float mSceneColor[4];
-	static float mGameColor[4];
 };

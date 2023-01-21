@@ -1,6 +1,7 @@
 #include "Button.h"
 
-#include "Properties.h"
+#include "GUI.h"
+#include "MathHelper.h"
 
 using namespace DirectX;
 
@@ -9,9 +10,10 @@ Button::Button()
 	x = 0; y = 0;
 	width = 0; height = 0;
 	action = 0;
+	color = Color(0.0f, 0.0f, 0.0f);
+	focus = Color(0.0f, 0.0f, 0.0f);
 
-	mVertexBuffer = 0;
-	mIndexBuffer = 0;
+	mBrush = 0;
 }
 
 Button::Button(Button& obj)
@@ -22,62 +24,48 @@ Button::Button(Button& obj)
 	height = obj.height;
 	action = obj.action;
 	color = obj.color;
+	focus = obj.focus;
 
-	VertexBuf vertices[]
-	{
-		XMFLOAT3{-0.5f, 0.5f, 0.0f},
-		XMFLOAT3{0.5f, 0.5f, 0.0f},
-		XMFLOAT3{0.5f, -0.5f, 0.0f},
-		XMFLOAT3{-0.5f, -0.5f, 0.0f}
-	};
+	D2D1_COLOR_F c;
+	c.r = color.r;
+	c.g = color.g;
+	c.b = color.b;
+	c.a = color.a;
 
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(VertexBuf) * 4;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData = {};
-	InitData.pSysMem = vertices;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mVertexBuffer));
-
-	WORD indices[] =
-	{
-		0,1,2,
-		0,2,3,
-	};
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(WORD) * 6;
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = indices;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mIndexBuffer));
+	FOG_TRACE(GUI::RenderTarget()->CreateSolidColorBrush(c, &mBrush));
 }
 
 Button::~Button()
 {
-	SAFE_RELEASE(mIndexBuffer);
-	SAFE_RELEASE(mVertexBuffer);
+	SAFE_RELEASE(mBrush);
 }
 
-void Button::Bind()
+void Button::Draw()
 {
-	UINT stride = sizeof(VertexBuf);
-	UINT offset = 0;
-	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-	Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+	static D2D1_RECT_F rect;
+	rect.left = (float)x;
+	rect.top = (float)y;
+	rect.right = (float)x + width;
+	rect.bottom = (float)y + height;
 
-	Direct3D::DeviceContext()->DrawIndexed(6, 0, 0);
-}
+	static D2D1_COLOR_F c;
+	if (mFocus)
+	{
+		c.r = focus.r;
+		c.g = focus.g;
+		c.b = focus.b;
+		c.a = focus.a;
+	}
+	else
+	{
+		c.r = color.r;
+		c.g = color.g;
+		c.b = color.b;
+		c.a = color.a;
+	}
 
-Matrix Button::GetWorldMatrix()
-{
-	int newX = Singlton.editor.width / -2 + x + width / 2;
-	int newY = Singlton.editor.height / 2 - y - height / 2;
-
-	XMMATRIX m = XMMatrixScaling((float)width, (float)height, 0.0f) * XMMatrixTranslation((float)newX, (float)newY, 0.0f);
-
-	return m;
+	mBrush->SetColor(c);
+	GUI::RenderTarget()->FillRectangle(rect, mBrush);
 }
 
 void Button::Action()

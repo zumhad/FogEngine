@@ -6,6 +6,7 @@
 
 class ShaderInclude : public ID3DInclude
 {
+private:
 	HRESULT Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes) override;
 	HRESULT Close(LPCVOID pData) override;
 };

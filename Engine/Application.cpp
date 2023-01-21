@@ -1,13 +1,12 @@
-#include "ApplicationEngine.h"
+#include "Application.h"
 
 #include "Definitions.h"
 #include "Direct3D.h"
-#include "Devices.h"
 #include "Trace.h"
-#include "TimerEngine.h"
+#include "Timer.h"
 #include "ObjectManager.h"
-#include "CameraEngine.h"
-#include "InputEngine.h"
+#include "Camera.h"
+#include "Input.h"
 #include "GUI.h"
 #include "Cursor.h"
 #include "FrustumCulling.h"
@@ -25,20 +24,22 @@ bool Application::mMaximized = false;
 bool Application::mResizing = false;
 bool Application::mPaused = false;
 bool Application::mStarted = false;
+WCHAR Application::mPath[MAX_PATH] = {};
+int Application::mCaptionHeight = 0;
+int Application::mFpsMax = 0;
 
-ApplicationEngine& ApplicationEngine::Get()
-{ 
-    static ApplicationEngine app;
-    return app;
-}
+decltype(Application::mScene) Application::mScene = {};
+decltype(Application::mEditor) Application::mEditor = {};
+decltype(Application::mGame) Application::mGame = {};
+decltype(Application::mFoo) Application::mFoo = {};
 
-void ApplicationEngine::InitWindow()
+void Application::InitWindow()
 {
     WCHAR exePath[MAX_PATH];                   //
     GetModuleFileName(0, exePath, MAX_PATH);   // get icon
     HICON hIcon = ExtractIcon(0, exePath, 0);  //
 
-    String::Strcpy(Singlton.path, exePath, 0, String::FindStr(exePath, L"\\FogEngine") + String::Strlen(L"\\FogEngine"));
+    String::Strcpy(mPath, exePath, 0, String::FindStr(exePath, L"\\FogEngine") + String::Strlen(L"\\FogEngine"));
 
     WNDCLASSEX wce{};
     wce.cbSize = sizeof(WNDCLASSEX);
@@ -56,59 +57,82 @@ void ApplicationEngine::InitWindow()
 
     if (mIsGame)
     {
-        width = Singlton.game.width;
-        height = Singlton.game.height;
+        width = GetSystemMetrics(SM_CXSCREEN);
+        height = GetSystemMetrics(SM_CYSCREEN);
         style = WS_POPUP;
     }
     else
     {
-        width = Singlton.editor.width;
-        height = Singlton.editor.height;
+        RECT rect{};
+        SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+        width = rect.right - rect.left;
+        height = rect.bottom - rect.top;
         style = WS_OVERLAPPEDWINDOW;
     }
 
     mHwnd = CreateWindowEx(0, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
-
-    //if(!mIsGame)
-        //SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
 }
 
-
-void ApplicationEngine::InitApp()
+void Application::InitProp(APPCLASS app)
 {
+    mIsGame = app.isGame;
+    mCaptionHeight = std::max(0, app.captionHeight);
+    mFpsMax = app.fpsMax;
+    mFoo.start = app.foo.start;
+    mFoo.update = app.foo.update;
+
+    mEditor.width = app.editor.width;
+    mEditor.height = app.editor.height;
+    mEditor.color = app.editor.color;
+
+    mGame.width = app.game.width;
+    mGame.height = app.game.height;
+    mGame.color = app.game.color;
+
+    mScene.x = app.scene.x;
+    mScene.y = app.scene.y;
+    mScene.width = app.scene.width;
+    mScene.height = app.scene.height;
+    mScene.color = app.scene.color;
+}
+
+void Application::InitApp(APPCLASS app)
+{
+    CheckDebug();
     srand((unsigned int)time(0));
 
+    InitProp(app);
     InitWindow();
-    InitModules();
+    InitModules(app);
 
-    if (Singlton.foo.start)
-        Singlton.foo.start();
+    if (app.foo.start)
+        app.foo.start();
 
     InitBuffers();
     mStarted = true;
 }
 
-void ApplicationEngine::CheckDebug()
+void Application::CheckDebug()
 {
 #ifdef _DEBUG
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 }
 
-void ApplicationEngine::InitModules()
+void Application::InitModules(APPCLASS app)
 {
-    InputEngine::Setup();
-    Direct3D::Setup();
-    TimeEngine::Setup();
-    CameraEngine::Setup();
     GUI::Setup();
+    Input::Setup();
+    Direct3D::Setup();
+    Time::Setup();
+    Camera::Setup(app);
     ObjectManager::Setup();
     FrustumCulling::Setup();
 }
 
 void Application::InitBuffers()
 {
-    CameraEngine::Update();
+    Camera::Update();
 
 	for (int i = 0; i < 2; i++)
 	{
@@ -121,13 +145,13 @@ void Application::InitBuffers()
 	}
 }
 
-int ApplicationEngine::Run()
+int Application::Run(APPCLASS app)
 {
-    InitApp();
+    InitApp(app);
 
-    Cursor::SetVisible(Singlton.cursorShow);
+    Cursor::SetVisible(app.cursorShow);
     ShowWindow(mHwnd, SW_MAXIMIZE);
-    TimeEngine::Reset(); //start timer
+    Time::Reset(); //start timer
 
     MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
@@ -157,28 +181,8 @@ bool Application::CursorInScene()
     return PtInRect(&r, p);
 }
 
-void ApplicationEngine::DefaultProp()
-{
-    mIsGame = Singlton.isGame;
 
-    Singlton.game.width = GetSystemMetrics(SM_CXSCREEN);
-    Singlton.game.height = GetSystemMetrics(SM_CYSCREEN);
-
-    Singlton.resolution.width = Singlton.game.width;
-    Singlton.resolution.height = Singlton.game.height;
-
-    RECT rect{};
-    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
-    Singlton.editor.width = rect.right - rect.left;
-    Singlton.editor.height = rect.bottom - rect.top;
-
-    Singlton.scene.width = Singlton.game.width / 2;
-    Singlton.scene.height = Singlton.game.height / 2;
-    Singlton.scene.y = Singlton.captionHeight;
-}
-
-
-void ApplicationEngine::Shotdown() //exit
+void Application::Shotdown() //exit
 {
     DestroyWindow(mHwnd);
     UnregisterClass(APP_CLASS, 0);
@@ -194,108 +198,190 @@ void Application::SetSceneX(int x)
 {
     if (mIsGame) return;
 
-    Singlton.scene.x = std::max(0, x);
+    mScene.x = std::max(0, x);
 
     Direct3D::ResizeScene();
-    InitBuffers();
 }
 
 void Application::SetSceneY(int y)
 {
     if (mIsGame) return;
 
-    Singlton.scene.y = std::max(0, y);
+    mScene.y = std::max(0, y);
 
     Direct3D::ResizeScene();
-    InitBuffers();
 }
 
 void Application::SetSceneWidth(int width)
 {
     if (mIsGame) return;
 
-    Singlton.scene.width = std::max(0, width);
+    mScene.width = std::max(0, width);
 
     Direct3D::ResizeScene();
-    InitBuffers();
 }
 
 void Application::SetSceneHeight(int height)
 {
     if (mIsGame) return;
 
-    Singlton.scene.height = std::max(0, height);
+    mScene.height = std::max(0, height);
 
     Direct3D::ResizeScene();
-    InitBuffers();
 }
 
+void Application::SetSceneColor(Color color)
+{ 
+    if (mIsGame) return;
 
-void Application::MoveSceneX(int x)
+    mScene.color = color;
+}
+
+int Application::GetSceneX() 
 {
-    if (Singlton.scene.x + x < 0) return;
+    if (mIsGame) return 0;
 
-    SetSceneX(Singlton.scene.x + x);
+    return mScene.x; 
 }
 
-void Application::MoveSceneY(int y)
+int Application::GetSceneY()
 {
-    if (Singlton.scene.y + y < 0) return;
+    if (mIsGame) return 0;
 
-    SetSceneY(Singlton.scene.y + y);
+    return mScene.y;
 }
 
-int Application::GetSceneX() { return Singlton.scene.x; }
-int Application::GetSceneY() { return Singlton.scene.y; }
-int Application::GetSceneWidth() { return Singlton.scene.width; }
-int Application::GetSceneHeight() { return Singlton.scene.height; }
-
-bool Application::IsAppPaused() { return mPaused; }
-
-void Application::SetSceneColor(float r, float g, float b) { Singlton.scene.color = Color(r, g, b); }
-
-void Application::Exit() { PostQuitMessage(0); }
-
-void ApplicationEngine::AdjustMaxClient(RECT& rect)
+int Application::GetSceneWidth()
 {
-    WINDOWPLACEMENT placement = {};
-    GetWindowPlacement(mHwnd, &placement);
+    if (mIsGame) return 0;
 
-    if (placement.showCmd != SW_MAXIMIZE) return;
-
-    HMONITOR monitor = MonitorFromWindow(mHwnd, MONITOR_DEFAULTTONULL);
-
-    MONITORINFO monitor_info{};
-    monitor_info.cbSize = sizeof(monitor_info);
-
-    if (!GetMonitorInfoW(monitor, &monitor_info)) return;
-
-    rect = monitor_info.rcWork;
+    return mScene.width;
 }
 
-LRESULT ApplicationEngine::HitTest()
+int Application::GetSceneHeight()
 {
-    static int xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    static int yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
-    int x = Cursor::GetPosition(CURSOR_X);
-    int y = Cursor::GetPosition(CURSOR_Y);
+    if (mIsGame) return 0;
 
-    int result =
-        BIT_1 * (x < xBorder) |
-        BIT_2 * (x >= (Singlton.editor.width - xBorder)) |
-        BIT_3 * (y < (xBorder)) |
-        BIT_4 * (y >= (Singlton.editor.height - yBorder));
-
-    switch (result)
-    {
-        case BIT_1: return HTLEFT;
-        case BIT_2: return HTRIGHT;
-        case BIT_3: return HTTOP;
-        case BIT_4: return HTBOTTOM;
-        case BIT_3 | BIT_1: return HTTOPLEFT;
-        case BIT_3 | BIT_2: return HTTOPRIGHT;
-        case BIT_4 | BIT_1: return HTBOTTOMLEFT;
-        case BIT_4 | BIT_2: return HTBOTTOMRIGHT;
-        default: return ((y <= Singlton.captionHeight) ? HTCAPTION : HTCLIENT);
-    }
+    return mScene.height;
 }
+
+Color Application::GetSceneColor() 
+{
+    if (mIsGame) return 0;
+
+    return mScene.color;
+}
+
+void Application::SetEditorWidth(int width)
+{
+    if (mIsGame) return;
+
+    mEditor.width = width;
+
+    Direct3D::ResizeEditor();
+}
+
+void Application::SetEditorHeight(int height)
+{
+    if (mIsGame) return;
+
+    mEditor.height = height;
+
+    Direct3D::ResizeEditor();
+}
+
+void Application::SetEditorColor(Color color)
+{
+    if (mIsGame) return;
+
+    mEditor.color = color;
+}
+
+int Application::GetEditorWidth()
+{
+    if (mIsGame) return 0;
+
+    return mEditor.width;
+}
+
+int Application::GetEditorHeight()
+{
+    if (mIsGame) return 0;
+
+    return mEditor.height;
+}
+
+Color Application::GetEditorColor()
+{
+    if (mIsGame) return 0;
+
+    return mEditor.color;
+}
+
+void Application::SetGameWidth(int width)
+{
+    if (!mIsGame) return;
+
+    mGame.width = width;
+
+    Direct3D::ResizeGame();
+}
+
+void Application::SetGameHeight(int height)
+{
+    if (!mIsGame) return;
+
+    mGame.height = height;
+
+    Direct3D::ResizeGame();
+}
+
+void Application::SetGameColor(Color color)
+{
+    if (!mIsGame) return;
+
+    mGame.color = color;
+}
+
+int Application::GetGameWidth()
+{
+    if (!mIsGame) return 0;
+
+    return mGame.width;
+}
+
+int Application::GetGameHeight()
+{
+    if (!mIsGame) return 0;
+
+    return mGame.height;
+}
+
+Color Application::GetGameColor()
+{
+    if (!mIsGame) return 0;
+
+    return mGame.color;
+}
+
+int Application::GetFpsMax() { return mFpsMax; }
+
+void Application::SetFpsMax(int fps) { mFpsMax = fps; }
+
+int Application::GetCaptionHeight() { return mCaptionHeight; }
+
+void Application::SetCaptionHeight(int height) { mCaptionHeight = height; }
+
+void Application::Restore()
+{ 
+    if (mMaximized)
+        ShowWindow(mHwnd, SW_RESTORE);
+    else
+        ShowWindow(mHwnd, SW_MAXIMIZE);
+}
+
+void Application::Close() { PostQuitMessage(0); }
+void Application::Minimize() { ShowWindow(mHwnd, SW_MINIMIZE); }
+bool Application::IsPaused() { return mPaused; }
+WCHAR* Application::GetPath() { return mPath; }
+bool Application::IsGame() { return mIsGame; }

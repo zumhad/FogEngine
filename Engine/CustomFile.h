@@ -21,6 +21,7 @@ public:
     void Read(void* data, int size);
     int Size();
     void Write(const void* data, size_t size);
+
     static bool Exists(String& name);
 
 private:

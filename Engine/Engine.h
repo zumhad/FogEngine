@@ -15,15 +15,11 @@
 #include "Mesh.h"
 #include "Cursor.h"
 #include "Quaternion.h"
+#include "Button.h"
 
 
 #define CREATE_APPLICATION(x)\
 int wmain()\
 {\
-	ApplicationEngine::CheckDebug();\
-	ApplicationEngine::DefaultProp();\
-	x();\
-	int exitCode = ApplicationEngine::Run();\
-	ApplicationEngine::Shotdown();\
-	return exitCode;\
+	return Engine::Start(x());\
 }

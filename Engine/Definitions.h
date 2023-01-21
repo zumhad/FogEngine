@@ -22,4 +22,6 @@
 #define SAFE_RELEASE(x) if(x) { x->Release(); x = 0; }
 
 #define EXT L"fog"
-#define DOT_EXT L"." EXT
+
+#define MAX_DIRECTIONAL_LIGHT 16
+#define MAX_POINT_LIGHT 16

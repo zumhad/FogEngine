@@ -9,6 +9,7 @@ public:
 	Texture();
 	~Texture();
 
+private:
 	void Bind();
 
 private:

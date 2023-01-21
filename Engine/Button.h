@@ -8,13 +8,14 @@
 #include "Color.h"
 #include "Matrix.h"
 
-struct VertexBuf
-{
-	DirectX::XMFLOAT3 pos;
-};
+#include <d2d1_3.h>
+
+class GUI;
 
 class FOG_API Button : public Control
 {
+	friend class GUI;
+
 public:
 	TypeControl GetType() override { return TypeControl::Button; }
 
@@ -22,18 +23,18 @@ public:
 	Button(Button& obj);
 	~Button();
 
-	Matrix GetWorldMatrix();
-	void Bind();
+private:
 	void Action();
+	void Draw();
 
 public:
 	Color color;
+	Color focus;
 	int x, y;
 	int width, height;
 	void (*action)();
 
 private:
-	ID3D11Buffer* mVertexBuffer;
-	ID3D11Buffer* mIndexBuffer;
+	ID2D1SolidColorBrush* mBrush;
 };
 

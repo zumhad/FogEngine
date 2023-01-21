@@ -119,12 +119,6 @@
     <ClInclude Include="Definitions.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="DeviceInput.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Devices.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Direct3D.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -152,15 +146,6 @@
     <ClInclude Include="ObjectManager.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="CameraEngine.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="ApplicationEngine.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Properties.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -183,12 +168,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Mesh.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="TimerEngine.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="InputEngine.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="MathHelper.h">
@@ -219,6 +198,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Vector4.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ApplicationHelper.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,41 +1,42 @@
-#include "ApplicationEngine.h"
+#include "Application.h"
 
 #include "Definitions.h"
-#include "Devices.h"
 #include "Direct3D.h"
-#include "TimerEngine.h"
-#include "CameraEngine.h"
-#include "InputEngine.h"
+#include "Timer.h"
+#include "Camera.h"
+#include "Input.h"
 #include "GUI.h"
 #include "Cursor.h"
+#include "CustomString.h"
 
 #include <windowsx.h>
 
 
-LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     switch (msg)
     {
         case WM_PAINT:
         {
-            if (TimeEngine::LockFPS())
+            if (Time::LockFPS())
             {
-                TimeEngine::Tick();
+                Time::Tick();
+ 
+                Input::Update();
 
-                InputEngine::Update();
-                GUI::Click();
+				GUI::Update();
 
-                if (Singlton.foo.update)
-                    Singlton.foo.update();
+				if (mFoo.update)
+                    mFoo.update();
 
-                CameraEngine::Update();
+                Camera::Update();
 
-                if (mIsGame)
-                    Direct3D::DrawGame();
-                else
-                    Direct3D::DrawEngine();
+				if (mIsGame)
+					Direct3D::DrawGame();
+				else
+					Direct3D::DrawEngine();
 
-                Direct3D::Present();
+				Direct3D::Present();
             }
 
             return 0;
@@ -68,9 +69,25 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
         {
             if (!mStarted) break;
             if (mIsGame) return HTCLIENT;
-            if (GUI::ClickTest()) return HTCLIENT;
-
+            
             return HitTest();
+        }
+
+        case WM_MOUSEMOVE:
+        {
+            TRACKMOUSEEVENT tme;
+            tme.cbSize = sizeof(tme);
+            tme.hwndTrack = hwnd;
+            tme.dwFlags = TME_NONCLIENT;
+            TrackMouseEvent(&tme);
+
+            break;
+        }
+
+        case WM_NCMOUSELEAVE:
+        {
+            OutputDebugString(L"leave \n");
+            break;
         }
 
         case WM_NCCALCSIZE:
@@ -105,8 +122,8 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
         {
             if (!mIsGame)
             {
-                Singlton.editor.width = GET_X_LPARAM(lparam);
-                Singlton.editor.height = GET_Y_LPARAM(lparam);
+                mEditor.width = GET_X_LPARAM(lparam);
+                mEditor.height = GET_Y_LPARAM(lparam);
             }
 
             if (wparam == SIZE_MINIMIZED)
@@ -152,11 +169,13 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_ACTIVATE:
         {
+            static bool cursorShow = false;
+
             if (LOWORD(wparam) == WA_INACTIVE)
             {
                 if (mStarted && mIsGame)
                 {
-                    Singlton.cursorShow = Cursor::GetVisible();
+                    cursorShow = Cursor::GetVisible();
                     Cursor::SetVisible(true);
 
                     ShowWindow(hwnd, SW_MINIMIZE);
@@ -168,9 +187,19 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
             {
                 if (mStarted && mIsGame)
                 {
-                    Cursor::SetVisible(Singlton.cursorShow);
+                    Cursor::SetVisible(cursorShow);
 
                     ShowWindow(hwnd, SW_MAXIMIZE);
+                }
+
+                if (mStarted && !mIsGame)
+                {
+                    RECT rect{};
+                    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+                    int width = rect.right - rect.left;
+                    int height = rect.bottom - rect.top;
+
+                    SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
                 }
 
                 mPaused = false;
@@ -181,14 +210,65 @@ LRESULT CALLBACK ApplicationEngine::WndProc(HWND hwnd, UINT msg, WPARAM wparam, 
 
         case WM_GETMINMAXINFO:
         {
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = Singlton.scene.width;
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = Singlton.scene.height + Singlton.captionHeight;
-            ((MINMAXINFO*)lparam)->ptMaxTrackSize.x = Singlton.resolution.width;
-            ((MINMAXINFO*)lparam)->ptMaxTrackSize.y = Singlton.resolution.height;
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = Application::GetSceneWidth();
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = Application::GetSceneHeight() + Application::GetCaptionHeight();
+            //((MINMAXINFO*)lparam)->ptMaxTrackSize.x = Singlton.resolution.width;
+            //((MINMAXINFO*)lparam)->ptMaxTrackSize.y = Singlton.resolution.height;
 
             return 0;
         }
     }
 
     return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+void Application::AdjustMaxClient(RECT& rect)
+{
+    WINDOWPLACEMENT placement = {};
+    GetWindowPlacement(mHwnd, &placement);
+
+    if (placement.showCmd != SW_MAXIMIZE) return;
+
+    HMONITOR monitor = MonitorFromWindow(mHwnd, MONITOR_DEFAULTTONULL);
+
+    MONITORINFO monitor_info{};
+    monitor_info.cbSize = sizeof(monitor_info);
+
+    if (!GetMonitorInfoW(monitor, &monitor_info)) return;
+
+    rect = monitor_info.rcWork;
+}
+
+LRESULT Application::HitTest()
+{
+    static int xBorder = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    static int yBorder = GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+    int x = Cursor::GetPosition(CURSOR_X);
+    int y = Cursor::GetPosition(CURSOR_Y);
+
+    int result =
+        BIT_1 * (x < xBorder) |
+        BIT_2 * (x >= (Application::GetEditorWidth() - xBorder)) |
+        BIT_3 * (y < (xBorder)) |
+        BIT_4 * (y >= (Application::GetEditorHeight() - yBorder));
+
+    switch (result)
+    {
+    case BIT_1: return HTLEFT;
+    case BIT_2: return HTRIGHT;
+    case BIT_3: return HTTOP;
+    case BIT_4: return HTBOTTOM;
+    case BIT_3 | BIT_1: return HTTOPLEFT;
+    case BIT_3 | BIT_2: return HTTOPRIGHT;
+    case BIT_4 | BIT_1: return HTBOTTOMLEFT;
+    case BIT_4 | BIT_2: return HTBOTTOMRIGHT;
+    }
+
+    if (y <= Application::GetCaptionHeight())
+    {
+        if (GUI::IsFocus()) return HTCLIENT;
+        return HTCAPTION;
+    }
+
+    return HTCLIENT;
 }

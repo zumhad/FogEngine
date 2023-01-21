@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 #include "Direct3D.h"
-#include "TimerEngine.h"
+#include "Timer.h"
 #include "MathHelper.h"
 #include "Trace.h"
 #include "PathHelper.h"

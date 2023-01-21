@@ -209,11 +209,10 @@
     <ClCompile Include="Vector4.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ApplicationHelper.h" />
     <ClInclude Include="Application.h" />
-    <ClInclude Include="ApplicationEngine.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
-    <ClInclude Include="CameraEngine.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
@@ -222,14 +221,11 @@
     <ClInclude Include="CustomString.h" />
     <ClInclude Include="CustomTypes.h" />
     <ClInclude Include="Definitions.h" />
-    <ClInclude Include="DeviceInput.h" />
-    <ClInclude Include="Devices.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
     <ClCompile Include="GenerateFiles.cpp" />
     <ClInclude Include="FrustumCulling.h" />
     <ClInclude Include="GUI.h" />
-    <ClInclude Include="InputEngine.h" />
     <ClInclude Include="InputHelper.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Input.h" />
@@ -240,12 +236,10 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="PathHelper.h" />
-    <ClInclude Include="Properties.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Timer.h" />
-    <ClInclude Include="TimerEngine.h" />
     <ClInclude Include="Trace.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />

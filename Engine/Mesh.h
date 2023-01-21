@@ -9,9 +9,15 @@
 
 #include <DirectXCollision.h>
 
+class ObjectManager;
+
 class FOG_API Mesh : public Object
 {
+	friend class ObjectManager;
+
 public:
+	TypeObject GetType() override { return TypeObject::Mesh; }
+
 	Mesh();
 	Mesh(Mesh& mesh);
 	~Mesh();
@@ -23,16 +29,15 @@ public:
 	Vector3 GetPosition();
 	Vector3 GetRotation();
 	Vector3 GetScale();
+	Vector3 GetDirection();
 
 	void Move(Vector3 v);
 	void Rotate(Vector3 v);
 	void Scale(Vector3 v);
 
-	Vector3 GetDirection();
-
+private:
 	void Bind();
 	DirectX::BoundingBox GetBoundingBox();
-	TypeObject GetType() override { return TypeObject::Mesh; }
 	Matrix GetWorldMatrix();
 	Matrix GetWorldInvTransposeMatrix();
 

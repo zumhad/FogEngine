@@ -2,27 +2,32 @@
 
 #include "Core.h"
 #include "Object.h"
-#include "Properties.h"
 #include "Light.h"
 #include "Mesh.h"
 #include "LightHelper.h"
 
 #include <vector>
 
+class Application;
+class Direct3D;
 
 class FOG_API ObjectManager
 {
-public:
-    static void Setup();
-    static void Shotdown();
-    static void Clear();
-    static void Draw();
+    friend class Application;
+    friend class Direct3D;
 
+public:
     template<typename T>
     static void Add(T& obj);
 
     static int Size();
     static Object& Get(int i);
+    static void Clear();
+
+private:
+    static void Setup();
+    static void Shotdown();
+    static void Draw();
 
 private:
     struct Data;

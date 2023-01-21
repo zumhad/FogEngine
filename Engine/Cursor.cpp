@@ -1,6 +1,7 @@
 #include "Cursor.h"
 
-#include "ApplicationEngine.h"
+#include "Application.h"
+#include "CustomString.h"
 
 bool Cursor::mVisible = true;
 
@@ -8,7 +9,7 @@ int Cursor::GetPosition(CursorAxis axis)
 {
 	POINT p;
 	GetCursorPos(&p);
-	ScreenToClient(ApplicationEngine::GetHWND(), &p);
+	ScreenToClient(Application::GetHWND(), &p);
 
 	return (axis ? p.y : p.x);
 }
@@ -16,7 +17,7 @@ int Cursor::GetPosition(CursorAxis axis)
 void Cursor::SetPosition(int x, int y)
 {
 	POINT p = { x, y };
-	ClientToScreen(ApplicationEngine::GetHWND(), &p);
+	ClientToScreen(Application::GetHWND(), &p);
 
 	SetCursorPos(p.x, p.y);
 }

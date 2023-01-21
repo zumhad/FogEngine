@@ -1,7 +1,7 @@
 #include "Vector3.h"
 
 #include "MathHelper.h"
-#include "TimerEngine.h"
+#include "Timer.h"
 #include "Quaternion.h"
 
 using namespace DirectX;

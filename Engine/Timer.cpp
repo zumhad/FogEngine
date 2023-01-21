@@ -1,6 +1,6 @@
-#include "TimerEngine.h"
+#include "Timer.h"
 
-#include "Properties.h"
+#include "Application.h"
 
 float Time::mDeltaTime = 0.0f;
 float Time::mSecondsPerCount = 0.0f;
@@ -11,7 +11,7 @@ long long Time::mPrevTime = 0;
 long long Time::mCurrTime = 0;
 bool Time::mStopped = false;
 
-void TimeEngine::Setup()
+void Time::Setup()
 {
 	long long countsPerSec;
 	QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);
@@ -19,7 +19,7 @@ void TimeEngine::Setup()
 	mSecondsPerCount = 1.0f / (float)countsPerSec;
 }
 
-float TimeEngine::TotalTime()
+float Time::TotalTime()
 {
 	if (mStopped)
 	{
@@ -37,7 +37,7 @@ float Time::DeltaTime()
 	return mDeltaTime;
 }
 
-void TimeEngine::Reset()
+void Time::Reset()
 {
 	long long currTime;
 	QueryPerformanceCounter((LARGE_INTEGER*)&currTime);
@@ -49,7 +49,7 @@ void TimeEngine::Reset()
 	mStopped = false;
 }
 
-void TimeEngine::Start()
+void Time::Start()
 {
 	if (mStopped)
 	{
@@ -64,7 +64,7 @@ void TimeEngine::Start()
 	}
 }
 
-void TimeEngine::Stop()
+void Time::Stop()
 {
 	if (!mStopped)
 	{
@@ -76,11 +76,11 @@ void TimeEngine::Stop()
 	}
 }
 
-bool TimeEngine::LockFPS()
+bool Time::LockFPS()
 {
-	if (Singlton.fpsMax <= 0) return true;
+	if (Application::GetFpsMax() <= 0) return true;
 
-	const float maxPeriod = 1.0f / Singlton.fpsMax;
+	const float maxPeriod = 1.0f / Application::GetFpsMax();
 	static float elipsedTime = 0.0f;
 
 	long long currTime;
@@ -94,7 +94,7 @@ bool TimeEngine::LockFPS()
 	return res;
 }
 
-void TimeEngine::Tick()
+void Time::Tick()
 {
 	if (mStopped)
 	{

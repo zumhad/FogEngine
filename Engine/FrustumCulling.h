@@ -6,9 +6,17 @@
 
 #include <DirectXCollision.h>
 
+class ObjectManager;
+class Application;
+class Camera;
+
 class FrustumCulling
 {
-public:
+	friend class ObjectManager;
+	friend class Application;
+	friend class Camera;
+
+private:
 	static void Setup();
 	static void Shotdown();
 	static void Update(Matrix view, Matrix proj);
