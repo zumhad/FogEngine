@@ -5,17 +5,19 @@
 #include <d2d1_3.h>
 #include <d3d11.h>
 
-class Control;
-class Button;
 class Application;
 class Direct3D;
+class Control;
+class Button;
+class Static;
 
 class FOG_API GUI
 {
+	friend class Application;
 	friend class Direct3D;
 	friend class Control;
 	friend class Button;
-	friend class Application;
+	friend class Static;
 
 public:
 	template<typename T>
@@ -41,3 +43,4 @@ private:
 
 template FOG_API void GUI::Add<Control>(Control&);
 template FOG_API void GUI::Add<Button>(Button&);
+template FOG_API void GUI::Add<Static>(Static&);

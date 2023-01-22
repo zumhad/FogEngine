@@ -73,23 +73,6 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             return HitTest();
         }
 
-        case WM_MOUSEMOVE:
-        {
-            TRACKMOUSEEVENT tme;
-            tme.cbSize = sizeof(tme);
-            tme.hwndTrack = hwnd;
-            tme.dwFlags = TME_NONCLIENT;
-            TrackMouseEvent(&tme);
-
-            break;
-        }
-
-        case WM_NCMOUSELEAVE:
-        {
-            OutputDebugString(L"leave \n");
-            break;
-        }
-
         case WM_NCCALCSIZE:
         {
             if (mIsGame) break;
@@ -98,10 +81,8 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             {
                 NCCALCSIZE_PARAMS* params = (NCCALCSIZE_PARAMS*)(lparam);
                 AdjustMaxClient(params->rgrc[0]);
-
-                return 0;
             }
-            break;
+            return 0;
         }
 
         case WM_ENTERSIZEMOVE:
@@ -169,7 +150,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
         case WM_ACTIVATE:
         {
-            static bool cursorShow = false;
+            static bool cursorShow = Cursor::GetVisible();
 
             if (LOWORD(wparam) == WA_INACTIVE)
             {
@@ -189,6 +170,10 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 {
                     Cursor::SetVisible(cursorShow);
 
+                    int width = GetSystemMetrics(SM_CXSCREEN);
+                    int height = GetSystemMetrics(SM_CYSCREEN);
+
+                    SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, 0);
                     ShowWindow(hwnd, SW_MAXIMIZE);
                 }
 
@@ -210,10 +195,16 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
         case WM_GETMINMAXINFO:
         {
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = Application::GetSceneWidth();
-            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = Application::GetSceneHeight() + Application::GetCaptionHeight();
-            //((MINMAXINFO*)lparam)->ptMaxTrackSize.x = Singlton.resolution.width;
-            //((MINMAXINFO*)lparam)->ptMaxTrackSize.y = Singlton.resolution.height;
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.x = GetSceneWidth() + GetSceneX();
+            ((MINMAXINFO*)lparam)->ptMinTrackSize.y = GetSceneHeight() + GetSceneY();
+
+            RECT rect{};
+            SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+            int width = rect.right - rect.left;
+            int height = rect.bottom - rect.top;
+
+            ((MINMAXINFO*)lparam)->ptMaxTrackSize.x = width;
+            ((MINMAXINFO*)lparam)->ptMaxTrackSize.y = height;
 
             return 0;
         }

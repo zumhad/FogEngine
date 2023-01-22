@@ -5,7 +5,8 @@
 enum class TypeControl
 {
 	Control,
-	Button
+	Button,
+	Static
 };
 
 class GUI;

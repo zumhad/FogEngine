@@ -136,6 +136,16 @@ void Start()
 {
 	Camera::SetRotationX(45);
 
+	if (Application::IsGame()) return;
+
+	Static s;
+	s.x = 0;
+	s.y = 0;
+	s.width = Application::GetEditorWidth();
+	s.height = Application::GetCaptionHeight();
+	s.color = Color(0.7, 0.7, 0.7);
+	GUI::Add(s);
+
 	int size = 40;
 	Button but;
 
@@ -164,23 +174,26 @@ APPCLASS Setting()
 {
 	APPCLASS app;
 	app.captionHeight = 50;
-	app.isGame = false;
+	app.isGame = true;
 	app.cursorShow = true;
-	app.scene.color = Color(0.7f, 0.7f, 0.7f);
-	app.editor.color = Color(1, 1, 1);
-	app.scene.y = 60;
 	app.foo.start = Start;
 	app.foo.update = Update;
 	app.camera.rotationSmooth = 500;
 	app.camera.moveSmooth = 1000;
 
+	app.game.width = 1920;
+	app.game.height = 1080;
+	app.game.color = Color(1, 1, 1);
+
 	app.editor.width = 1920;
 	app.editor.height = 1080;
+	app.editor.color = Color(1, 1, 1);
 
 	app.scene.x = 0;
 	app.scene.y = 60;
 	app.scene.width = 800;
 	app.scene.height = 600;
+	app.scene.color = Color(0.7f, 0.7f, 0.7f);
 
 	return app;
 }

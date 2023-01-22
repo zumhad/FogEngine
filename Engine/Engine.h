@@ -16,6 +16,7 @@
 #include "Cursor.h"
 #include "Quaternion.h"
 #include "Button.h"
+#include "Static.h"
 
 
 #define CREATE_APPLICATION(x)\

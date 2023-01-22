@@ -9,6 +9,7 @@
 #include "PathHelper.h"
 #include "Input.h"
 #include "Button.h"
+#include "Static.h"
 
 #include <d2d1_3.h>
 #include <dwrite.h>
@@ -87,7 +88,7 @@ Control& GUI::Get(int i)
 
 void GUI::Draw()
 {
-	static D2D1_COLOR_F color;
+	static D2D1_COLOR_F color{};
 
 	Color c = Application::GetEditorColor();
 	color.r = c.r;
@@ -104,10 +105,21 @@ void GUI::Draw()
 		Control& control = Get(i);
 		TypeControl type = control.GetType();
 
-		if (type == TypeControl::Button)
+		switch (type)
 		{
-			Button& button = (Button&)control;
-			button.Draw();
+			case TypeControl::Button:
+			{
+				Button& button = (Button&)control;
+				button.Draw();
+				break;
+			}
+
+			case TypeControl::Static:
+			{
+				Static& st = (Static&)control;
+				st.Draw();
+				break;
+			}
 		}
 	}
 
@@ -189,6 +201,7 @@ GUI::Data::~Data()
 
 		if (type == TypeControl::Control) delete (Control*)v[i];
 		if (type == TypeControl::Button) delete (Button*)v[i];
+		if (type == TypeControl::Static) delete (Static*)v[i];
 	}
 }
 

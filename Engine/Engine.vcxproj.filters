@@ -99,6 +99,9 @@
     <ClCompile Include="Quaternion.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Static.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -201,6 +204,9 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="ApplicationHelper.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Static.h">
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>

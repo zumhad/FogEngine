@@ -147,13 +147,13 @@ void Application::InitBuffers()
 
 int Application::Run(APPCLASS app)
 {
-    InitApp(app);
+	InitApp(app);
 
-    Cursor::SetVisible(app.cursorShow);
-    ShowWindow(mHwnd, SW_MAXIMIZE);
-    Time::Reset(); //start timer
+	Cursor::SetVisible(app.cursorShow);
+	ShowWindow(mHwnd, SW_MAXIMIZE);
+	Time::Reset(); //start timer
 
-    MSG msg = { 0 };
+	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)
 	{
 		if (PeekMessage(&msg, 0, 0, 0, PM_REMOVE))
