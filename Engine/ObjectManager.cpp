@@ -11,6 +11,7 @@
 #include "FrustumCulling.h"
 #include "CustomFile.h"
 #include "Cursor.h"
+#include "ConstantBuffer.h"
 
 #include <DirectXCollision.h>
 
@@ -33,15 +34,16 @@ public:
     ID3D11VertexShader* vertexShader;
     ID3D11PixelShader* pixelShader;
     ID3D11InputLayout* vertexLayout;
-    ID3D11Buffer* perFrameBuffer;
-	ID3D11Buffer* perObjectBuffer;
 	ID3D11Buffer* outputBuffer;
 	ID3D11Buffer* outputResultBuffer;
 	ID3D11UnorderedAccessView* uav;
+
+	ConstantBuffer<PerObjectBuffer> perObjectBuffer;
+	ConstantBuffer<PerFrameBuffer> perFrameBuffer;
 };
 
 
-ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), perFrameBuffer(0), perObjectBuffer(0), outputBuffer(0), outputResultBuffer(0), uav(0), selectObject(0)
+ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), outputBuffer(0), outputResultBuffer(0), uav(0), selectObject(0)
 {
 	String shaderPath;
 	PathHelper::GetAssetsPath(shaderPath);
@@ -78,14 +80,6 @@ ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLa
 	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
 	FOG_TRACE(Direct3D::Device()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), 0, &pixelShader));
 	SAFE_RELEASE(pPSBlob);
-
-	D3D11_BUFFER_DESC bd{};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.ByteWidth = sizeof(PerFrameBuffer);
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, 0, &perFrameBuffer));
-	bd.ByteWidth = sizeof(PerObjectBuffer);
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, 0, &perObjectBuffer));
 
 	D3D11_BUFFER_DESC outputDesc{};
 	outputDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -160,8 +154,8 @@ void ObjectManager::Draw()
 		}
 	}
 
-	Direct3D::DeviceContext()->UpdateSubresource(mData->perFrameBuffer, 0, 0, &frameBuffer, 0, 0);
-	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, &mData->perFrameBuffer);
+	mData->perFrameBuffer.Bind(frameBuffer);
+	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, mData->perFrameBuffer.Get());
 
 	static PerObjectBuffer buffer{};
 
@@ -186,9 +180,9 @@ void ObjectManager::Draw()
 			buffer.material = obj.material;
 			buffer.id = obj.id;
 
-			Direct3D::DeviceContext()->UpdateSubresource(mData->perObjectBuffer, 0, 0, &buffer, 0, 0);
-			Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, &mData->perObjectBuffer);
-			Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, &mData->perObjectBuffer);
+			mData->perObjectBuffer.Bind(buffer);
+			Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mData->perObjectBuffer.Get());
+			Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mData->perObjectBuffer.Get());
 
 			obj.Bind();
 		}
@@ -248,11 +242,12 @@ Object* ObjectManager::GetSelectObject()
 
 ObjectManager::Data::~Data()
 {
+	perFrameBuffer.Release();
+	perObjectBuffer.Release();
+
 	SAFE_RELEASE(vertexShader);
 	SAFE_RELEASE(pixelShader);
 	SAFE_RELEASE(vertexLayout);
-	SAFE_RELEASE(perFrameBuffer);
-	SAFE_RELEASE(perObjectBuffer);
 	SAFE_RELEASE(outputBuffer);
 	SAFE_RELEASE(outputResultBuffer);
 	SAFE_RELEASE(uav);

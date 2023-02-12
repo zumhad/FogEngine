@@ -11,6 +11,9 @@ class Mesh;
 class ObjectManager;
 class Texture;
 
+template <typename T> class ConstantBuffer;
+
+
 class FOG_API Direct3D
 {
 	friend class Application;
@@ -18,6 +21,9 @@ class FOG_API Direct3D
 	friend class Mesh;
 	friend class ObjectManager;
 	friend class Texture;
+
+	template <typename T> friend class ConstantBuffer;
+	
 
 private:
 	static void Setup();

@@ -183,6 +183,7 @@
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="Control.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
@@ -215,6 +216,7 @@
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Cursor.h" />
