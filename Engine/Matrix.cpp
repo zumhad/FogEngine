@@ -299,3 +299,13 @@ Matrix operator* (float f, const Matrix& m)
     XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(&_m.m[3]), v4);
     return _m;
 }
+
+Vector4 operator* (const Matrix& _m, const Vector4& v)
+{
+    return XMVector4Transform(v, _m);
+}
+
+Matrix Matrix::Invert(Matrix _m)
+{
+    return XMMatrixInverse(0, _m);
+}

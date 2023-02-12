@@ -32,5 +32,9 @@ struct Material
 class FOG_API Object
 {
 public:
+	Object();
 	virtual TypeObject GetType() { return TypeObject::Object; }
+
+protected:
+	int id;
 };

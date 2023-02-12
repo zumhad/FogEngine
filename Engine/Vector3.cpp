@@ -85,59 +85,49 @@ Vector3& Vector3::operator/= (float f)
     return *this;
 }
 
-Vector3 Vector3::operator+ () const
+Vector3 Vector3::operator+ ()
 {
     return *this;
 }
 
-Vector3 Vector3::operator- () const
+Vector3 Vector3::operator- ()
 {
-    Vector3 v = XMVectorNegate(*this);
-    return v;
+    return XMVectorNegate(*this);
 }
-
-
 
 Vector3 operator+ (const Vector3& v1, const Vector3& v2)
 {
-    Vector3 v = XMVectorAdd(v1, v2);
-    return v;
+    return XMVectorAdd(v1, v2);
 }
 
 Vector3 operator- (const Vector3& v1, const Vector3& v2)
 {
-    Vector3 v = XMVectorSubtract(v1, v2);
-    return v;
+    return XMVectorSubtract(v1, v2);
 }
 
 Vector3 operator* (const Vector3& v1, const Vector3& v2)
 {
-    Vector3 v = XMVectorMultiply(v1, v2);
-    return v;
+    return XMVectorMultiply(v1, v2);
 }
 
 Vector3 operator* (const Vector3& v, float f)
 {
-    Vector3 _v = XMVectorScale(v, f);
-    return _v;
+    return XMVectorScale(v, f);
 }
 
 Vector3 operator/ (const Vector3& v1, const Vector3& v2)
 {
-    Vector3 v = XMVectorDivide(v1, v2);
-    return v;
+    return XMVectorDivide(v1, v2);
 }
 
 Vector3 operator/ (const Vector3& v, float f)
 {
-    Vector3 _v = XMVectorScale(v, 1.0f / f);
-    return _v;
+    return XMVectorScale(v, 1.0f / f);
 }
 
 Vector3 operator* (float f, const Vector3& v)
 {
-    Vector3 _v = XMVectorScale(v, f);
-    return _v;
+    return XMVectorScale(v, f);
 }
 
 

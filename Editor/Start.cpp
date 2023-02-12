@@ -32,8 +32,8 @@ void MyUpdate()
 	{
 		PointLight light;
 		light.position.y = 5;
-		light.range = 10.0f;
-		light.power = 3.0f;
+		light.range = 500.0f;
+		light.power = 30.0f;
 		ObjectManager::Add(light);
 	}
 
@@ -83,7 +83,7 @@ void Update()
 	float moveSpeed = 1.0f;
 	float rotationSpeed = 100.0f;
 
-	static Vector3 pos = Vector3(0, 0, -5);
+	static Vector3 pos = Vector3(0, 0, -50);
 	static Vector3 rot = Camera::GetRotation();
 
 	float move = (float)Input::GetAxis(MOUSE_SCROLL);
@@ -113,23 +113,23 @@ void Update()
 	Camera::SetPosition(targetPos);
 	Camera::LookAt(Vector3::Zero());
 
+	Object* obj = ObjectManager::GetSelectObject();
+
+	if (obj && Input::Press(MOUSE_RIGHT))
+	{
+		Mesh& mesh = (Mesh&)(*obj);
+
+		mesh.material.diffuse = Color(1, 0, 0);
+	}
+
 	MyUpdate();
 }
 
-void close()
+void AddBox()
 {
-	Application::Close();
-}
-
-void minimize()
-{
-	Application::Minimize();
-
-}
-
-void restore()
-{
-	Application::Restore();
+	Mesh m;
+	m.name = L"box.obj";
+	ObjectManager::Add(m);
 }
 
 void Start()
@@ -149,24 +149,44 @@ void Start()
 	int size = 40;
 	Button but;
 
-	but.x = Application::GetEditorWidth() - size;
+	but.x = 0;
 	but.y = 0;
 	but.width = size;
 	but.height = size;
 	but.color = Color(0.5, 0.5, 0.5);
 	but.focus = Color(1.0, 0.7, 0.7);
-	but.action = close;
+	but.action = Application::Close;
+	but.alignm.horizontal = ALIGNM_RIGHT;
 	GUI::Add(but);
 
-	but.x -= size;
+	but.x += size;
 	but.color = Color(0.5, 0.5, 0.5);
-	but.action = restore;
+	but.action = Application::Restore;
 	GUI::Add(but);
 
-	but.x -= size;
+	but.x += size;
 	but.color = Color(0.5, 0.5, 0.5);
-	but.action = minimize;
+	but.action = Application::Minimize;
 	GUI::Add(but);
+
+	but.x = 10;
+	but.y = 60;
+	but.width = 200;
+	but.height = 50;
+	but.color = Color(0.5, 0.5, 0.5);
+	but.action = AddBox;
+	GUI::Add(but);
+
+	for (int i = -20; i < 20; i++)
+	{
+		for (int j = -20; j < 20; j++)
+		{
+			Mesh m1;
+			m1.name = L"box.obj";
+			m1.position = Vector3(i, 0, j);
+			ObjectManager::Add(m1);
+		}
+	}
 }
 
 
@@ -174,7 +194,7 @@ APPCLASS Setting()
 {
 	APPCLASS app;
 	app.captionHeight = 50;
-	app.isGame = true;
+	app.isGame = false;
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;
@@ -183,10 +203,8 @@ APPCLASS Setting()
 
 	app.game.width = 1920;
 	app.game.height = 1080;
-	app.game.color = Color(1, 1, 1);
+	app.game.color = Color(0, 0, 0);
 
-	app.editor.width = 1920;
-	app.editor.height = 1080;
 	app.editor.color = Color(1, 1, 1);
 
 	app.scene.x = 0;

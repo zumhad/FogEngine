@@ -2,11 +2,10 @@
 
 #include "Trace.h"
 #include "GUI.h"
+#include "Application.h"
 
 Static::Static()
 {
-	x = 0; y = 0;
-	width = 0; height = 0;
 	color = Color(0, 0, 0);
 
 	mBrush = 0;
@@ -19,6 +18,7 @@ Static::Static(Static& obj)
 	width = obj.width;
 	height = obj.height;
 	color = obj.color;
+	alignm = obj.alignm;
 
 	D2D1_COLOR_F c;
 	c.r = color.r;
@@ -37,9 +37,19 @@ Static::~Static()
 void Static::Draw()
 {
 	static D2D1_RECT_F rect;
-	rect.left = (float)x;
+	if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+	{
+		rect.left = (float)x;
+		rect.right = (float)x + width;
+	}
+	if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+	{
+		int right = Application::GetEditorWidth();
+		rect.left = (float)right - x - width;
+		rect.right = (float)right - x;
+	}
+
 	rect.top = (float)y;
-	rect.right = (float)x + width;
 	rect.bottom = (float)y + height;
 
 	static D2D1_COLOR_F c;

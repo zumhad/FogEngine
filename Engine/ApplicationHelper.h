@@ -8,8 +8,6 @@ struct APPCLASS
 {
     struct
     {
-        int width = 0;
-        int height = 0;
         Color color;
     } editor;
 

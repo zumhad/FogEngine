@@ -10,10 +10,12 @@
 #include <DirectXCollision.h>
 
 class ObjectManager;
+class Picking;
 
 class FOG_API Mesh : public Object
 {
 	friend class ObjectManager;
+	friend class Picking;
 
 public:
 	TypeObject GetType() override { return TypeObject::Mesh; }

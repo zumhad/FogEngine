@@ -23,11 +23,14 @@ public:
     static int Size();
     static Object& Get(int i);
     static void Clear();
+    static Object* GetSelectObject();
 
 private:
     static void Setup();
     static void Shotdown();
     static void Draw();
+    static void Pick();
+    static ID3D11UnorderedAccessView* const* GetUAV();
 
 private:
     struct Data;
@@ -46,7 +49,8 @@ struct PerFrameBuffer
     DirectionalLightBuffer directionalLight[MAX_DIRECTIONAL_LIGHT];
     DirectX::XMFLOAT3 cameraPosW;
     int directionalCount;
-    int pointCount; float pad[3];
+    int pointCount;
+    int mousePos[2]; float pad;
 };
 
 
@@ -56,4 +60,13 @@ struct PerObjectBuffer
     DirectX::XMFLOAT4X4 worldInvTranspose;
     DirectX::XMFLOAT4X4 worldViewProj;
     Material material;
+    int id; float pad[3];
+};
+
+
+struct PickingObject
+{
+    DirectX::XMFLOAT3 position;
+    int id;
+    float depth;
 };

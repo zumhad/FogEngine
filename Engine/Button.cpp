@@ -2,13 +2,12 @@
 
 #include "GUI.h"
 #include "MathHelper.h"
+#include "Application.h"
 
 using namespace DirectX;
 
 Button::Button()
 {
-	x = 0; y = 0;
-	width = 0; height = 0;
 	action = 0;
 	color = Color(0.0f, 0.0f, 0.0f);
 	focus = Color(0.0f, 0.0f, 0.0f);
@@ -25,6 +24,7 @@ Button::Button(Button& obj)
 	action = obj.action;
 	color = obj.color;
 	focus = obj.focus;
+	alignm = obj.alignm;
 
 	D2D1_COLOR_F c;
 	c.r = color.r;
@@ -43,10 +43,26 @@ Button::~Button()
 void Button::Draw()
 {
 	static D2D1_RECT_F rect;
-	rect.left = (float)x;
-	rect.top = (float)y;
-	rect.right = (float)x + width;
-	rect.bottom = (float)y + height;
+	if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+	{
+		rect.left = (float)x;
+		rect.right = (float)x + width;
+	}
+	if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+	{
+		rect.left = (float)Application::GetEditorWidth() - x - width;
+		rect.right = (float)Application::GetEditorWidth() - x;
+	}
+	if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
+	{
+		rect.top = (float)y;
+		rect.bottom = (float)y + height;
+	}
+	if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+	{
+		rect.top = (float)Application::GetEditorHeight() - y - height;
+		rect.bottom = (float)Application::GetEditorHeight() - y;
+	}
 
 	static D2D1_COLOR_F c;
 	if (mFocus)
@@ -66,6 +82,10 @@ void Button::Draw()
 
 	mBrush->SetColor(c);
 	GUI::RenderTarget()->FillRectangle(rect, mBrush);
+
+	//IDWriteTextLayout* lay;
+
+	//GUI::RenderTarget()->DrawTextLayout()
 }
 
 void Button::Action()

@@ -18,7 +18,7 @@ void FrustumCulling::Update(Matrix view, Matrix proj)
 	mData->frustum.Transform(mData->frustum, XMMatrixInverse(0, view));
 }
 
-bool FrustumCulling::Intersect(const DirectX::BoundingBox& bb)
+bool FrustumCulling::Intersect(const BoundingBox& bb)
 {
 	return mData->frustum.Intersects(bb);
 }

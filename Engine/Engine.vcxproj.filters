@@ -217,8 +217,10 @@
     <None Include="Assets\light.hlsli">
       <Filter>stuff</Filter>
     </None>
-    <None Include="Assets\shader.hlsl">
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
-    </None>
+    </FxCompile>
   </ItemGroup>
 </Project>

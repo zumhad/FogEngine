@@ -122,7 +122,12 @@ void Direct3D::ResizeGame()
 
 	ID3D11Texture2D* backBuffer = 0;
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
-	FOG_TRACE(mDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
+
+	D3D11_RENDER_TARGET_VIEW_DESC descRTV{};
+	descRTV.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	descRTV.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	FOG_TRACE(mDevice->CreateRenderTargetView(backBuffer, &descRTV, &mRenderTargetView));
 	SAFE_RELEASE(backBuffer);
 
 	D3D11_TEXTURE2D_DESC descDepth = {};
@@ -140,10 +145,10 @@ void Direct3D::ResizeGame()
 	ID3D11Texture2D* depthStencil = 0;
 	FOG_TRACE(mDevice->CreateTexture2D(&descDepth, 0, &depthStencil));
 
-	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV = {};
+	D3D11_DEPTH_STENCIL_VIEW_DESC descDSV{};
 	descDSV.Format = descDepth.Format;
 	descDSV.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	descDSV.Texture2D.MipSlice = 0;
+
 	FOG_TRACE(mDevice->CreateDepthStencilView(depthStencil, 0, &mDepthStencilView));
 	SAFE_RELEASE(depthStencil);
 
@@ -250,8 +255,11 @@ void Direct3D::DrawEditor()
 
 void Direct3D::DrawGame()
 {
-	mDeviceContext->OMSetRenderTargets(1, &mRenderTargetView, mDepthStencilView);
+	const UINT count = 0;
+	mDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(1, &mRenderTargetView, mDepthStencilView, 1, 1, ObjectManager::GetUAV(), &count);
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+
+
 
 	static FLOAT color[4]{};
 
@@ -279,6 +287,7 @@ void Direct3D::DrawGame()
 	}
 
 	ObjectManager::Draw();
+	ObjectManager::Pick();
 }
 
 void Direct3D::Present()

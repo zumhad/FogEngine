@@ -25,8 +25,6 @@ private:
 
 public:
 	Color color;
-	int x, y;
-	int width, height;
 
 private:
 	ID2D1SolidColorBrush* mBrush;

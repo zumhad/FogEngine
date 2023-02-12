@@ -56,6 +56,8 @@ public:
     Matrix operator+ () const;
     Matrix operator- () const;
 
+    static Matrix Invert(Matrix _m);
+
 public:
     float m[4][4];
 };
@@ -67,4 +69,5 @@ FOG_API Matrix operator* (const Matrix& _m, float f);
 FOG_API Matrix operator/ (const Matrix& _m, float f);
 FOG_API Matrix operator/ (const Matrix& m1, const Matrix& m2);
 FOG_API Matrix operator* (float f, const Matrix& _m);
+FOG_API Vector4 operator* (const Matrix& _m, const Vector4& v);
 

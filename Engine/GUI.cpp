@@ -47,6 +47,8 @@ GUI::Data::Data() : size(0), renderTarget(0), factory(0), writeFactory(0), focus
 
 	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&factory));
 	FOG_TRACE(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&writeFactory));
+
+	//writeFactory->CreateTextLayout()
 }
 
 ID2D1RenderTarget* GUI::RenderTarget()
@@ -134,9 +136,6 @@ void GUI::Update()
 		mData->focusControl = 0;
 	}
 
-	int x = Cursor::GetPosition(CURSOR_X);
-	int y = Cursor::GetPosition(CURSOR_Y);
-
 	int size = Size();
 	for (int i = 0; i < size; i++)
 	{
@@ -146,6 +145,19 @@ void GUI::Update()
 		if (type == TypeControl::Button)
 		{
 			Button& b = (Button&)control;
+
+			int x = Cursor::GetPosition(CURSOR_X);
+			int y = Cursor::GetPosition(CURSOR_Y);
+
+			if (b.alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+			{
+				x = Application::GetEditorWidth() - x;
+			}
+			if (b.alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+			{
+				y = Application::GetEditorHeight() - y;
+			}
+
 			bool isFocus = (x >= b.x) && (x <= b.x + b.width) && (y >= b.y) && (y <= b.y + b.height);
 
 			if (isFocus)

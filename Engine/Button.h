@@ -30,8 +30,6 @@ private:
 public:
 	Color color;
 	Color focus;
-	int x, y;
-	int width, height;
 	void (*action)();
 
 private:

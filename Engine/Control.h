@@ -9,6 +9,18 @@ enum class TypeControl
 	Static
 };
 
+enum HorizontalAlignm
+{
+	ALIGNM_LEFT,
+	ALIGNM_RIGHT
+};
+
+enum VerticalAlignm
+{
+	ALIGNM_TOP,
+	ALIGNM_BOTTOM
+};
+
 class GUI;
 
 class FOG_API Control
@@ -18,10 +30,22 @@ class FOG_API Control
 public:
 	virtual TypeControl GetType() { return TypeControl::Control; }
 
+	Control();
+
 private:
 	void SetFocus(bool focus) { mFocus = focus; }
 
+public:
+	struct
+	{
+		HorizontalAlignm horizontal;
+		VerticalAlignm vertical;
+	} alignm;
+
+	int x, y;
+	int width, height;
+
 protected:
-	bool mFocus = false;
+	bool mFocus;
 };
 

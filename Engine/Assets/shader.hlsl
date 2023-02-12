@@ -34,7 +34,8 @@ cbuffer cbPerFrame : register(b0)
     DirectionalLight gDirLight[16];
     float3 gCameraPosW;
     int gDirCount;
-    int gPointCount; float3 pad;
+    int gPointCount;
+    int2 gMousePos; float pad;
 };
 
 cbuffer cbPerObject : register(b1)
@@ -43,6 +44,7 @@ cbuffer cbPerObject : register(b1)
     float4x4 gWorldInvTranspose;
     float4x4 gWorldViewProj;
     Material gMaterial;
+    int gID; float3 pad1;
 };
 
 
@@ -50,7 +52,6 @@ struct VS_INPUT
 {
     float3 PosL : POSITION;
     float3 NormalL : NORMAL;
-    float2 tex : TEXCOORD;
 };
 
 
@@ -114,6 +115,16 @@ float3 ApplyPointLight(Material material, PointLight light, float3 normal, float
 
 }
 
+struct PickingObject
+{
+    float3 position;
+    int id;
+    float depth;
+};
+
+AppendStructuredBuffer<PickingObject> gOutput  : register(u1);
+
+[earlydepthstencil] // ??
 float4 PS(VS_OUTPUT input) : SV_Target
 {
     float3 normal = normalize(input.NormalW);
@@ -130,6 +141,16 @@ float4 PS(VS_OUTPUT input) : SV_Target
     for (int j = 0; j < gPointCount; j++)
     {
         color += ApplyPointLight(gMaterial, gPointLight[j], normal, viewDir, worldPos);
+    }
+
+    if (gMousePos.x == (int)input.PosH.x && gMousePos.y == (int)input.PosH.y)
+    {
+        PickingObject pick;
+        pick.position = worldPos;
+        pick.id = gID;
+        pick.depth = input.PosH.z / input.PosH.w;
+
+        gOutput.Append(pick);
     }
 
     return float4(color, 1.0f);

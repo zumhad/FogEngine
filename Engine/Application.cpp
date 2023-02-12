@@ -10,6 +10,7 @@
 #include "GUI.h"
 #include "Cursor.h"
 #include "FrustumCulling.h"
+#include "MathHelper.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -63,10 +64,8 @@ void Application::InitWindow()
     }
     else
     {
-        RECT rect{};
-        SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
-        width = rect.right - rect.left;
-        height = rect.bottom - rect.top;
+        width = mEditor.width;
+        height = mEditor.height;
         style = WS_OVERLAPPEDWINDOW;
     }
 
@@ -76,13 +75,16 @@ void Application::InitWindow()
 void Application::InitProp(APPCLASS app)
 {
     mIsGame = app.isGame;
-    mCaptionHeight = std::max(0, app.captionHeight);
+    mCaptionHeight = Math::Max(0, app.captionHeight);
     mFpsMax = app.fpsMax;
     mFoo.start = app.foo.start;
     mFoo.update = app.foo.update;
 
-    mEditor.width = app.editor.width;
-    mEditor.height = app.editor.height;
+    RECT rect{};
+    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+
+    mEditor.width = rect.right - rect.left;
+    mEditor.height = rect.bottom - rect.top;
     mEditor.color = app.editor.color;
 
     mGame.width = app.game.width;
@@ -198,7 +200,7 @@ void Application::SetSceneX(int x)
 {
     if (mIsGame) return;
 
-    mScene.x = std::max(0, x);
+    mScene.x = Math::Max(0, x);
 
     Direct3D::ResizeScene();
 }
@@ -207,7 +209,7 @@ void Application::SetSceneY(int y)
 {
     if (mIsGame) return;
 
-    mScene.y = std::max(0, y);
+    mScene.y = Math::Max(0, y);
 
     Direct3D::ResizeScene();
 }
@@ -216,7 +218,7 @@ void Application::SetSceneWidth(int width)
 {
     if (mIsGame) return;
 
-    mScene.width = std::max(0, width);
+    mScene.width = Math::Max(0, width);
 
     Direct3D::ResizeScene();
 }
@@ -225,7 +227,7 @@ void Application::SetSceneHeight(int height)
 {
     if (mIsGame) return;
 
-    mScene.height = std::max(0, height);
+    mScene.height = Math::Max(0, height);
 
     Direct3D::ResizeScene();
 }
@@ -270,24 +272,6 @@ Color Application::GetSceneColor()
     if (mIsGame) return 0;
 
     return mScene.color;
-}
-
-void Application::SetEditorWidth(int width)
-{
-    if (mIsGame) return;
-
-    mEditor.width = width;
-
-    Direct3D::ResizeEditor();
-}
-
-void Application::SetEditorHeight(int height)
-{
-    if (mIsGame) return;
-
-    mEditor.height = height;
-
-    Direct3D::ResizeEditor();
 }
 
 void Application::SetEditorColor(Color color)

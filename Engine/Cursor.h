@@ -2,6 +2,8 @@
 
 #include "Core.h"
 
+#include "Vector3.h"
+
 enum CursorAxis
 {
 	CURSOR_X,
@@ -15,6 +17,7 @@ public:
 	static void SetPosition(int x, int y);
 	static void SetVisible(bool var);
 	static bool GetVisible();
+	static Vector3 GetDirection();
 
 private:
 	static bool mVisible;

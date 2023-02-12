@@ -10,11 +10,13 @@
 
 class Application;
 class ObjectManager;
+class Cursor;
 
 class FOG_API Camera
 {
 	friend class Application;
 	friend class ObjectManager;
+	friend class Cursor;
 
 public:
 	static void SetPosition(Vector3 position);

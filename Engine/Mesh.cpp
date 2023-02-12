@@ -5,6 +5,7 @@
 #include "MathHelper.h"
 #include "Trace.h"
 #include "PathHelper.h"
+#include "ObjectManager.h"
 
 #include <WaveFrontReader.h>
 
@@ -54,6 +55,7 @@ Mesh::Mesh(Mesh& mesh)
     lighting = mesh.lighting;
     material = mesh.material;
     name = mesh.name;
+    id = mesh.id;
 
     String path;
     PathHelper::GetAssetsPath(path);

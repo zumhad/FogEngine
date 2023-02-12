@@ -30,8 +30,8 @@ public:
     Vector3& operator*= (float f);
     Vector3& operator/= (float f);
 
-    Vector3 operator+ () const;
-    Vector3 operator- () const;
+    Vector3 operator+ ();
+    Vector3 operator- ();
 
     static const Vector3& Zero();
     static const Vector3& One();

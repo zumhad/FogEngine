@@ -27,8 +27,6 @@ public:
     static int GetSceneHeight();
     static Color GetSceneColor();
 
-    static void SetEditorWidth(int width);
-    static void SetEditorHeight(int height);
     static void SetEditorColor(Color color);
 
     static int GetEditorWidth();
