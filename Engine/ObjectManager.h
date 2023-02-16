@@ -29,8 +29,7 @@ private:
     static void Setup();
     static void Shotdown();
     static void Draw();
-    static void Pick();
-    static ID3D11UnorderedAccessView* const* GetUAV();
+    static void SetSelectObject(int id);
 
 private:
     struct Data;

@@ -34,16 +34,13 @@ public:
     ID3D11VertexShader* vertexShader;
     ID3D11PixelShader* pixelShader;
     ID3D11InputLayout* vertexLayout;
-	ID3D11Buffer* outputBuffer;
-	ID3D11Buffer* outputResultBuffer;
-	ID3D11UnorderedAccessView* uav;
 
 	ConstantBuffer<PerObjectBuffer> perObjectBuffer;
 	ConstantBuffer<PerFrameBuffer> perFrameBuffer;
 };
 
 
-ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), outputBuffer(0), outputResultBuffer(0), uav(0), selectObject(0)
+ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), selectObject(0)
 {
 	String shaderPath;
 	PathHelper::GetAssetsPath(shaderPath);
@@ -80,33 +77,6 @@ ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLa
 	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
 	FOG_TRACE(Direct3D::Device()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), 0, &pixelShader));
 	SAFE_RELEASE(pPSBlob);
-
-	D3D11_BUFFER_DESC outputDesc{};
-	outputDesc.Usage = D3D11_USAGE_DEFAULT;
-	outputDesc.ByteWidth = sizeof(PickingObject) * 32;
-	outputDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
-	outputDesc.StructureByteStride = sizeof(PickingObject);
-	outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&outputDesc, 0, &outputBuffer));
-
-	outputDesc.Usage = D3D11_USAGE_STAGING;
-	outputDesc.BindFlags = 0;
-	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&outputDesc, 0, &outputResultBuffer));
-
-	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
-	uavDesc.Buffer.FirstElement = 0;
-	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
-	uavDesc.Buffer.NumElements = 32;
-	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
-	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
-
-	FOG_TRACE(Direct3D::Device()->CreateUnorderedAccessView(outputBuffer, &uavDesc, &uav));
-}
-
-ID3D11UnorderedAccessView* const* ObjectManager::GetUAV()
-{
-	return &(mData->uav);
 }
 
 void ObjectManager::Draw()
@@ -189,54 +159,18 @@ void ObjectManager::Draw()
 	}
 }
 
-void ObjectManager::Pick()
+void ObjectManager::SetSelectObject(int id)
 {
-	static bool isWait = false;
-
-	if (!isWait)
-	{
-		Direct3D::DeviceContext()->CopyResource(mData->outputResultBuffer, mData->outputBuffer);
-	}
-
-	static D3D11_MAPPED_SUBRESOURCE mappedBuffer;
-	HRESULT hr = Direct3D::DeviceContext()->Map(mData->outputResultBuffer, 0, D3D11_MAP_READ, D3D11_MAP_FLAG_DO_NOT_WAIT, &mappedBuffer);
-
-	if (SUCCEEDED(hr))
-	{
-		PickingObject* copy = (PickingObject*)(mappedBuffer.pData);
-
-		float maxDepth = 0.0f;
-		for (size_t i = 0; i < 32; i++)
-		{
-			if (copy[i].id != 0)
-			{
-				if (copy[i].depth > maxDepth)
-				{
-					mData->selectObject = &Get(copy[i].id - 1);
-					maxDepth = copy[i].depth;
-				}
-			}
-			else break;
-		}
-
-		if (maxDepth == 0.0f)
-			mData->selectObject = 0;
-
-		Direct3D::DeviceContext()->Unmap(mData->outputResultBuffer, 0);
-
-		static const UINT var[4]{};
-		Direct3D::DeviceContext()->ClearUnorderedAccessViewUint(mData->uav, var);
-
-		isWait = false;
-	}
+	if (id > 0)
+		mData->selectObject = &Get(id - 1);
 	else
-	{
-		isWait = true;
-	}
+		mData->selectObject = 0;
 }
 
 Object* ObjectManager::GetSelectObject()
 {
+	Direct3D::Pick();
+
 	return mData->selectObject;
 }
 
@@ -248,9 +182,6 @@ ObjectManager::Data::~Data()
 	SAFE_RELEASE(vertexShader);
 	SAFE_RELEASE(pixelShader);
 	SAFE_RELEASE(vertexLayout);
-	SAFE_RELEASE(outputBuffer);
-	SAFE_RELEASE(outputResultBuffer);
-	SAFE_RELEASE(uav);
 
     for (int i = 0; i < size; i++)
     {

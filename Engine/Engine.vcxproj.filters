@@ -102,7 +102,10 @@
     <ClCompile Include="Static.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="ConstantBuffer.cpp" />
+    <ClCompile Include="ConstantBuffer.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Picking.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -210,7 +213,10 @@
     <ClInclude Include="Static.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ConstantBuffer.h" />
+    <ClInclude Include="ConstantBuffer.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Picking.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GUIShader.hlsl">

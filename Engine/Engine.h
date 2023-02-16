@@ -17,6 +17,7 @@
 #include "Quaternion.h"
 #include "Button.h"
 #include "Static.h"
+#include "Picking.h"
 
 
 #define CREATE_APPLICATION(x)\

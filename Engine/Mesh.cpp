@@ -14,7 +14,7 @@ using namespace DirectX;
 struct Mesh::Data
 {
 public:
-    Data() : indexCount(0), vertexBuffer(0), indexBuffer(0) {}
+    Data() : indexCount(0), vertexBuffer(0), indexBuffer(0), vertexSize(0) {}
     ~Data();
 
 public:
@@ -24,6 +24,7 @@ public:
     BoundingBox bb;
 
     int indexCount;
+    int vertexSize;
     ID3D11Buffer* vertexBuffer;
     ID3D11Buffer* indexBuffer;
 };
@@ -62,7 +63,7 @@ Mesh::Mesh(Mesh& mesh)
     path += name;
 
     // читаем файл
-    WaveFrontReader<WORD> wfReader;
+    WaveFrontReader<UINT> wfReader;
     FOG_TRACE(wfReader.Load(path));
     mData->bb = wfReader.bounds;
 
@@ -83,14 +84,15 @@ Mesh::Mesh(Mesh& mesh)
     FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mData->indexBuffer));
 
     mData->indexCount = (int)wfReader.indices.size();
+    mData->vertexSize = sizeof(wfReader.vertices[0]);
 }
 
 void Mesh::Bind()
 {
-    UINT stride = sizeof(Vertex);
+    UINT stride = mData->vertexSize;
     UINT offset = 0;
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mData->vertexBuffer, &stride, &offset);
-    Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R16_UINT, 0);
+    Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
     //mTexture->Bind();
 

@@ -13,14 +13,6 @@ enum class TypeObject
 	Mesh
 };
 
-
-struct Vertex
-{
-	DirectX::XMFLOAT3 pos;
-	DirectX::XMFLOAT3 normal;
-	DirectX::XMFLOAT2 tex;
-};
-
 struct Material
 {
 	DirectX::XMFLOAT4 ambient = { 1.0f, 1.0f, 1.0f, 1.0f };

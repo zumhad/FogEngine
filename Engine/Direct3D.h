@@ -40,6 +40,8 @@ private:
 	static void ResizeEngine();
 	static void ResizeGame();
 
+	static void Pick();
+
 	static IDXGISwapChain* SwapChain() { return mSwapChain; }
 	static ID3D11Device* Device() { return mDevice; }
 	static ID3D11DeviceContext* DeviceContext() { return mDeviceContext; }
@@ -54,6 +56,10 @@ private:
 	static ID3D11DepthStencilView* mDepthStencilView;
 	static ID3D11DepthStencilState* mDepthStencilState;
 	static ID3D11DepthStencilState* mDepthDisabledStencilState;
+
+	static ID3D11Buffer* mOutputBuffer;
+	static ID3D11Buffer* mOutputResultBuffer;
+	static ID3D11UnorderedAccessView* mUAV;
 
 	static D3D11_VIEWPORT mGameViewport;
 	static D3D11_VIEWPORT mSceneViewport;

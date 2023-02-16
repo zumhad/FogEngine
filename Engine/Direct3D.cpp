@@ -29,6 +29,9 @@ ID3D11RasterizerState* Direct3D::mRasterizerState = 0;
 ID3D11DepthStencilView* Direct3D::mDepthStencilView = 0;
 ID3D11DepthStencilState* Direct3D::mDepthDisabledStencilState = 0;
 ID3D11DepthStencilState* Direct3D::mDepthStencilState = 0;
+ID3D11Buffer* Direct3D::mOutputBuffer = 0;
+ID3D11Buffer* Direct3D::mOutputResultBuffer = 0;
+ID3D11UnorderedAccessView* Direct3D::mUAV = 0;
 
 D3D11_VIEWPORT Direct3D::mGameViewport = { 0 };
 D3D11_VIEWPORT Direct3D::mSceneViewport = { 0 };
@@ -237,6 +240,28 @@ void Direct3D::Initialize()
 	dsd.DepthEnable = true;
 	FOG_TRACE(mDevice->CreateDepthStencilState(&dsd, &mDepthStencilState));
 
+	D3D11_BUFFER_DESC outputDesc{};
+	outputDesc.Usage = D3D11_USAGE_DEFAULT;
+	outputDesc.ByteWidth = sizeof(PickingObject) * 32;
+	outputDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS;
+	outputDesc.StructureByteStride = sizeof(PickingObject);
+	outputDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+	FOG_TRACE(mDevice->CreateBuffer(&outputDesc, 0, &mOutputBuffer));
+
+	outputDesc.Usage = D3D11_USAGE_STAGING;
+	outputDesc.BindFlags = 0;
+	outputDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+	FOG_TRACE(mDevice->CreateBuffer(&outputDesc, 0, &mOutputResultBuffer));
+
+	D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+	uavDesc.Buffer.FirstElement = 0;
+	uavDesc.Buffer.Flags = D3D11_BUFFER_UAV_FLAG_APPEND;
+	uavDesc.Buffer.NumElements = 32;
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;
+	uavDesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
+
+	FOG_TRACE(mDevice->CreateUnorderedAccessView(mOutputBuffer, &uavDesc, &mUAV));
+
 	mDeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
@@ -256,13 +281,10 @@ void Direct3D::DrawEditor()
 void Direct3D::DrawGame()
 {
 	const UINT count = 0;
-	mDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(1, &mRenderTargetView, mDepthStencilView, 1, 1, ObjectManager::GetUAV(), &count);
+	mDeviceContext->OMSetRenderTargetsAndUnorderedAccessViews(1, &mRenderTargetView, mDepthStencilView, 1, 1, &mUAV, &count);
 	mDeviceContext->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 
-
-
 	static FLOAT color[4]{};
-
 	if (Application::IsGame())
 	{
 		Color c = Application::GetGameColor();
@@ -286,13 +308,51 @@ void Direct3D::DrawGame()
 		mDeviceContext1->ClearView(mRenderTargetView, color, &mSceneRect, 1);
 	}
 
+	static const UINT var[4]{};
+	mDeviceContext->ClearUnorderedAccessViewUint(mUAV, var);
+
 	ObjectManager::Draw();
-	ObjectManager::Pick();
 }
 
 void Direct3D::Present()
 {
 	FOG_TRACE(mSwapChain->Present(0, DXGI_PRESENT_ALLOW_TEARING));
+}
+
+void Direct3D::Pick()
+{
+	mDeviceContext->CopyResource(mOutputResultBuffer, mOutputBuffer);
+
+	while (true)
+	{
+		static D3D11_MAPPED_SUBRESOURCE mappedBuffer;
+		HRESULT hr = mDeviceContext->Map(mOutputResultBuffer, 0, D3D11_MAP_READ, 0, &mappedBuffer);
+
+		if (SUCCEEDED(hr))
+		{
+			PickingObject* copy = (PickingObject*)(mappedBuffer.pData);
+
+			float maxDepth = 0.0f;
+			for (size_t i = 0; i < 32; i++)
+			{
+				if (copy[i].id != 0)
+				{
+					if (copy[i].depth > maxDepth)
+					{
+						ObjectManager::SetSelectObject(copy[i].id);
+						maxDepth = copy[i].depth;
+					}
+				}
+				else break;
+			}
+
+			if (maxDepth == 0.0f)
+				ObjectManager::SetSelectObject(0);
+
+			mDeviceContext->Unmap(mOutputResultBuffer, 0);
+			break;
+		}
+	}
 }
 
 
@@ -306,6 +366,9 @@ void Direct3D::Shotdown()
 	SAFE_RELEASE(mDeviceContext);
 	SAFE_RELEASE(mDeviceContext1);
 	SAFE_RELEASE(mRenderTargetView);
+	SAFE_RELEASE(mOutputBuffer);
+	SAFE_RELEASE(mOutputResultBuffer);
+	SAFE_RELEASE(mUAV);
 
 #ifdef _DEBUG
 	ID3D11Debug* d3dDebug;
