@@ -10,6 +10,7 @@ class Direct3D;
 class Control;
 class Button;
 class Static;
+class Text;
 
 class FOG_API GUI
 {
@@ -18,12 +19,16 @@ class FOG_API GUI
 	friend class Control;
 	friend class Button;
 	friend class Static;
+	friend class Text;
 
 public:
 	template<typename T>
-	static void Add(T& b);
+	static int Add(T& control);
 
-	static Control& Get(int index);
+	template<typename T>
+	static int AddChild(int parent, T& child);
+
+	static Control& Get(int id);
 	static int Size();
 
 private:
@@ -41,6 +46,12 @@ private:
 	static Data* mData;
 };
 
-template FOG_API void GUI::Add<Control>(Control&);
-template FOG_API void GUI::Add<Button>(Button&);
-template FOG_API void GUI::Add<Static>(Static&);
+template FOG_API int GUI::Add<Control>(Control&);
+template FOG_API int GUI::Add<Button>(Button&);
+template FOG_API int GUI::Add<Static>(Static&);
+template FOG_API int GUI::Add<Text>(Text&);
+
+template FOG_API int GUI::AddChild<Control>(int, Control&);
+template FOG_API int GUI::AddChild<Button>(int, Button&);
+template FOG_API int GUI::AddChild<Static>(int, Static&);
+template FOG_API int GUI::AddChild<Text>(int, Text&);

@@ -1,3 +1,5 @@
+#pragma warning(disable : 6387)
+
 #include "Direct3D.h"
 
 #include "Trace.h"
@@ -64,7 +66,6 @@ void Direct3D::ResizeEditor()
 {
 	SAFE_RELEASE(mRenderTargetView);
 	SAFE_RELEASE(mDepthStencilView);
-	GUI::Release();
 
 	int width = Application::GetEditorWidth();
 	int height = Application::GetEditorHeight();
@@ -75,8 +76,6 @@ void Direct3D::ResizeEditor()
 	FOG_TRACE(mSwapChain->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 	FOG_TRACE(mDevice->CreateRenderTargetView(backBuffer, 0, &mRenderTargetView));
 	SAFE_RELEASE(backBuffer);
-
-	GUI::Resize();
 
 	D3D11_TEXTURE2D_DESC descDepth{};
 	descDepth.Width = width;
@@ -207,7 +206,6 @@ void Direct3D::Initialize()
 
 	FOG_TRACE(dxgiFactory->MakeWindowAssociation(Application::GetHWND(), DXGI_MWA_NO_ALT_ENTER));
 	SAFE_RELEASE(dxgiFactory);
-
 
 	if (Application::IsGame())
 		ResizeGame();

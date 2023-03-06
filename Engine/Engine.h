@@ -18,6 +18,7 @@
 #include "Button.h"
 #include "Static.h"
 #include "Picking.h"
+#include "Text.h"
 
 
 #define CREATE_APPLICATION(x)\

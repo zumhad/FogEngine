@@ -6,6 +6,10 @@
 #include "Matrix.h"
 #include "Camera.h"
 
+#include <DirectXMath.h>
+
+using namespace DirectX;
+
 bool Cursor::mVisible = true;
 
 int Cursor::GetPosition(CursorAxis axis)
@@ -42,30 +46,35 @@ bool Cursor::GetVisible()
 
 Vector3 Cursor::GetDirection()
 {
-    float xPos = GetPosition(CURSOR_X);
-    float yPos = GetPosition(CURSOR_Y);
-    float width = Application::GetSceneWidth();
-    float height = Application::GetSceneHeight();
-    float xPosW = Application::GetSceneX();
-    float yPosW = Application::GetSceneY();
+    float xCursor = (float)GetPosition(CURSOR_X);
+    float yCursor = (float)GetPosition(CURSOR_Y);
 
+	float widthWindow;
+	float heightWindow;
+	float xWindow;
+	float yWindow;
 
-    float x = (2.0f * (xPos- xPosW)) / width - 1.0f;
-    float y = 1.0f - (2.0f * (yPos - yPosW)) / height;
-    //float y = (2.0f * yPos) / height - 1.0f;
+	if (Application::IsGame())
+	{
+		widthWindow = (float)Application::GetGameWidth();
+		heightWindow = (float)Application::GetGameHeight();
+		xWindow = 0.0f;
+		yWindow = 0.0f;
+	}
+	else
+	{
+		widthWindow = (float)Application::GetSceneWidth();
+		heightWindow = (float)Application::GetSceneHeight();
+		xWindow = (float)Application::GetSceneX();
+		yWindow = (float)Application::GetSceneY();
+	}
 
-    float z = 1.0f;
-    Vector3 ray_nds = Vector3(x, y, z);
-    Vector4 ray_clip = Vector4(ray_nds.x, ray_nds.y, -1.0f, 1.0f);
+	XMMATRIX proj = Camera::GetProjMatrix();
+	XMMATRIX view = Camera::GetViewMatrix();
+	XMMATRIX world = XMMatrixIdentity();
 
-    Vector4 ray_eye = Matrix::Invert(Camera::GetProjMatrix()) * ray_clip;
+	XMVECTOR v = XMVectorSet(xCursor, yCursor, 1.0f, 0.0f);
+    XMVECTOR ray = XMVector3Unproject(v, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
 
-    ray_eye = Vector4(ray_eye.x, ray_eye.y, 1.0f, 0.0f);
-
-    Vector4 inv_ray_wor = (Matrix::Invert(Camera::GetViewMatrix()) * ray_eye);
-    Vector3 ray_wor = Vector3(inv_ray_wor.x, inv_ray_wor.y, inv_ray_wor.z);
-    ray_wor = Vector3::Normalize(ray_wor);
-    return ray_wor;
-
-    
+    return Vector3::Normalize(ray);
 }

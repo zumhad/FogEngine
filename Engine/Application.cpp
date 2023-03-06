@@ -11,6 +11,7 @@
 #include "Cursor.h"
 #include "FrustumCulling.h"
 #include "MathHelper.h"
+#include "Text.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -75,7 +76,7 @@ void Application::InitWindow()
 void Application::InitProp(APPCLASS app)
 {
     mIsGame = app.isGame;
-    mCaptionHeight = Math::Max(0, app.captionHeight);
+    mCaptionHeight = (int)Math::Max(0.0f, (float)app.captionHeight);
     mFpsMax = app.fpsMax;
     mFoo.start = app.foo.start;
     mFoo.update = app.foo.update;
@@ -123,9 +124,10 @@ void Application::CheckDebug()
 
 void Application::InitModules(APPCLASS app)
 {
-    GUI::Setup();
-    Input::Setup();
     Direct3D::Setup();
+    Input::Setup();
+    GUI::Setup();
+    Text::Setup();
     Time::Setup();
     Camera::Setup(app);
     ObjectManager::Setup();
@@ -191,8 +193,8 @@ void Application::Shotdown() //exit
 
     FrustumCulling::Shotdown();
     ObjectManager::Shotdown();
+    Text::Shotdown();
     GUI::Shotdown();
-    ObjectManager::Shotdown();
     Direct3D::Shotdown();
 }
 
@@ -200,7 +202,7 @@ void Application::SetSceneX(int x)
 {
     if (mIsGame) return;
 
-    mScene.x = Math::Max(0, x);
+    mScene.x = (int)Math::Max(0.0f, float(x));
 
     Direct3D::ResizeScene();
 }
@@ -209,7 +211,7 @@ void Application::SetSceneY(int y)
 {
     if (mIsGame) return;
 
-    mScene.y = Math::Max(0, y);
+    mScene.y = (int)Math::Max(0.0f, float(y));
 
     Direct3D::ResizeScene();
 }
@@ -218,7 +220,7 @@ void Application::SetSceneWidth(int width)
 {
     if (mIsGame) return;
 
-    mScene.width = Math::Max(0, width);
+    mScene.width = (int)Math::Max(0.0f, float(width));
 
     Direct3D::ResizeScene();
 }
@@ -227,7 +229,7 @@ void Application::SetSceneHeight(int height)
 {
     if (mIsGame) return;
 
-    mScene.height = Math::Max(0, height);
+    mScene.height = (int)Math::Max(0.0f, float(height));
 
     Direct3D::ResizeScene();
 }

@@ -7,6 +7,7 @@
 #include "Control.h"
 #include "Color.h"
 #include "Matrix.h"
+#include "Text.h"
 
 #include <d2d1_3.h>
 

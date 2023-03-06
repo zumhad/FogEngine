@@ -10,6 +10,7 @@ class FOG_API Time
 
 public:
 	static float DeltaTime();
+	static int GetFPS();
 
 private:
 	static void Setup();
@@ -24,6 +25,7 @@ private:
 private:
 	static float mSecondsPerCount;
 	static float mDeltaTime;
+	static int mFPS;
 
 	static long long mBaseTime;
 	static long long mPausedTime;

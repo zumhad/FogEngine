@@ -105,7 +105,12 @@
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Picking.cpp" />
+    <ClCompile Include="Picking.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Text.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -216,7 +221,12 @@
     <ClInclude Include="ConstantBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Picking.h" />
+    <ClInclude Include="Picking.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="Text.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\GUIShader.hlsl">
@@ -225,10 +235,8 @@
     <None Include="Assets\light.hlsli">
       <Filter>stuff</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="Assets\shader.hlsl">
+    <None Include="Assets\shader.hlsl">
       <Filter>stuff</Filter>
-    </FxCompile>
+    </None>
   </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 #include "Control.h"
 
+#include "GUI.h"
+
 Control::Control()
 {
 	alignm.horizontal = ALIGNM_LEFT;
@@ -9,4 +11,8 @@ Control::Control()
 	width = 0, height = 0;
 
 	mFocus = false;
+
+	mChild = 0;
+	mParent = 0;
+	mRect = {};
 }

@@ -42,26 +42,73 @@ Button::~Button()
 
 void Button::Draw()
 {
-	static D2D1_RECT_F rect;
-	if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+	if (mParent)
 	{
-		rect.left = (float)x;
-		rect.right = (float)x + width;
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+		{
+			mRect.left = (float)mParent->mRect.left + x;
+			mRect.right = (float)mParent->mRect.left + x + width;
+		}
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+		{
+			mRect.left = (float)mParent->mRect.right - width + x;
+			mRect.right = (float)mParent->mRect.right + x;
+		}
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_CENTER_H)
+		{
+			mRect.left = (float)mParent->mRect.left + (mParent->mRect.right - mParent->mRect.left - width) * 0.5f + x;
+			mRect.right = (float)mParent->mRect.left + (mParent->mRect.right - mParent->mRect.left + width) * 0.5f + x;
+		}
+
+		if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
+		{
+			mRect.top = (float)mParent->mRect.top + y;
+			mRect.bottom = (float)mParent->mRect.top + y + height;
+		}
+		if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+		{
+			mRect.top = (float)mParent->mRect.bottom - height + y;
+			mRect.bottom = (float)mParent->mRect.bottom + y;
+		}
+		if (alignm.vertical == VerticalAlignm::ALIGNM_CENTER_V)
+		{
+			mRect.top = (float)mParent->mRect.top + (mParent->mRect.bottom - mParent->mRect.top - height) * 0.5f + y;
+			mRect.bottom = (float)mParent->mRect.top + (mParent->mRect.bottom - mParent->mRect.top + height) * 0.5f + y;
+		}
 	}
-	if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+	else
 	{
-		rect.left = (float)Application::GetEditorWidth() - x - width;
-		rect.right = (float)Application::GetEditorWidth() - x;
-	}
-	if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
-	{
-		rect.top = (float)y;
-		rect.bottom = (float)y + height;
-	}
-	if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
-	{
-		rect.top = (float)Application::GetEditorHeight() - y - height;
-		rect.bottom = (float)Application::GetEditorHeight() - y;
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+		{
+			mRect.left = (float)x;
+			mRect.right = (float)x + width;
+		}
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+		{
+			mRect.left = (float)Application::GetEditorWidth() - width + x;
+			mRect.right = (float)Application::GetEditorWidth() + x;
+		}
+		if (alignm.horizontal == HorizontalAlignm::ALIGNM_CENTER_H)
+		{
+			mRect.left = (float)(Application::GetEditorWidth() - width) * 0.5f + x;
+			mRect.right = (float)(Application::GetEditorWidth() + width) * 0.5f + x;
+		}
+
+		if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
+		{
+			mRect.top = (float)y;
+			mRect.bottom = (float)y + height;
+		}
+		if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+		{
+			mRect.top = (float)Application::GetEditorHeight() - height + y;
+			mRect.bottom = (float)Application::GetEditorHeight() + y;
+		}
+		if (alignm.vertical == VerticalAlignm::ALIGNM_CENTER_V)
+		{
+			mRect.top = (float)(Application::GetEditorHeight() - height) * 0.5f + y;
+			mRect.bottom = (float)(Application::GetEditorHeight() + height) * 0.5f + y;
+		}
 	}
 
 	static D2D1_COLOR_F c;
@@ -81,11 +128,7 @@ void Button::Draw()
 	}
 
 	mBrush->SetColor(c);
-	GUI::RenderTarget()->FillRectangle(rect, mBrush);
-
-	//IDWriteTextLayout* lay;
-
-	//GUI::RenderTarget()->DrawTextLayout()
+	GUI::RenderTarget()->FillRectangle(mRect, mBrush);
 }
 
 void Button::Action()

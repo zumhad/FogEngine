@@ -92,7 +92,7 @@ public:
 
         VertexCache  vertexCache;
 
-        Material defmat;
+        Material defmat{};
 
         wcscpy_s(defmat.strName, L"default");
         materials.emplace_back(defmat);
@@ -152,9 +152,9 @@ public:
             {
                 // Face
                 INT iPosition, iTexCoord, iNormal;
-                Vertex vertex;
+                Vertex vertex{};
 
-                uint32_t faceIndex[MAX_POLY];
+                uint32_t faceIndex[MAX_POLY]{};
                 size_t iFace = 0;
                 for (;;)
                 {
@@ -349,7 +349,7 @@ public:
 
                 if (!bFound)
                 {
-                    Material mat;
+                    Material mat{};
                     curSubset = static_cast<uint32_t>(materials.size());
                     wcscpy_s(mat.strName, MAX_PATH - 1, strName);
                     materials.emplace_back(mat);
@@ -581,7 +581,7 @@ public:
         name = path.filename().c_str();
 #endif
 
-        Material defmat;
+        Material defmat{};
         wcscpy_s(defmat.strName, L"default");
         materials.emplace_back(defmat);
 
@@ -691,7 +691,7 @@ private:
     {
         auto f = cache.equal_range(hash);
 
-        for (auto it = f.first; it != f.second; ++it)
+        for (auto& it = f.first; it != f.second; ++it)
         {
             auto& tv = vertices[it->second];
 

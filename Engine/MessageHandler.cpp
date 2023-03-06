@@ -46,8 +46,10 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         {
             if (mStarted && !mIsGame)
             {
-                Direct3D::ResizeEditor();
-                InitBuffers();
+                //GUI::Release();
+                //Direct3D::ResizeEditor();
+                //GUI::Resize();
+                //InitBuffers();
             }
 
             return 0;
@@ -141,7 +143,11 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
             if (mStarted && !mIsGame)
             {
+
+                GUI::Release();
                 Direct3D::ResizeEditor();
+                GUI::Resize();
+
                 InitBuffers();
             }
 

@@ -5,14 +5,14 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Cursor.h"
-#include "CustomString.h"
 #include "PathHelper.h"
 #include "Input.h"
 #include "Button.h"
 #include "Static.h"
+#include "Timer.h"
+#include "Text.h"
 
 #include <d2d1_3.h>
-#include <dwrite.h>
 #include <vector>
 
 using namespace DirectX;
@@ -32,12 +32,11 @@ public:
 	int size;
 	Control* focusControl;
 
-	ID2D1RenderTarget* renderTarget;
 	ID2D1Factory3* factory;
-	IDWriteFactory* writeFactory;
+	ID2D1RenderTarget* renderTarget;
 }; 
 
-GUI::Data::Data() : size(0), renderTarget(0), factory(0), writeFactory(0), focusControl(0)
+GUI::Data::Data() : size(0), renderTarget(0), factory(0), focusControl(0)
 {
 	D2D1_FACTORY_OPTIONS factoryOptions{};
 
@@ -46,9 +45,6 @@ GUI::Data::Data() : size(0), renderTarget(0), factory(0), writeFactory(0), focus
 #endif
 
 	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&factory));
-	FOG_TRACE(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)&writeFactory));
-
-	//writeFactory->CreateTextLayout()
 }
 
 ID2D1RenderTarget* GUI::RenderTarget()
@@ -59,6 +55,8 @@ ID2D1RenderTarget* GUI::RenderTarget()
 void GUI::Setup()
 {
 	mData = new Data;
+
+	Resize();
 }
 
 void GUI::Release()
@@ -80,12 +78,12 @@ void GUI::Resize()
 	SAFE_RELEASE(surface);
 }
 
-Control& GUI::Get(int i)
+Control& GUI::Get(int id)
 { 
-	if (i + 1 > mData->size)
+	if (id >= mData->size || id < 0)
 		Application::Close();
 
-	return *(mData->v[i]);
+	return *(mData->v[id]);
 }
 
 void GUI::Draw()
@@ -122,6 +120,13 @@ void GUI::Draw()
 				st.Draw();
 				break;
 			}
+
+			case TypeControl::Text:
+			{
+				Text& text = (Text&)control;
+				text.Draw();
+				break;
+			}
 		}
 	}
 
@@ -149,16 +154,7 @@ void GUI::Update()
 			int x = Cursor::GetPosition(CURSOR_X);
 			int y = Cursor::GetPosition(CURSOR_Y);
 
-			if (b.alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
-			{
-				x = Application::GetEditorWidth() - x;
-			}
-			if (b.alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
-			{
-				y = Application::GetEditorHeight() - y;
-			}
-
-			bool isFocus = (x >= b.x) && (x <= b.x + b.width) && (y >= b.y) && (y <= b.y + b.height);
+			bool isFocus = (x >= b.mRect.left) && (x <= b.mRect.right) && (y >= b.mRect.top) && (y <= b.mRect.bottom);
 
 			if (isFocus)
 			{
@@ -205,7 +201,6 @@ GUI::Data::~Data()
 {
 	SAFE_RELEASE(renderTarget);
 	SAFE_RELEASE(factory);
-	SAFE_RELEASE(writeFactory);
 
 	for (int i = 0; i < size; i++)
 	{
@@ -214,14 +209,30 @@ GUI::Data::~Data()
 		if (type == TypeControl::Control) delete (Control*)v[i];
 		if (type == TypeControl::Button) delete (Button*)v[i];
 		if (type == TypeControl::Static) delete (Static*)v[i];
+		if (type == TypeControl::Text) delete (Text*)v[i];
 	}
 }
 
 template<typename T>
-void GUI::Add(T& b)
+int GUI::Add(T& control)
 {
-	T* t = new T(b);
+	T* t = new T(control);
 
 	mData->v.push_back(t);
-	mData->size++;
+	int id = mData->size++;
+
+	return id;
+}
+
+template<typename T>
+int GUI::AddChild(int parent, T& child)
+{
+	Control* c = &Get(parent);
+	c->mChild = new T(child);
+	c->mChild->mParent = c;
+
+	mData->v.push_back(c->mChild);
+	int id = mData->size++;
+
+	return id;
 }

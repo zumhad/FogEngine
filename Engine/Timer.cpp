@@ -10,6 +10,7 @@ long long Time::mPausedTime = 0;
 long long Time::mPrevTime = 0;
 long long Time::mCurrTime = 0;
 bool Time::mStopped = false;
+int Time::mFPS = 0;
 
 void Time::Setup()
 {
@@ -111,6 +112,24 @@ void Time::Tick()
 	{
 		mDeltaTime = 0.0;
 	}
+
+	static float timeElapsed = 0.0f;
+	static int fps = 0;
+
+	fps++;
+	timeElapsed += mDeltaTime;
+
+	if (timeElapsed >= 1.0f)
+	{
+		mFPS = fps;
+
+		fps = 0;
+		timeElapsed = 0.0f;
+	}
 }
 
+int Time::GetFPS()
+{
+	return mFPS;
+}
 
