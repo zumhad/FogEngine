@@ -61,5 +61,6 @@ protected:
 	Control* mChild;
 	Control* mParent;
 	D2D1_RECT_F mRect;
+	int mChildCount;
 };
 

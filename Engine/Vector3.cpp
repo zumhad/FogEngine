@@ -272,3 +272,15 @@ Vector3 Vector3::Lerp(const Vector3& v1, const Vector3& v2, float t)
 {
     return XMVectorLerp(v1, v2, t);
 }
+
+float Vector3::Distance(const Vector3& v1, const Vector3& v2)
+{
+    return XMVectorGetX(XMVector3Length(v2 - v1));
+}
+
+float Vector3::Angle(const Vector3& v1, const Vector3& v2)
+{
+    XMVECTOR v = XMVector3AngleBetweenVectors(v1, v2);
+
+    return Math::ConvertToDegrees(XMVectorGetX(v));
+}

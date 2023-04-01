@@ -4,5 +4,10 @@
 
 Object::Object()
 {
-	id = ObjectManager::Size() + 1;
+	mID = 0;
+}
+
+int Object::GetID()
+{
+	return mID;
 }

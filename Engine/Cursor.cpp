@@ -73,8 +73,11 @@ Vector3 Cursor::GetDirection()
 	XMMATRIX view = Camera::GetViewMatrix();
 	XMMATRIX world = XMMatrixIdentity();
 
-	XMVECTOR v = XMVectorSet(xCursor, yCursor, 1.0f, 0.0f);
-    XMVECTOR ray = XMVector3Unproject(v, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
+	XMVECTOR v1 = XMVectorSet(xCursor, yCursor, 1.0f, 0.0f);
+    XMVECTOR ray1 = XMVector3Unproject(v1, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
 
-    return Vector3::Normalize(ray);
+	XMVECTOR v2 = XMVectorSet(xCursor, yCursor, 0.0f, 0.0f);
+	XMVECTOR ray2 = XMVector3Unproject(v2, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
+
+    return Vector3::Normalize(ray2 - ray1);
 }

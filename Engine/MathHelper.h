@@ -5,10 +5,13 @@
 class FOG_API Math
 {
 public:
+    static int Sign(float f);
+    static float Abs(float f);
     static float Sqrt(float f);
     static float Pow(float f, float p);
     static float Infinity();
     static float Epsilon();
+    static float Min(float a, float b);
     static float Max(float a, float b);
     static float Clamp(float value, float min, float max);
     static float Floor(float f);

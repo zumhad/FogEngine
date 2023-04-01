@@ -6,6 +6,7 @@
 #include "Trace.h"
 #include "PathHelper.h"
 #include "ObjectManager.h"
+#include "Application.h"
 
 #include <WaveFrontReader.h>
 
@@ -56,7 +57,6 @@ Mesh::Mesh(Mesh& mesh)
     lighting = mesh.lighting;
     material = mesh.material;
     name = mesh.name;
-    id = mesh.id;
 
     String path;
     PathHelper::GetAssetsPath(path);
@@ -89,8 +89,8 @@ Mesh::Mesh(Mesh& mesh)
 
 void Mesh::Bind()
 {
-    UINT stride = mData->vertexSize;
-    UINT offset = 0;
+    static UINT stride = mData->vertexSize;
+    static UINT offset = 0;
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mData->vertexBuffer, &stride, &offset);
     Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
@@ -117,17 +117,15 @@ BoundingBox Mesh::GetBoundingBox()
 Matrix Mesh::GetWorldMatrix()
 {
     XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-    XMMATRIX m = XMMatrixAffineTransformation(scale, XMVectorSet(0, 0, 0, 1), q, position);
-
-    mData->world = m;
+    Matrix m = XMMatrixAffineTransformation(scale, XMVectorSet(0, 0, 0, 1), q, position);
 
     return m;
 }
 
 Matrix Mesh::GetWorldInvTransposeMatrix()
 {
-    XMMATRIX m = mData->world;
-    m.r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+    Matrix m = mData->world;
+    //m.m. r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
     m = XMMatrixTranspose(XMMatrixInverse(0, m));
     mData->worldInvTranspose = m;
 

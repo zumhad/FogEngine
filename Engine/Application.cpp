@@ -12,11 +12,17 @@
 #include "FrustumCulling.h"
 #include "MathHelper.h"
 #include "Text.h"
+#include "DepthMap.h"
+#include "SelectMap.h"
+#include "TextureMap.h"
+#include "PassMap.h"
+#include "Picking.h"
 
 #include <ctime>
 #include <shellapi.h>
 #include <crtdbg.h>
 #include <algorithm>
+#include <commdlg.h>
 
 HWND Application::mHwnd = 0;
 
@@ -41,7 +47,7 @@ void Application::InitWindow()
     GetModuleFileName(0, exePath, MAX_PATH);   // get icon
     HICON hIcon = ExtractIcon(0, exePath, 0);  //
 
-    String::Strcpy(mPath, exePath, 0, String::FindStr(exePath, L"\\FogEngine") + String::Strlen(L"\\FogEngine"));
+    String::Strcpy(mPath, exePath, 0, String::FindStr(exePath, L"\\Build"));
 
     WNDCLASSEX wce{};
     wce.cbSize = sizeof(WNDCLASSEX);
@@ -125,6 +131,11 @@ void Application::CheckDebug()
 void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
+    Picking::Setup();
+    PassMap::Setup();
+    TextureMap::Setup();
+    SelectMap::Setup();
+    DepthMap::Setup();
     Input::Setup();
     GUI::Setup();
     Text::Setup();
@@ -179,7 +190,7 @@ bool Application::CursorInScene()
     int left = GetSceneX();
     int top = GetSceneY();
     int right = GetSceneX() + GetSceneWidth();
-    int bootom = GetSceneX() + GetSceneHeight();
+    int bootom = GetSceneY() + GetSceneHeight();
 
     RECT r = { left, top, right, bootom };
     return PtInRect(&r, p);
@@ -195,6 +206,11 @@ void Application::Shotdown() //exit
     ObjectManager::Shotdown();
     Text::Shotdown();
     GUI::Shotdown();
+    DepthMap::Shotdown();
+    SelectMap::Shotdown();
+    TextureMap::Shotdown();
+    PassMap::Shotdown();
+    Picking::Shotdown();
     Direct3D::Shotdown();
 }
 
@@ -203,8 +219,6 @@ void Application::SetSceneX(int x)
     if (mIsGame) return;
 
     mScene.x = (int)Math::Max(0.0f, float(x));
-
-    Direct3D::ResizeScene();
 }
 
 void Application::SetSceneY(int y)
@@ -212,8 +226,6 @@ void Application::SetSceneY(int y)
     if (mIsGame) return;
 
     mScene.y = (int)Math::Max(0.0f, float(y));
-
-    Direct3D::ResizeScene();
 }
 
 void Application::SetSceneWidth(int width)
@@ -221,17 +233,13 @@ void Application::SetSceneWidth(int width)
     if (mIsGame) return;
 
     mScene.width = (int)Math::Max(0.0f, float(width));
-
-    Direct3D::ResizeScene();
 }
 
 void Application::SetSceneHeight(int height)
 {
     if (mIsGame) return;
 
-    mScene.height = (int)Math::Max(0.0f, float(height));
-
-    Direct3D::ResizeScene();
+    mScene.height = (int)Math::Max(0.0f, float(height));;
 }
 
 void Application::SetSceneColor(Color color)
@@ -310,7 +318,7 @@ void Application::SetGameWidth(int width)
 
     mGame.width = width;
 
-    Direct3D::ResizeGame();
+    Direct3D::Resize();
 }
 
 void Application::SetGameHeight(int height)
@@ -319,7 +327,7 @@ void Application::SetGameHeight(int height)
 
     mGame.height = height;
 
-    Direct3D::ResizeGame();
+    Direct3D::Resize();
 }
 
 void Application::SetGameColor(Color color)
@@ -364,6 +372,31 @@ void Application::Restore()
         ShowWindow(mHwnd, SW_RESTORE);
     else
         ShowWindow(mHwnd, SW_MAXIMIZE);
+}
+
+void Application::OpenFileDialog()
+{
+    //::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
+    TCHAR szFile[260] = { 0 };
+
+    OPENFILENAMEW ofn = { sizeof(OPENFILENAMEW) };
+    ZeroMemory(&ofn, sizeof(OPENFILENAMEW));
+    ofn.lStructSize = sizeof(OPENFILENAMEW);
+    ofn.hwndOwner = mHwnd;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = L"All\0*.*\0Text\0*.TXT\0";
+    ofn.nFilterIndex = 1;
+    ofn.lpstrFileTitle = NULL;
+    ofn.nMaxFileTitle = 0;
+    ofn.lpstrInitialDir = NULL;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (GetOpenFileName(&ofn) == TRUE)
+    {
+        MessageBox(NULL, ofn.lpstrFile, L"File Name", MB_OK);
+    }
 }
 
 void Application::Close() { PostQuitMessage(0); }

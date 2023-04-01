@@ -9,12 +9,14 @@
 class ObjectManager;
 class Application;
 class Camera;
+class DepthMap;
 
 class FrustumCulling
 {
 	friend class ObjectManager;
 	friend class Application;
-	friend class Camera;
+	friend class Camera;	
+	friend class DepthMap;
 
 private:
 	static void Setup();

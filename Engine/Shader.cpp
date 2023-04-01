@@ -3,9 +3,12 @@
 #include "PathHelper.h"
 #include "CustomFile.h"
 #include "CustomString.h"
+#include "SelectMap.h"
+#include "DepthMap.h"
 
 #include <d3dcompiler.h>
 #include <cstdlib>
+#include <vector>
 
 void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -21,13 +24,26 @@ void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR 
 
 	ShaderInclude include;
 
-	ID3DBlob* pErrorBlob = 0;
-	FOG_TRACE(D3DCompileFromFile(szFileName, 0, &include, szEntryPoint, szShaderModel, dwShaderFlags, 0, ppBlobOut, &pErrorBlob));
+	std::vector<D3D_SHADER_MACRO> vDefine;
+	if (DepthMap::GetEnable()) vDefine.push_back({ "DEPTH_MAP", 0 });
+	if (SelectMap::GetEnable()) vDefine.push_back({ "SELECT_MAP", 0 });
 
-	SAFE_RELEASE(pErrorBlob);
+	if (DepthMap::GetDraw()) vDefine.push_back({ "DEPTH_MAP_DRAW", 0 });
+	if (SelectMap::GetDraw()) vDefine.push_back({ "SELECT_MAP_DRAW", 0 });
+	vDefine.push_back({ 0, 0 });
+
+	ID3DBlob* pErrorBlob = 0;
+	D3DCompileFromFile(szFileName, vDefine.data(), &include, szEntryPoint, szShaderModel, dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
+
+	if (pErrorBlob)
+	{
+		OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+	}
+
+	SAFE_RELEASE(pErrorBlob)
 }
 
-HRESULT ShaderInclude::Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes)
+SHADERAPI ShaderInclude::Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes)
 {
 	String includePath;
 	PathHelper::GetAssetsPath(includePath);
@@ -45,7 +61,7 @@ HRESULT ShaderInclude::Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID
 	return S_OK;
 }
 
-HRESULT ShaderInclude::Close(LPCVOID pData)
+SHADERAPI ShaderInclude::Close(LPCVOID pData)
 {
 	std::free(const_cast<void*>(pData));
 	return S_OK;

@@ -12,6 +12,7 @@ Control::Control()
 
 	mFocus = false;
 
+	mChildCount = 0;
 	mChild = 0;
 	mParent = 0;
 	mRect = {};

@@ -2,8 +2,12 @@
 
 #include "Core.h"
 
+#include "Vector3.h"
+
 #include <d3d11.h>
 #include <DirectXMath.h>
+
+#undef GetObject
 
 enum class TypeObject
 {
@@ -21,12 +25,18 @@ struct Material
 	DirectX::XMFLOAT4 reflect = { 1.0f, 1.0f, 1.0f, 1.0f };
 };
 
+class ObjectManager;
+
 class FOG_API Object
 {
+	friend class ObjectManager;
+
 public:
 	Object();
 	virtual TypeObject GetType() { return TypeObject::Object; }
 
+	int GetID();
+
 protected:
-	int id;
+	int mID;
 };

@@ -42,6 +42,8 @@ public:
     static const Vector3& Forward();
     static const Vector3& Backward();
 
+    static float Angle(const Vector3& v1, const Vector3& v2);
+    static float Distance(const Vector3& v1, const Vector3& v2);
     static Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
     static Vector3 Rotate(const Vector3& v, const Quaternion& q);
     static Vector3 Normalize(const Vector3& v);

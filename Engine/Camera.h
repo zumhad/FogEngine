@@ -11,12 +11,18 @@
 class Application;
 class ObjectManager;
 class Cursor;
+class DepthMap;
+class SelectMap;
+class PassMap;
 
 class FOG_API Camera
 {
 	friend class Application;
 	friend class ObjectManager;
 	friend class Cursor;
+	friend class DepthMap;
+	friend class SelectMap;
+	friend class PassMap;
 
 public:
 	static void SetPosition(Vector3 position);

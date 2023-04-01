@@ -19,6 +19,8 @@
 #include "Static.h"
 #include "Picking.h"
 #include "Text.h"
+#include "BufferManager.h"
+#include "RayCasting.h"
 
 
 #define CREATE_APPLICATION(x)\

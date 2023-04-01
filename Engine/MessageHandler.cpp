@@ -21,19 +21,19 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             if (Time::LockFPS())
             {
                 Time::Tick();
- 
-                Input::Update();
 
-				GUI::Update();
+                Input::Update(); // opt
+
+				GUI::Update(); // fix!!!
 
 				if (mFoo.update)
                     mFoo.update();
 
-                Camera::Update();
+                Camera::Update(); //opt
 
-				if (mIsGame)
-					Direct3D::DrawGame();
-				else
+                if (mIsGame)
+                    Direct3D::DrawGame();
+                else
 					Direct3D::DrawEngine();
 
 				Direct3D::Present();
@@ -145,7 +145,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             {
 
                 GUI::Release();
-                Direct3D::ResizeEditor();
+                Direct3D::Resize();
                 GUI::Resize();
 
                 InitBuffers();

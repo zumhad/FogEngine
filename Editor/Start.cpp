@@ -10,11 +10,27 @@ void MyUpdate()
 		Application::Close();
 	}
 
+	if (Input::Down(KEY_TAB))
+	{
+		Application::OpenFileDialog();
+	}
+
+	if (Input::Down(KEY_F1))
+	{
+		BufferManager::SetDraw(TypeBuffer::DepthMap);
+	}
+
+	if (Input::Down(KEY_F2))
+	{
+		BufferManager::SetDraw(TypeBuffer::SelectMap);
+	}
+
 	if (Input::Down(KEY_L))
 	{
 		PointLight light;
-		light.position.y = 40;
-		light.range = 50.0f;
+		light.position.y = 50;
+		light.position.z = 100;
+		light.range = 150.0f;
 		light.power = 15.0f;
 		ObjectManager::Add(light);
 	}
@@ -45,10 +61,10 @@ void fpstest()
 
 void Update()
 {
-	float moveSpeed = 1.0f;
+	float moveSpeed = 10.0f;
 	float rotationSpeed = 100.0f;
 
-	static Vector3 pos = Vector3(0, 0, -10);
+	static Vector3 pos = Vector3(0, 0, -5);
 	static Vector3 rot = Camera::GetRotation();
 
 	float move = (float)Input::GetAxis(MOUSE_SCROLL);
@@ -80,56 +96,132 @@ void Update()
 
 
 	static Object* obj = 0;
-	static Vector3 start;	
+	static Vector3 offset;
+	static Vector4 plane;
+
+	static bool x = true;
+	static bool y = false;
+	static bool z = true;
+
+	static bool xPlane = false;
+	static bool yPlane = false;
+	static bool zPlane = false;
+
+	static int sign = 0;
 
 	if (Input::Down(MOUSE_LEFT) && Application::CursorInScene())
 	{
 		static Object* prevObj = 0;
-		static Color prevColor;
-		obj = ObjectManager::GetSelectObject();
+
+		Picking::Pick();
+		obj = Picking::GetPickObject();
 
 		if (obj != prevObj)
 		{
 			if (prevObj)
 			{
 				Mesh& prevMesh = (Mesh&)(*prevObj);
-				prevMesh.material.diffuse = prevColor;
+				prevMesh.drawOutline = false;
 			}
 		}
 
 		if (obj)
 		{
 			Mesh& mesh = (Mesh&)(*obj);
+			mesh.drawOutline = true;
 
-			if(obj != prevObj) prevColor = mesh.material.diffuse;
+			Vector3 r = Camera::GetDirection();
 
-			mesh.material.diffuse = Color(1, 0, 0);
+			float angX = Math::Abs(Vector3::Angle(r, Vector3(1, 0, 0)) - 90.0f);
+			float angY = Math::Abs(Vector3::Angle(r, Vector3(0, 1, 0)) - 90.0f);
+			float angZ = Math::Abs(Vector3::Angle(r, Vector3(0, 0, 1)) - 90.0f);
 
-			start = Picking::Pick(Cursor::GetDirection(), Camera::GetPosition());
-			start -= mesh.position;
+			xPlane = false;
+			yPlane = false;
+			zPlane = false;
+
+			if (x && !y && !z)
+			{
+				if (angY > angZ) yPlane = true;
+				else zPlane = true;
+			}
+			if (!x && y && !z)
+			{
+				if (angX > angZ) xPlane = true;
+				else zPlane = true;
+			}
+			if (!x && !y && z)
+			{
+				if (angX > angY) xPlane = true;
+				else yPlane = true;
+			}
+
+			if (!x && y && z) xPlane = true;
+			if (x && !y && z) yPlane = true;
+			if (x && y && !z) zPlane = true;
+
+			Vector3 cursorDir = Cursor::GetDirection();
+
+			if (xPlane)
+			{
+				float h = Picking::GetPickPosition().x;
+				plane = Vector4(1, 0, 0, -h);
+				sign = Math::Sign(cursorDir.x);
+			}
+			if (yPlane)
+			{
+				float h = Picking::GetPickPosition().y;
+				plane = Vector4(0, 1, 0, -h);
+				sign = Math::Sign(cursorDir.y);
+			}
+			if (zPlane)
+			{
+				float h = Picking::GetPickPosition().z;
+				plane = Vector4(0, 0, 1, -h);
+				sign = Math::Sign(cursorDir.z);
+			}
+
+			Vector3 pick = RayCasting::RayCast(cursorDir, Camera::GetPosition(), plane);
+			offset = mesh.position - pick;
 		}
 
 		if (obj != prevObj) prevObj = obj;
 	}
 
-	if (Input::Press(MOUSE_LEFT) && Application::CursorInScene())
+	if (Input::Press(MOUSE_LEFT))
 	{
 		if (obj)
 		{
-			Vector3 end = Picking::Pick(Cursor::GetDirection(), Camera::GetPosition());
-			end -= start;
+			if (Application::CursorInScene())
+			{
+				Vector3 dir = Cursor::GetDirection();
+				float limit = 0.0f;
 
-			Mesh& mesh = (Mesh&)(*obj);
-			mesh.position.x = end.x;
-			mesh.position.z = end.z;
+				if (xPlane) limit = dir.x;
+				if (yPlane) limit = dir.y;
+				if (zPlane) limit = dir.z;
 
-			String str = L"";
-			str += L"x: " + String::ToStr(mesh.position.x) + L"\n";
-			str += L"y: " + String::ToStr(mesh.position.y) + L"\n";
-			str += L"z: " + String::ToStr(mesh.position.z);
+				if (Math::Sign(limit) == sign)
+				{
+					Vector3 pick = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
 
-			Text & t = (Text&)GUI::Get(idPos);
-			t.text = str;
+					Mesh& mesh = (Mesh&)(*obj);
+
+					if (x) mesh.position.x = pick.x + offset.x;
+					if (y) mesh.position.y = pick.y + offset.y;
+					if (z) mesh.position.z = pick.z + offset.z;
+
+					//OutputDebugString(String::ToStr(pick) + L"\n");
+
+					String str = L"";
+					str += L"x: " + String::ToStr(mesh.position.x) + L"\n";
+					str += L"y: " + String::ToStr(mesh.position.y) + L"\n";
+					str += L"z: " + String::ToStr(mesh.position.z);
+
+					Text& t = (Text&)GUI::Get(idPos);
+					t.text = str;
+				}
+			}
 		}
 		else
 		{
@@ -142,9 +234,6 @@ void Update()
 			t.text = str;
 		}
 	}
-
-	Text& t = (Text&)GUI::Get(idFPS);
-	t.text = L"FPS: " + String::ToStr(Time::GetFPS());
 
 	MyUpdate();
 }
@@ -172,21 +261,33 @@ void AddSphere()
 
 void Start()
 {
+	DirectionalLight dir;
+	dir.color = Color(0.5, 0.5, 0.5);
+	dir.direction = Vector3(0.7f, -0.7f, 0.7f);
+	ObjectManager::Add(dir);
+
 	Mesh m;
-	m.name = L"2107.obj";
-	m.material.diffuse = Color(0.5f, 0.0f, 0.1f);
+	m.name = L"house.obj";
+	m.position = Vector3(0.0, 0.0, 0.0);
+	m.scale = Vector3(1.0, 1.0, 1.0);
+	m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
-	Camera::SetRotationX(45);
+	Camera::SetRotationX(0.0f);
+	Camera::SetFar(0.1f);
+	Camera::SetNear(1000000.0f);
 
-	for (int i = -20; i < 20; i++)
+	BufferManager::SetEnable(TypeBuffer::SelectMap, true);
+	BufferManager::SetEnable(TypeBuffer::DepthMap, true);
+
+	for (int i = -40; i <= 40; i++)
 	{
-		for (int j = -20; j < 20; j++)
+		for (int j = -40; j <= 40; j++)
 		{
 			Mesh m1;
 			m1.name = L"box.obj";
 			m1.position = Vector3(float(i), 0.0f, float(j));
-			ObjectManager::Add(m1);
+			//ObjectManager::Add(m1);
 		}
 	}
 
@@ -271,6 +372,28 @@ void Start()
 
 	t.text = L"AddPlane";
 	GUI::AddChild(idAddPlane, t);
+
+	Static s2;
+	s2.x = -100;
+	s2.y = 0;
+	s2.width = 300;
+	s2.height = 500;
+	s2.color = Color(0.7f, 0.7f, 0.7f);
+	s2.alignm.horizontal = ALIGNM_RIGHT;
+	s2.alignm.vertical = ALIGNM_BOTTOM;
+	int s2ID = GUI::Add(s2);
+
+	but.x = 0;
+	but.y = 0;
+	but.alignm.horizontal = ALIGNM_CENTER_H;
+	but.alignm.vertical = ALIGNM_CENTER_V;
+	GUI::AddChild(s2ID, but);
+
+	but.x = 0;
+	but.y = 60;
+	but.alignm.horizontal = ALIGNM_CENTER_H;
+	but.alignm.vertical = ALIGNM_CENTER_V;
+	GUI::AddChild(s2ID, but);
 }
 
 
@@ -288,7 +411,7 @@ APPCLASS Setting()
 
 	app.game.width = 1920;
 	app.game.height = 1080;
-	app.game.color = Color(0.0f, 0.0f, 0.0f);
+	app.game.color = Color(1.0f, 0.0f, 0.0f);
 
 	app.editor.color = Color(1.0f, 1.0f, 1.0f);
 

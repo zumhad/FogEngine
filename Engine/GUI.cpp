@@ -228,7 +228,10 @@ template<typename T>
 int GUI::AddChild(int parent, T& child)
 {
 	Control* c = &Get(parent);
+
+	//c->mChild = new T
 	c->mChild = new T(child);
+
 	c->mChild->mParent = c;
 
 	mData->v.push_back(c->mChild);

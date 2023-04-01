@@ -10,9 +10,14 @@ class GUI;
 class Mesh;
 class ObjectManager;
 class Texture;
+class DepthMap;
+class TextureMap;
+class SelectMap;
+class Picking;
+class PassMap;
 
-template <typename T> class ConstantBuffer;
-
+template <typename T>
+class ConstantBuffer;
 
 class FOG_API Direct3D
 {
@@ -21,9 +26,14 @@ class FOG_API Direct3D
 	friend class Mesh;
 	friend class ObjectManager;
 	friend class Texture;
+	friend class DepthMap;
+	friend class TextureMap;
+	friend class SelectMap;
+	friend class Picking;
+	friend class PassMap;
 
-	template <typename T> friend class ConstantBuffer;
-	
+	template <typename T>
+	friend class ConstantBuffer;
 
 private:
 	static void Setup();
@@ -35,12 +45,10 @@ private:
 	static void DrawEditor();
 	static void Present();
 
-	static void ResizeScene();
-	static void ResizeEditor();
-	static void ResizeEngine();
-	static void ResizeGame();
-
-	static void Pick();
+	static void Resize();
+	
+	static ID3D11RenderTargetView* const* RTV();
+	static ID3D11ShaderResourceView* const* NullSRV();
 
 	static IDXGISwapChain* SwapChain() { return mSwapChain; }
 	static ID3D11Device* Device() { return mDevice; }
@@ -53,17 +61,4 @@ private:
 	static IDXGISwapChain* mSwapChain;
 	static ID3D11RenderTargetView* mRenderTargetView;
 	static ID3D11RasterizerState* mRasterizerState;
-	static ID3D11DepthStencilView* mDepthStencilView;
-	static ID3D11DepthStencilState* mDepthStencilState;
-	static ID3D11DepthStencilState* mDepthDisabledStencilState;
-
-	static ID3D11Buffer* mOutputBuffer;
-	static ID3D11Buffer* mOutputResultBuffer;
-	static ID3D11UnorderedAccessView* mUAV;
-
-	static D3D11_VIEWPORT mGameViewport;
-	static D3D11_VIEWPORT mSceneViewport;
-	static D3D11_VIEWPORT mEditorViewport;
-
-	static RECT mSceneRect;
 };

@@ -12,6 +12,11 @@ float Math::mPI = (float)M_PI;
 float Math::mE = (float)M_E;
 
 
+float Math::Abs(float f)
+{
+    return std::abs(f);
+}
+
 float Math::Sqrt(float f) 
 { 
 	return std::sqrt(f); 
@@ -32,17 +37,27 @@ float Math::Epsilon()
     return mEpsilon; 
 }
 
+float Math::Min(float a, float b)
+{
+    return std::min(a, b);
+}
+
 float Math::Max(float a, float b) 
 {
-    return a > b ? a : b; 
+    return std::max(a, b);
+}
+
+int Math::Sign(float f) 
+{
+    if (f > 0.0f) return 1;
+    if (f < 0.0f) return -1;
+    return 0;
 }
 
 float Math::Clamp(float value, float min, float max)
 {
-    if (value < min)
-        value = min;
-    else if (value > max)
-        value = max;
+    if (value < min) return min;
+    if (value > max) return max;
     return value;
 }
 

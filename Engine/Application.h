@@ -52,6 +52,7 @@ public:
     static void Close();
 
     static void SaveProject();
+    static void OpenFileDialog();
 
     static bool CursorInScene();
     static bool IsPaused();

@@ -12,224 +12,126 @@
 #include "CustomFile.h"
 #include "Cursor.h"
 #include "ConstantBuffer.h"
+#include "DepthMap.h"
+#include "SelectMap.h"
+#include "TextureMap.h"
+#include "PassMap.h"
 
 #include <DirectXCollision.h>
+#include <vector>
 
 using namespace DirectX;
 using namespace std;
 
-ObjectManager::Data* ObjectManager::mData = 0;
-
-struct ObjectManager::Data
-{
-public:
-    Data();
-    ~Data();
-
-public:
-    int size;
-    std::vector<Object*> v;
-	Object* selectObject;
-
-    ID3D11VertexShader* vertexShader;
-    ID3D11PixelShader* pixelShader;
-    ID3D11InputLayout* vertexLayout;
-
-	ConstantBuffer<PerObjectBuffer> perObjectBuffer;
-	ConstantBuffer<PerFrameBuffer> perFrameBuffer;
-};
-
-
-ObjectManager::Data::Data() : size(0), vertexShader(0), pixelShader(0), vertexLayout(0), selectObject(0)
-{
-	String shaderPath;
-	PathHelper::GetAssetsPath(shaderPath);
-	shaderPath += L"shader.hlsl";
-
-	String includePath;
-	PathHelper::GetAssetsPath(includePath);
-	includePath += L"light.hlsli";
-
-	String s = L"#define MAX_DIRECTIONAL_LIGHT " + String::ToStr(MAX_DIRECTIONAL_LIGHT);
-	File include(includePath, FileOpenMode::Write);
-	CHAR* utf8 = s.ToUTF8();
-	include.Write(utf8, s.Length());
-	delete[] utf8;
-	include.Close();
-
-	// Vertex Shader
-	ID3DBlob* pVSBlob = 0;
-	CompileShaderFromFile(shaderPath, "VS", "vs_5_0", &pVSBlob);
-	FOG_TRACE(Direct3D::Device()->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), 0, &vertexShader));
-
-	// Input Layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-	FOG_TRACE(Direct3D::Device()->CreateInputLayout(layout, ARRAYSIZE(layout), pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &vertexLayout));
-	SAFE_RELEASE(pVSBlob);
-
-	// Pixel Shader
-	ID3DBlob* pPSBlob = 0;
-	CompileShaderFromFile(shaderPath, "PS", "ps_5_0", &pPSBlob);
-	FOG_TRACE(Direct3D::Device()->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), 0, &pixelShader));
-	SAFE_RELEASE(pPSBlob);
-}
+int ObjectManager::mSize = 0;
+vector<Object*> ObjectManager::mArr;
 
 void ObjectManager::Draw()
 {
-	Direct3D::DeviceContext()->IASetInputLayout(mData->vertexLayout);
-	Direct3D::DeviceContext()->VSSetShader(mData->vertexShader, 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mData->pixelShader, 0, 0);
+	PrePass();
+	Pass();
+}
 
-	static PerFrameBuffer frameBuffer{};
-	frameBuffer.directionalCount = 0;
-	frameBuffer.pointCount = 0;
-	frameBuffer.mousePos[0] = Cursor::GetPosition(CURSOR_X);
-	frameBuffer.mousePos[1] = Cursor::GetPosition(CURSOR_Y);
-
-	for (int i = 0, d = 0, p = 0; i < mData->size; i++)
+void ObjectManager::PrePass()
+{
 	{
-		TypeObject type = Get(i).GetType();
+		std::vector<ID3D11RenderTargetView*> vRTV;
+		vRTV.push_back(SelectMap::GetRTV());
 
-		if (type == TypeObject::DirectionalLight)
+		Direct3D::DeviceContext()->OMSetRenderTargets((UINT)vRTV.size(), vRTV.data(), DepthMap::GetDSV());
+	}
+ 
+	PassMap::BindSRV();
+	DepthMap::BindSRV();
+	SelectMap::BindSRV();
+
+	for (int i = 0; i < mSize; i++)
+	{
+		Object& obj = Get(i);
+		TypeObject type = obj.GetType();
+
+		switch (type)
 		{
-			DirectionalLight& obj = (DirectionalLight&)Get(i);
+			case TypeObject::Mesh:
+			{
+				Mesh& mesh = (Mesh&)obj;
 
-			DirectionalLightBuffer light{};
-			light.color = obj.color;
-			light.direction = obj.direction;
+				PassMap::Bind(mesh);
+				DepthMap::Bind(mesh);
+				SelectMap::Bind(mesh);
 
-			frameBuffer.directionalLight[d++] = light;
-			frameBuffer.directionalCount++;
-			frameBuffer.cameraPosW = Camera::GetPosition();
-		}
+				mesh.Bind();
 
-		if (type == TypeObject::PointLight)
-		{
-			PointLight& obj = (PointLight&)Get(i);
-
-			PointLightBuffer light{};
-			light.color = obj.color;
-			light.position = obj.position;
-			light.range = obj.range;
-			light.power = obj.power;
-
-			frameBuffer.pointLight[p++] = light;
-			frameBuffer.pointCount++;
-			frameBuffer.cameraPosW = Camera::GetPosition();
+				break;
+			}
 		}
 	}
 
-	mData->perFrameBuffer.Bind(frameBuffer);
-	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, mData->perFrameBuffer.Get());
-
-	static PerObjectBuffer buffer{};
-
-	for (int i = 0; i < mData->size; i++)
-	{
-		TypeObject type = Get(i).GetType();
-
-		if (type == TypeObject::Mesh)
-		{
-			Mesh& obj = (Mesh&)ObjectManager::Get(i);
-
-			BoundingBox bb = obj.GetBoundingBox();
-			if (!FrustumCulling::Intersect(bb)) continue;
-
-			XMMATRIX world = XMMatrixTranspose(obj.GetWorldMatrix());
-			XMMATRIX worldInvTranspose = XMMatrixTranspose(obj.GetWorldInvTransposeMatrix());
-			XMMATRIX worldViewProj = obj.GetWorldMatrix() * Camera::GetViewMatrix() * Camera::GetProjMatrix();
-
-			XMStoreFloat4x4(&buffer.world, world);
-			XMStoreFloat4x4(&buffer.worldInvTranspose, worldInvTranspose);
-			XMStoreFloat4x4(&buffer.worldViewProj, worldViewProj);
-			buffer.material = obj.material;
-			buffer.id = obj.id;
-
-			mData->perObjectBuffer.Bind(buffer);
-			Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mData->perObjectBuffer.Get());
-			Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mData->perObjectBuffer.Get());
-
-			obj.Bind();
-		}
-	}
+	Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, 0);
 }
 
-void ObjectManager::SetSelectObject(int id)
+void ObjectManager::Pass()
 {
-	if (id > 0)
-		mData->selectObject = &Get(id - 1);
-	else
-		mData->selectObject = 0;
-}
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, Direct3D::RTV(), 0);
 
-Object* ObjectManager::GetSelectObject()
-{
-	Direct3D::Pick();
+	PassMap::BindRTV();
+	DepthMap::BindRTV();
+	SelectMap::BindRTV();
 
-	return mData->selectObject;
-}
+	TextureMap::Bind();
 
-ObjectManager::Data::~Data()
-{
-	perFrameBuffer.Release();
-	perObjectBuffer.Release();
+	PassMap::UnbindRTV();
+	DepthMap::UnbindRTV();
+	SelectMap::UnbindRTV();
 
-	SAFE_RELEASE(vertexShader);
-	SAFE_RELEASE(pixelShader);
-	SAFE_RELEASE(vertexLayout);
-
-    for (int i = 0; i < size; i++)
-    {
-        TypeObject type = v[i]->GetType();
-
-        if (type == TypeObject::Object) delete (Object*)v[i];
-        if (type == TypeObject::DirectionalLight) delete (DirectionalLight*)v[i];
-        if (type == TypeObject::PointLight) delete (PointLight*)v[i];
-        if (type == TypeObject::Mesh) delete (Mesh*)v[i];
-    }
+	Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, 0);
 }
 
 template<typename T>
 void ObjectManager::Add(T& obj)
 {
     T* temp = new T(obj);
+	temp->mID = mSize;
 
-    mData->v.push_back(temp);
-    mData->size++;
+    mArr.push_back(temp);
+    mSize++;
 }
 
 
 void ObjectManager::Setup()
 {
-    mData = new Data;
+	return;
 }
 
 void ObjectManager::Shotdown()
 {
-    SAFE_DELETE(mData);
+	for (int i = 0; i < mSize; i++)
+	{
+		TypeObject type = mArr[i]->GetType();
+
+		if (type == TypeObject::Object) delete (Object*)mArr[i];
+		if (type == TypeObject::DirectionalLight) delete (DirectionalLight*)mArr[i];
+		if (type == TypeObject::PointLight) delete (PointLight*)mArr[i];
+		if (type == TypeObject::Mesh) delete (Mesh*)mArr[i];
+	}
 }
 
 void ObjectManager::Clear()
 {
-    mData->v.clear();
-    mData->size = 0;
+	mArr.clear();
+    mSize = 0;
 }
 
 
-Object& ObjectManager::Get(int i)
+Object& ObjectManager::Get(int id)
 {
-    if (i + 1 > mData->size)
+    if (id + 1 > mSize || id < 0)
         Application::Close();
 
-    return *(mData->v[i]);
+    return *(mArr[id]);
 }
 
 int ObjectManager::Size()
 { 
-    return mData->size;
+    return mSize;
 }

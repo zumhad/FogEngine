@@ -153,13 +153,9 @@ void Camera::Update()
 	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 1), q);
 	XMVECTOR target = forward + position;
 	
-	XMMATRIX proj, view;
+	mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
+	mView = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
 
-	proj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
-	view = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
-	mProj = proj;
-	mView = view;
-
-	FrustumCulling::Update(view, proj);
+	FrustumCulling::Update(mView, mProj);
 }
 

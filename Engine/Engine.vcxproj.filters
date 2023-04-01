@@ -111,6 +111,27 @@
     <ClCompile Include="Text.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="BufferManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ColorMap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthMap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="PassMap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectMap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="RayCasting.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="TextureMap.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -227,15 +248,36 @@
     <ClInclude Include="Text.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="BufferManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="ColorMap.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthMap.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="PassMap.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="RayCasting.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectMap.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureMap.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\GUIShader.hlsl">
-      <Filter>stuff</Filter>
-    </None>
-    <None Include="Assets\light.hlsli">
-      <Filter>stuff</Filter>
-    </None>
     <None Include="Assets\shader.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\PrePass.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\Pass.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

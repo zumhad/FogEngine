@@ -1,1 +1,0 @@
-#define MAX_DIRECTIONAL_LIGHT 16

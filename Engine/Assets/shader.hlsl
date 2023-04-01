@@ -34,8 +34,8 @@ cbuffer cbPerFrame : register(b0)
     DirectionalLight gDirLight[16];
     float3 gCameraPosW;
     int gDirCount;
-    int gPointCount;
-    int2 gMousePos; float pad;
+    int gPointCount; float3 pad;
+
 };
 
 cbuffer cbPerObject : register(b1)
@@ -44,7 +44,7 @@ cbuffer cbPerObject : register(b1)
     float4x4 gWorldInvTranspose;
     float4x4 gWorldViewProj;
     Material gMaterial;
-    int gID; float3 pad1;
+    bool gDrawOutline; float3 pad1;
 };
 
 
@@ -115,18 +115,22 @@ float3 ApplyPointLight(Material material, PointLight light, float3 normal, float
 
 }
 
-struct PickingObject
+
+Texture2D<float> Texture : register(t0);
+SamplerState Sampler : register(s0);
+
+struct PS_OUTPUT
 {
-    float3 position;
-    int id;
-    float depth;
+    float4 color : SV_Target0;
+    //float depth : SV_Depth;
 };
 
-AppendStructuredBuffer<PickingObject> gOutput  : register(u1);
-
 [earlydepthstencil] // ??
-float4 PS(VS_OUTPUT input) : SV_Target
+PS_OUTPUT PS(VS_OUTPUT input)
 {
+    PS_OUTPUT output;
+    //output.depth = input.PosH.z / input.PosH.w;
+
     float3 normal = normalize(input.NormalW);
     float3 viewDir = normalize(input.PosW - gCameraPosW);
     float3 worldPos = input.PosW;
@@ -143,15 +147,53 @@ float4 PS(VS_OUTPUT input) : SV_Target
         color += ApplyPointLight(gMaterial, gPointLight[j], normal, viewDir, worldPos);
     }
 
-    if (gMousePos.x == (int)input.PosH.x && gMousePos.y == (int)input.PosH.y)
-    {
-        PickingObject pick;
-        pick.position = worldPos;
-        pick.id = gID;
-        pick.depth = input.PosH.z / input.PosH.w;
+    //if (gMousePos.x == (int)input.PosH.x && gMousePos.y == (int)input.PosH.y)
+    //{
+    //    PickingObject pick;
+    //    pick.position = input.PosW;
+    //    pick.id = gID;
+    //    pick.depth = input.PosH.z / input.PosH.w;
+    //
+    //   gOutput.Append(pick);
+    //}
 
-        gOutput.Append(pick);
+    if (gDrawOutline)
+    {
+        float w = 5.0f;
+
+        float left = input.PosH.x - w;
+        float right = input.PosH.x + w;
+        float top = (input.PosH.y - 60) - w;
+        float bottom = (input.PosH.y - 60) + w;
+
+        float2 uv = float2(input.PosH.x / 800.0f, (input.PosH.y - 60) / 600.0f);
+        float2 uv0 = float2(left / 800.0f, top / 600.0f);
+        float2 uv1 = float2(right / 800.0f, bottom / 600.0f);
+        float2 uv2 = float2(right / 800.0f, top / 600.0f);
+        float2 uv3 = float2(left / 800.0f, bottom / 600.0f);
+
+        float2 uv4 = float2(left / 800.0f, (input.PosH.y - 60) / 600.0f);
+        float2 uv5 = float2((input.PosH.x) / 800.0f, top / 600.0f);
+        float2 uv6 = float2(right / 800.0f, (input.PosH.y - 60) / 600.0f);
+        float2 uv7 = float2((input.PosH.x) / 800.0f, bottom / 600.0f);
+
+        float d = Texture.Sample(Sampler, uv);
+        float d0 = Texture.Sample(Sampler, uv0);
+        float d1 = Texture.Sample(Sampler, uv1);
+        float d2 = Texture.Sample(Sampler, uv2);
+        float d3 = Texture.Sample(Sampler, uv3);
+
+        float d4 = Texture.Sample(Sampler, uv4);
+        float d5 = Texture.Sample(Sampler, uv5);
+        float d6 = Texture.Sample(Sampler, uv6);
+        float d7 = Texture.Sample(Sampler, uv7);
+
+        //color = float3(d, d, d);
+
+        if (d0 == 1.0f || d1 == 1.0f || d2 == 1.0f || d3 == 1.0f)
+            color = float3(1, 1, 0);
     }
 
-    return float4(color, 1.0f);
+    output.color = float4(color, 1);
+    return output;
 }

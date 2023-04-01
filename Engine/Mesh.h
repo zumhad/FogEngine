@@ -11,11 +11,17 @@
 
 class ObjectManager;
 class Picking;
+class DepthMap;
+class SelectMap;
+class PassMap;
 
 class FOG_API Mesh : public Object
 {
 	friend class ObjectManager;
 	friend class Picking;
+	friend class DepthMap;
+	friend class SelectMap;
+	friend class PassMap;
 
 public:
 	TypeObject GetType() override { return TypeObject::Mesh; }
@@ -47,6 +53,7 @@ public:
 	String name;
 	Material material;
 	bool lighting;
+	bool drawOutline = false;
 
 	Vector3 position;
 	Vector3 rotation;

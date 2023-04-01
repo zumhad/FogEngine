@@ -30,26 +30,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <PreferredToolArchitecture>x64</PreferredToolArchitecture>
@@ -180,6 +180,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="ColorMap.cpp" />
+    <ClCompile Include="BufferManager.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
@@ -188,6 +190,7 @@
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
+    <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="FrustumCulling.cpp" />
     <ClCompile Include="GUI.cpp" />
@@ -199,13 +202,17 @@
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="PassMap.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Picking.cpp" />
     <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="RayCasting.cpp" />
+    <ClCompile Include="SelectMap.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Static.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="TextureMap.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="Trace.cpp" />
     <ClCompile Include="Vector2.cpp" />
@@ -215,6 +222,8 @@
   <ItemGroup>
     <ClInclude Include="ApplicationHelper.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="ColorMap.h" />
+    <ClInclude Include="BufferManager.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
@@ -226,6 +235,7 @@
     <ClInclude Include="CustomString.h" />
     <ClInclude Include="CustomTypes.h" />
     <ClInclude Include="Definitions.h" />
+    <ClInclude Include="DepthMap.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
     <ClCompile Include="GenerateFiles.cpp" />
@@ -240,13 +250,17 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="PassMap.h" />
     <ClInclude Include="PathHelper.h" />
     <ClInclude Include="Picking.h" />
     <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="RayCasting.h" />
+    <ClInclude Include="SelectMap.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Static.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="TextureMap.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="Trace.h" />
     <ClInclude Include="Vector2.h" />
@@ -267,10 +281,14 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
-    <None Include="Assets\light.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\GUIShader.hlsl">
+    <None Include="Assets\Pass.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\PrePass.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

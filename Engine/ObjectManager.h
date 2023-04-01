@@ -1,6 +1,9 @@
 #pragma once
 
+#pragma warning(disable: 4251)
+
 #include "Core.h"
+
 #include "Object.h"
 #include "Light.h"
 #include "Mesh.h"
@@ -10,62 +13,40 @@
 
 class Application;
 class Direct3D;
+class Object;
+class DepthMap;
+class BufferManager;
 
 class FOG_API ObjectManager
 {
     friend class Application;
     friend class Direct3D;
+    friend class Object;
+    friend class DepthMap;
+    friend class BufferManager;
 
 public:
     template<typename T>
     static void Add(T& obj);
 
     static int Size();
-    static Object& Get(int i);
+    static Object& Get(int id);
     static void Clear();
-    static Object* GetSelectObject();
 
 private:
     static void Setup();
     static void Shotdown();
     static void Draw();
-    static void SetSelectObject(int id);
+
+    static void PrePass();
+    static void Pass();
 
 private:
-    struct Data;
-    static Data* mData;
+    static int mSize;
+    static std::vector<Object*> mArr;
 };
 
 template FOG_API void ObjectManager::Add<Object>(Object&);
 template FOG_API void ObjectManager::Add<Mesh>(Mesh&);
 template FOG_API void ObjectManager::Add<PointLight>(PointLight&);
 template FOG_API void ObjectManager::Add<DirectionalLight>(DirectionalLight&);
-
-
-struct PerFrameBuffer
-{
-    PointLightBuffer pointLight[MAX_POINT_LIGHT];
-    DirectionalLightBuffer directionalLight[MAX_DIRECTIONAL_LIGHT];
-    DirectX::XMFLOAT3 cameraPosW;
-    int directionalCount;
-    int pointCount;
-    int mousePos[2]; float pad;
-};
-
-
-struct PerObjectBuffer
-{
-    DirectX::XMFLOAT4X4 world;
-    DirectX::XMFLOAT4X4 worldInvTranspose;
-    DirectX::XMFLOAT4X4 worldViewProj;
-    Material material;
-    int id; float pad[3];
-};
-
-
-struct PickingObject
-{
-    DirectX::XMFLOAT3 position;
-    int id;
-    float depth;
-};
