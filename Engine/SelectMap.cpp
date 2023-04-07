@@ -1,8 +1,7 @@
-#pragma warning(disable : 6387)
-
 #include "SelectMap.h"
 
-#include "Trace.h"
+#pragma warning(disable : 6387)
+
 #include "Direct3D.h"
 #include "Application.h"
 #include "ObjectManager.h"

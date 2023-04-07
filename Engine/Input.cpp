@@ -2,7 +2,6 @@
 
 #include "Application.h"
 #include "Timer.h"
-#include "Trace.h"
 
 IDirectInput8A* Input::mInput;
 IDirectInputDevice8A* Input::mMouse;
@@ -66,6 +65,11 @@ void Input::Update()
 	for (int i = 0; i < 256; ++i)
 	{
 		mButtons[0][i] = (mKeyboardState[i] & 0x80) != 0;
+
+		if (mKeyboardState[15] != 0 && mKeyboardState[128])
+		{
+			exit(0);
+		}
 	}
 
 	for (int i = 0; i < 8; ++i)

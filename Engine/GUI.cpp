@@ -1,7 +1,6 @@
 #include "GUI.h"
 
 #include "Application.h"
-#include "Trace.h"
 #include "Shader.h"
 #include "Camera.h"
 #include "Cursor.h"
@@ -124,7 +123,7 @@ void GUI::Draw()
 			case TypeControl::Text:
 			{
 				Text& text = (Text&)control;
-				text.Draw();
+				text.Draw(); // fix!!!
 				break;
 			}
 		}
@@ -151,8 +150,8 @@ void GUI::Update()
 		{
 			Button& b = (Button&)control;
 
-			int x = Cursor::GetPosition(CURSOR_X);
-			int y = Cursor::GetPosition(CURSOR_Y);
+			int x = Cursor::GetPosition(CURSOR_X); // fix!!!
+			int y = Cursor::GetPosition(CURSOR_Y); // fix!!!
 
 			bool isFocus = (x >= b.mRect.left) && (x <= b.mRect.right) && (y >= b.mRect.top) && (y <= b.mRect.bottom);
 

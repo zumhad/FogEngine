@@ -1,11 +1,10 @@
-#pragma warning(disable : 6387)
-
 #include "DepthMap.h"
+
+#pragma warning(disable : 6387)
 
 #include "ObjectManager.h"
 #include "Application.h"
 #include "Direct3D.h"
-#include "Trace.h"
 #include "FrustumCulling.h"
 #include "Camera.h"
 #include "Shader.h"

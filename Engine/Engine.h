@@ -21,7 +21,7 @@
 #include "Text.h"
 #include "BufferManager.h"
 #include "RayCasting.h"
-
+#include "Utility.h"
 
 #define CREATE_APPLICATION(x)\
 int wmain()\

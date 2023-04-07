@@ -1,6 +1,5 @@
 #include "Camera.h"
 
-#include "Trace.h"
 #include "MathHelper.h"
 #include "FrustumCulling.h"
 #include "Quaternion.h"

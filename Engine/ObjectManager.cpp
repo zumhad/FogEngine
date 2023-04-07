@@ -5,7 +5,6 @@
 #include "Mesh.h"
 #include "PathHelper.h"
 #include "Shader.h"
-#include "Trace.h"
 #include "Direct3D.h"
 #include "Camera.h"
 #include "FrustumCulling.h"

@@ -2,7 +2,6 @@
 
 #include "Definitions.h"
 #include "Direct3D.h"
-#include "Trace.h"
 #include "Timer.h"
 #include "ObjectManager.h"
 #include "Camera.h"
@@ -58,7 +57,8 @@ void Application::InitWindow()
     wce.lpszClassName = APP_CLASS;
     wce.hIcon = hIcon;
 
-    FOG_ASSERT(RegisterClassEx(&wce));
+    ATOM atom = RegisterClassEx(&wce);
+    FOG_ASSERT(atom);
 
     DWORD style;
     int width, height;
@@ -76,7 +76,8 @@ void Application::InitWindow()
         style = WS_OVERLAPPEDWINDOW;
     }
 
-    mHwnd = CreateWindowEx(0, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
+    mHwnd = CreateWindowEx(WS_EX_TOPMOST, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
+    FOG_ASSERT(mHwnd);
 }
 
 void Application::InitProp(APPCLASS app)
@@ -164,9 +165,10 @@ int Application::Run(APPCLASS app)
 {
 	InitApp(app);
 
+    Cursor::Update();
 	Cursor::SetVisible(app.cursorShow);
 	ShowWindow(mHwnd, SW_MAXIMIZE);
-	Time::Reset(); //start timer
+	Time::Reset();
 
 	MSG msg = { 0 };
 	while (WM_QUIT != msg.message)

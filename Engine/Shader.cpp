@@ -9,6 +9,11 @@
 #include <d3dcompiler.h>
 #include <cstdlib>
 #include <vector>
+#include <string>
+#include <locale>
+#include <codecvt>
+
+using namespace std;
 
 void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -37,7 +42,13 @@ void CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR 
 
 	if (pErrorBlob)
 	{
-		OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+		string str = (const char*)pErrorBlob->GetBufferPointer();
+
+		int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, 0, 0);
+		wstring out(len, 0);
+		MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &out[0], len);
+
+		FOG_ERROR(out.c_str());
 	}
 
 	SAFE_RELEASE(pErrorBlob)

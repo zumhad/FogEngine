@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core.h"
+
 struct DirectionalLightBuffer
 {
 	DirectX::XMFLOAT4 color;

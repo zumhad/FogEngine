@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core.h"
+
 #include "CustomString.h"
-#include "Trace.h"
 
 enum class FileOpenMode
 {

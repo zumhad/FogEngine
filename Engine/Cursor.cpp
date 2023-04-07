@@ -11,14 +11,25 @@
 using namespace DirectX;
 
 bool Cursor::mVisible = true;
+int Cursor::mX = 0;
+int Cursor::mY = 0;
 
-int Cursor::GetPosition(CursorAxis axis)
+void Cursor::Update()
 {
 	POINT p;
 	GetCursorPos(&p);
 	ScreenToClient(Application::GetHWND(), &p);
 
-	return (axis ? p.y : p.x);
+	mX = p.x;
+	mY = p.y;
+}
+
+int Cursor::GetPosition(CursorAxis axis)
+{
+	if (axis == CursorAxis::CURSOR_X)
+		return mX;
+	else
+		return mY;
 }
 
 void Cursor::SetPosition(int x, int y)

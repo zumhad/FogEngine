@@ -10,8 +10,12 @@ enum CursorAxis
 	CURSOR_Y
 };
 
+class Application;
+
 class FOG_API Cursor
 {
+	friend class Application;
+
 public:
 	static int GetPosition(CursorAxis axis);
 	static void SetPosition(int x, int y);
@@ -20,6 +24,11 @@ public:
 	static Vector3 GetDirection();
 
 private:
+	static void Update();
+
+private:
 	static bool mVisible;
+	static int mX;
+	static int mY;
 };
 

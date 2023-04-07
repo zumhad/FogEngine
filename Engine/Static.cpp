@@ -1,6 +1,5 @@
 #include "Static.h"
 
-#include "Trace.h"
 #include "GUI.h"
 #include "Application.h"
 

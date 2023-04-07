@@ -1,8 +1,7 @@
-#pragma warning(disable : 6387)
-
 #include "Direct3D.h"
 
-#include "Trace.h"
+#pragma warning(disable : 6387)
+
 #include "Definitions.h"
 #include "PathHelper.h"
 #include "ObjectManager.h"
@@ -90,7 +89,7 @@ void Direct3D::Initialize()
 	IDXGIFactory2* dxgiFactory = 0;
 	FOG_TRACE(CreateDXGIFactory2(dxgiFactoryFlags, IID_PPV_ARGS(&dxgiFactory)));
 
-	DXGI_SWAP_CHAIN_DESC desc{};
+	DXGI_SWAP_CHAIN_DESC desc = {};
 	desc.BufferDesc.RefreshRate.Numerator = 0;
 	desc.BufferDesc.RefreshRate.Numerator = 0;
 	desc.SampleDesc.Count = 1;

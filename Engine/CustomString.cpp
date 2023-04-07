@@ -283,8 +283,8 @@ int String::FindStr(const WCHAR* dest, const WCHAR* str)
 
 CHAR* String::ToUTF8()
 {
-	int len = WideCharToMultiByte(CP_UTF8, 0, mStr, -1, NULL, 0, NULL, NULL);
+	int len = WideCharToMultiByte(CP_UTF8, 0, mStr, -1, 0, 0, 0, 0);
 	CHAR* utf8 = new CHAR[len];
-	WideCharToMultiByte(CP_UTF8, 0, mStr, -1, utf8, len, NULL, NULL);
+	WideCharToMultiByte(CP_UTF8, 0, mStr, -1, utf8, len, 0, 0);
 	return utf8;
 }

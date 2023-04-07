@@ -2,7 +2,6 @@
 
 #include "Core.h"
 
-#include "Trace.h"
 #include "Direct3D.h"
 
 #include <d3d11.h>

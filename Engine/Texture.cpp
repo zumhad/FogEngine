@@ -1,6 +1,5 @@
 #include "Texture.h"
 
-#include "Trace.h"
 #include "Direct3D.h"
 #include "PathHelper.h"
 

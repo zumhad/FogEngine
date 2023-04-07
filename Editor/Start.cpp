@@ -1,5 +1,8 @@
 #include "Engine.h"
 
+#include <WinUser.h>
+#pragma comment(lib, "User32.lib")
+
 int idFPS = -1;
 int idPos = -1;
 
@@ -8,11 +11,6 @@ void MyUpdate()
 	if (Input::Down(KEY_ESCAPE))
 	{
 		Application::Close();
-	}
-
-	if (Input::Down(KEY_TAB))
-	{
-		Application::OpenFileDialog();
 	}
 
 	if (Input::Down(KEY_F1))
@@ -94,11 +92,11 @@ void Update()
 	Camera::SetPosition(targetPos);
 	Camera::LookAt(Vector3::Zero());
 
-
 	static Object* obj = 0;
-	static Vector3 offset;
 	static Vector4 plane;
-
+	static Vector3 pick1;
+	static Vector3 pick2;
+	
 	static bool x = true;
 	static bool y = false;
 	static bool z = true;
@@ -160,29 +158,30 @@ void Update()
 			if (x && !y && z) yPlane = true;
 			if (x && y && !z) zPlane = true;
 
-			Vector3 cursorDir = Cursor::GetDirection();
+			Vector3 pickPos = Picking::GetPickPosition();
+			Vector3 camPos = Camera::GetPosition();
+			Vector3 dir = pickPos - camPos;
 
 			if (xPlane)
 			{
-				float h = Picking::GetPickPosition().x;
+				float h = pickPos.x;
 				plane = Vector4(1, 0, 0, -h);
-				sign = Math::Sign(cursorDir.x);
+				sign = Math::Sign(dir.x);
 			}
 			if (yPlane)
 			{
-				float h = Picking::GetPickPosition().y;
+				float h = pickPos.y;
 				plane = Vector4(0, 1, 0, -h);
-				sign = Math::Sign(cursorDir.y);
+				sign = Math::Sign(dir.y);
 			}
 			if (zPlane)
 			{
-				float h = Picking::GetPickPosition().z;
+				float h = pickPos.z;
 				plane = Vector4(0, 0, 1, -h);
-				sign = Math::Sign(cursorDir.z);
+				sign = Math::Sign(dir.z);
 			}
 
-			Vector3 pick = RayCasting::RayCast(cursorDir, Camera::GetPosition(), plane);
-			offset = mesh.position - pick;
+			pick1 = RayCasting::RayCast(dir, camPos, plane);
 		}
 
 		if (obj != prevObj) prevObj = obj;
@@ -201,17 +200,17 @@ void Update()
 				if (yPlane) limit = dir.y;
 				if (zPlane) limit = dir.z;
 
-				if (Math::Sign(limit) == sign)
-				{
-					Vector3 pick = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
+				pick2 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
 
+				if (Math::Sign(limit) == sign && pick1 != pick2)
+				{
 					Mesh& mesh = (Mesh&)(*obj);
 
-					if (x) mesh.position.x = pick.x + offset.x;
-					if (y) mesh.position.y = pick.y + offset.y;
-					if (z) mesh.position.z = pick.z + offset.z;
+					if (x) mesh.position.x += pick2.x - pick1.x;
+					if (y) mesh.position.y += pick2.y - pick1.y;
+					if (z) mesh.position.z += pick2.z - pick1.z;
 
-					//OutputDebugString(String::ToStr(pick) + L"\n");
+					pick1 = pick2;
 
 					String str = L"";
 					str += L"x: " + String::ToStr(mesh.position.x) + L"\n";
@@ -261,6 +260,8 @@ void AddSphere()
 
 void Start()
 {
+	Matrix arr;
+
 	DirectionalLight dir;
 	dir.color = Color(0.5, 0.5, 0.5);
 	dir.direction = Vector3(0.7f, -0.7f, 0.7f);
@@ -273,7 +274,8 @@ void Start()
 	m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
-	Camera::SetRotationX(0.0f);
+	Camera::SetPosition(Vector3(0, 4, 0));
+	Camera::SetRotationX(45.0f);
 	Camera::SetFar(0.1f);
 	Camera::SetNear(1000000.0f);
 

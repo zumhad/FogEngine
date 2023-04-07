@@ -1,5 +1,9 @@
 #pragma once
-class Vector2
+
+#include "Core.h"
+
+class FOG_API Vector2
 {
+
 };
 

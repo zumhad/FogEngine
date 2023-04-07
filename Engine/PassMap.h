@@ -4,6 +4,7 @@
 
 #include "ConstantBuffer.h"
 #include "Mesh.h"
+#include "Matrix.h"
 
 #include <DirectXMath.h>
 
@@ -39,8 +40,8 @@ private:
 
 	struct PrePassBuffer
 	{
-		DirectX::XMFLOAT4X4 worldViewProj;
-		DirectX::XMFLOAT4X4 world;
+		Matrix worldViewProj;
+		Matrix world;
 	};
 	static ConstantBuffer<PrePassBuffer> mPrePassBuffer;
 

@@ -3,7 +3,6 @@
 #include "Direct3D.h"
 #include "Timer.h"
 #include "MathHelper.h"
-#include "Trace.h"
 #include "PathHelper.h"
 #include "ObjectManager.h"
 #include "Application.h"

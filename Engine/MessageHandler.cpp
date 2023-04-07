@@ -14,6 +14,8 @@
 
 LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+    static bool isSnapshot = false;
+
     switch (msg)
     {
         case WM_PAINT:
@@ -22,34 +24,28 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             {
                 Time::Tick();
 
-                Input::Update(); // opt
+                Cursor::Update();
+                Input::Update();
 
-				GUI::Update(); // fix!!!
+                GUI::Update();
 
-				if (mFoo.update)
+                if (mFoo.update)
                     mFoo.update();
 
-                Camera::Update(); //opt
+                Camera::Update();
 
                 if (mIsGame)
                     Direct3D::DrawGame();
                 else
-					Direct3D::DrawEngine();
+                    Direct3D::DrawEngine();
 
-				Direct3D::Present();
+                Direct3D::Present();
             }
 
-            return 0;
-        }
-
-        case WM_MOVE:
-        {
-            if (mStarted && !mIsGame)
+            if (GetAsyncKeyState(VK_SNAPSHOT) & 0x01)
             {
-                //GUI::Release();
-                //Direct3D::ResizeEditor();
-                //GUI::Resize();
-                //InitBuffers();
+                isSnapshot = true;
+                mPaused = true;
             }
 
             return 0;
@@ -160,7 +156,14 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
             if (LOWORD(wparam) == WA_INACTIVE)
             {
-                if (mStarted && mIsGame)
+                if (isSnapshot)
+                {
+                    isSnapshot = false;
+
+                    return 0;
+                }
+
+                if(mStarted && mIsGame)
                 {
                     cursorShow = Cursor::GetVisible();
                     Cursor::SetVisible(true);

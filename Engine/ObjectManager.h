@@ -1,5 +1,6 @@
 #pragma once
 
+#pragma warning(push)
 #pragma warning(disable: 4251)
 
 #include "Core.h"
@@ -50,3 +51,5 @@ template FOG_API void ObjectManager::Add<Object>(Object&);
 template FOG_API void ObjectManager::Add<Mesh>(Mesh&);
 template FOG_API void ObjectManager::Add<PointLight>(PointLight&);
 template FOG_API void ObjectManager::Add<DirectionalLight>(DirectionalLight&);
+
+#pragma warning(pop)

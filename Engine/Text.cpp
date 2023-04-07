@@ -2,7 +2,6 @@
 
 #include "Timer.h"
 #include "GUI.h"
-#include "Trace.h"
 #include "Application.h"
 
 #include <d2d1_3.h>

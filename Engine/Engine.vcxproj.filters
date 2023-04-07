@@ -69,9 +69,6 @@
     <ClCompile Include="Mesh.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Trace.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Cursor.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -132,6 +129,7 @@
     <ClCompile Include="TextureMap.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -168,9 +166,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="Trace.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
@@ -269,6 +264,7 @@
     <ClInclude Include="TextureMap.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\shader.hlsl">
