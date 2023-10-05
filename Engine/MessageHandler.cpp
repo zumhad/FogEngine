@@ -15,6 +15,7 @@
 LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     static bool isSnapshot = false;
+    static bool isClickWindow = false;
 
     switch (msg)
     {
@@ -25,7 +26,18 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 Time::Tick();
 
                 Cursor::Update();
-                Input::Update();
+
+                if (isClickWindow)
+                {
+                    Input::Update();
+                    mPaused = false;
+                    isClickWindow = false;
+                }
+                else
+                {
+                    Input::Update();
+                }
+
 
                 GUI::Update();
 
@@ -139,7 +151,6 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
             if (mStarted && !mIsGame)
             {
-
                 GUI::Release();
                 Direct3D::Resize();
                 GUI::Resize();
@@ -154,6 +165,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
         {
             static bool cursorShow = Cursor::GetVisible();
 
+
             if (LOWORD(wparam) == WA_INACTIVE)
             {
                 if (isSnapshot)
@@ -163,7 +175,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                     return 0;
                 }
 
-                if(mStarted && mIsGame)
+                if(mIsGame)
                 {
                     cursorShow = Cursor::GetVisible();
                     Cursor::SetVisible(true);
@@ -175,31 +187,43 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
             }
             else
             {
-                if (mStarted && mIsGame)
+                if (isClickWindow) return 0;
+
+                if (mIsGame)
                 {
                     Cursor::SetVisible(cursorShow);
 
                     int width = GetSystemMetrics(SM_CXSCREEN);
                     int height = GetSystemMetrics(SM_CYSCREEN);
 
-                    SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, 0);
-                    ShowWindow(hwnd, SW_MAXIMIZE);
+                    SetWindowPos(mHwnd, HWND_TOPMOST, 0, 0, width, height, 0);
                 }
-
-                if (mStarted && !mIsGame)
+                else
                 {
                     RECT rect{};
                     SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
                     int width = rect.right - rect.left;
                     int height = rect.bottom - rect.top;
 
-                    SetWindowPos(mHwnd, HWND_TOP, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+                    SetWindowPos(mHwnd, HWND_NOTOPMOST, 0, 0, width, height, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+                    SetForegroundWindow(mHwnd);
                 }
 
                 mPaused = false;
             }
 
             return 0;
+        }
+
+        case WM_MOUSEACTIVATE:
+        {
+            isClickWindow = true;
+            return MA_ACTIVATEANDEAT;
+        }
+
+        case WM_MENUCHAR:
+        {
+            return MAKELRESULT(0, MNC_CLOSE);
         }
 
         case WM_GETMINMAXINFO:

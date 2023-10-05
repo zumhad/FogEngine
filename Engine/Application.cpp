@@ -14,13 +14,14 @@
 #include "DepthMap.h"
 #include "SelectMap.h"
 #include "TextureMap.h"
-#include "PassMap.h"
 #include "Picking.h"
+#include "ColorMap.h"
+#include "Utility.h"
+#include "PipelineState.h"
+#include "NormalMap.h"
 
 #include <ctime>
 #include <shellapi.h>
-#include <crtdbg.h>
-#include <algorithm>
 #include <commdlg.h>
 
 HWND Application::mHwnd = 0;
@@ -31,7 +32,7 @@ bool Application::mMaximized = false;
 bool Application::mResizing = false;
 bool Application::mPaused = false;
 bool Application::mStarted = false;
-WCHAR Application::mPath[MAX_PATH] = {};
+String Application::mPath;
 int Application::mCaptionHeight = 0;
 int Application::mFpsMax = 0;
 
@@ -43,10 +44,10 @@ decltype(Application::mFoo) Application::mFoo = {};
 void Application::InitWindow()
 {
     WCHAR exePath[MAX_PATH];                   //
-    GetModuleFileName(0, exePath, MAX_PATH);   // get icon
+    GetModuleFileNameW(0, exePath, MAX_PATH);   // get icon
     HICON hIcon = ExtractIcon(0, exePath, 0);  //
 
-    String::Strcpy(mPath, exePath, 0, String::FindStr(exePath, L"\\Build"));
+    String::Copy(mPath, exePath, 0, String::Find(exePath, L"\\Build"));
 
     WNDCLASSEX wce{};
     wce.cbSize = sizeof(WNDCLASSEX);
@@ -68,6 +69,7 @@ void Application::InitWindow()
         width = GetSystemMetrics(SM_CXSCREEN);
         height = GetSystemMetrics(SM_CYSCREEN);
         style = WS_POPUP;
+
     }
     else
     {
@@ -76,7 +78,7 @@ void Application::InitWindow()
         style = WS_OVERLAPPEDWINDOW;
     }
 
-    mHwnd = CreateWindowEx(WS_EX_TOPMOST, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
+    mHwnd = CreateWindowExW(WS_EX_TOPMOST, APP_CLASS, APP_NAME, style, 0, 0, width, height, 0, 0, 0, 0);
     FOG_ASSERT(mHwnd);
 }
 
@@ -118,7 +120,7 @@ void Application::InitApp(APPCLASS app)
     if (app.foo.start)
         app.foo.start();
 
-    InitBuffers();
+    //InitBuffers();
     mStarted = true;
 }
 
@@ -132,8 +134,9 @@ void Application::CheckDebug()
 void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
+    NormalMap::Setup();
+    ColorMap::Setup();
     Picking::Setup();
-    PassMap::Setup();
     TextureMap::Setup();
     SelectMap::Setup();
     DepthMap::Setup();
@@ -142,8 +145,8 @@ void Application::InitModules(APPCLASS app)
     Text::Setup();
     Time::Setup();
     Camera::Setup(app);
-    ObjectManager::Setup();
     FrustumCulling::Setup();
+    PipelineState::Setup();
 }
 
 void Application::InitBuffers()
@@ -204,6 +207,7 @@ void Application::Shotdown() //exit
     DestroyWindow(mHwnd);
     UnregisterClass(APP_CLASS, 0);
 
+    PipelineState::Shotdown();
     FrustumCulling::Shotdown();
     ObjectManager::Shotdown();
     Text::Shotdown();
@@ -211,8 +215,9 @@ void Application::Shotdown() //exit
     DepthMap::Shotdown();
     SelectMap::Shotdown();
     TextureMap::Shotdown();
-    PassMap::Shotdown();
     Picking::Shotdown();
+    ColorMap::Shotdown();
+    NormalMap::Shotdown();
     Direct3D::Shotdown();
 }
 
@@ -404,5 +409,5 @@ void Application::OpenFileDialog()
 void Application::Close() { PostQuitMessage(0); }
 void Application::Minimize() { ShowWindow(mHwnd, SW_MINIMIZE); }
 bool Application::IsPaused() { return mPaused; }
-WCHAR* Application::GetPath() { return mPath; }
+String& Application::GetPath() { return mPath; }
 bool Application::IsGame() { return mIsGame; }

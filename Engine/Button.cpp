@@ -1,8 +1,10 @@
 #include "Button.h"
 
+#include "Direct3D.h"
 #include "GUI.h"
 #include "MathHelper.h"
 #include "Application.h"
+#include "Utility.h"
 
 using namespace DirectX;
 
@@ -26,7 +28,7 @@ Button::Button(Button& obj)
 	focus = obj.focus;
 	alignm = obj.alignm;
 
-	D2D1_COLOR_F c;
+	D2D1_COLOR_F c = {};
 	c.r = color.r;
 	c.g = color.g;
 	c.b = color.b;

@@ -2,6 +2,8 @@
 
 #include "Core.h"
 
+#include "CustomString.h"
+
 #include <d3dcommon.h>
 
 #define SHADERAPI __declspec(nothrow) HRESULT __stdcall
@@ -13,4 +15,8 @@ private:
     SHADERAPI Close(LPCVOID pData);
 };
 
-void FOG_API CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+class Shader
+{
+public:
+    static void Compile(String fileName, String entryPoint, String shaderModel, ID3D10Blob** blob);
+};

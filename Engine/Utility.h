@@ -1,10 +1,10 @@
 #pragma once
 
-#include <Windows.h>
-
 #include "Core.h"
 
-FOG_API void MessageBoxError(const WCHAR* strFile, int line, const WCHAR* strMsg);
+#include "CustomString.h"
+
+FOG_API void MessageBoxError(String file, int line, String msg);
 
 #if defined(DEBUG) | defined(_DEBUG)
 #define FOG_TRACE(x) \

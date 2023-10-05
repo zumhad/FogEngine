@@ -3,6 +3,9 @@
 #include "Core.h"
 
 #include "ApplicationHelper.h"
+#include "CustomString.h"
+
+#include <windows.h>
 
 class Engine;
 class Cursor;
@@ -57,7 +60,7 @@ public:
     static bool CursorInScene();
     static bool IsPaused();
     static bool IsGame();
-    static WCHAR* GetPath();
+    static String& GetPath();
 
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -73,6 +76,7 @@ private:
     static void InitModules(APPCLASS app);
     static HWND GetHWND() { return mHwnd; }
     static void InitBuffers();
+    //static bool IsMouseActivate();
 
 private:
     static bool mIsGame;
@@ -81,9 +85,10 @@ private:
     static bool mResizing;
     static bool mPaused;
     static bool mStarted;
-    static WCHAR mPath[MAX_PATH];
+    static String mPath;
     static int mCaptionHeight;
     static int mFpsMax;
+    static bool isMouseActivate;
 
     static struct
     {

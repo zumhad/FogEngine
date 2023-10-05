@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include "Timer.h"
+#include "Utility.h"
 
 IDirectInput8A* Input::mInput;
 IDirectInputDevice8A* Input::mMouse;

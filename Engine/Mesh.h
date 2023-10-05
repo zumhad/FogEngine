@@ -6,6 +6,7 @@
 #include "CustomString.h"
 #include "Vector3.h"
 #include "Matrix.h"
+#include "Texture.h"
 
 #include <DirectXCollision.h>
 
@@ -14,6 +15,7 @@ class Picking;
 class DepthMap;
 class SelectMap;
 class PassMap;
+class PipelineState;
 
 class FOG_API Mesh : public Object
 {
@@ -22,6 +24,7 @@ class FOG_API Mesh : public Object
 	friend class DepthMap;
 	friend class SelectMap;
 	friend class PassMap;
+	friend class PipelineState;
 
 public:
 	TypeObject GetType() override { return TypeObject::Mesh; }
@@ -53,11 +56,12 @@ public:
 	String name;
 	Material material;
 	bool lighting;
-	bool drawOutline = false;
 
 	Vector3 position;
 	Vector3 rotation;
 	Vector3 scale;
+
+	String texture;
 
 private:
 	struct Data;

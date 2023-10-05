@@ -1,8 +1,5 @@
 #include "Engine.h"
 
-#include <WinUser.h>
-#pragma comment(lib, "User32.lib")
-
 int idFPS = -1;
 int idPos = -1;
 
@@ -13,24 +10,21 @@ void MyUpdate()
 		Application::Close();
 	}
 
-	if (Input::Down(KEY_F1))
-	{
-		BufferManager::SetDraw(TypeBuffer::DepthMap);
-	}
-
-	if (Input::Down(KEY_F2))
-	{
-		BufferManager::SetDraw(TypeBuffer::SelectMap);
-	}
-
 	if (Input::Down(KEY_L))
 	{
 		PointLight light;
-		light.position.y = 50;
-		light.position.z = 100;
-		light.range = 150.0f;
-		light.power = 15.0f;
+		light.position.y = 100;
+		light.position.z = 2;
+		light.radius = 10.0f;
+		light.power = 1000.0f;
 		ObjectManager::Add(light);
+
+		Mesh m;
+		m.name = L"sphere.obj";
+		m.position = Vector3(0.0, 10, 2.0);
+		m.scale = Vector3(1.0, 1.0, 1.0);
+		m.material.diffuse = Color(1.0f, 0.0f, 0.0f);
+		ObjectManager::Add(m);
 	}
 }
 
@@ -59,10 +53,10 @@ void fpstest()
 
 void Update()
 {
-	float moveSpeed = 10.0f;
+	float moveSpeed = 30.0f;
 	float rotationSpeed = 100.0f;
 
-	static Vector3 pos = Vector3(0, 0, -5);
+	static Vector3 pos = Camera::GetPosition();
 	static Vector3 rot = Camera::GetRotation();
 
 	float move = (float)Input::GetAxis(MOUSE_SCROLL);
@@ -182,6 +176,8 @@ void Update()
 			}
 
 			pick1 = RayCasting::RayCast(dir, camPos, plane);
+
+			Vector3 test = RayCasting::RayCast(Vector3(0, -1, 1), Vector3(0, 5, -5), Vector4(0, 1, 0, 0));
 		}
 
 		if (obj != prevObj) prevObj = obj;
@@ -213,9 +209,9 @@ void Update()
 					pick1 = pick2;
 
 					String str = L"";
-					str += L"x: " + String::ToStr(mesh.position.x) + L"\n";
-					str += L"y: " + String::ToStr(mesh.position.y) + L"\n";
-					str += L"z: " + String::ToStr(mesh.position.z);
+					str += L"x: " + String::ToString(mesh.position.x) + L"\n";
+					str += L"y: " + String::ToString(mesh.position.y) + L"\n";
+					str += L"z: " + String::ToString(mesh.position.z);
 
 					Text& t = (Text&)GUI::Get(idPos);
 					t.text = str;
@@ -225,13 +221,19 @@ void Update()
 		else
 		{
 			String str = L"";
-			str += L"x: " + String::ToStr(0.0f) + L"\n";
-			str += L"y: " + String::ToStr(0.0f) + L"\n";
-			str += L"z: " + String::ToStr(0.0f);
+			str += L"x: " + String::ToString(0.0f) + L"\n";
+			str += L"y: " + String::ToString(0.0f) + L"\n";
+			str += L"z: " + String::ToString(0.0f);
 
 			Text& t = (Text&)GUI::Get(idPos);
 			t.text = str;
 		}
+	}
+
+	if (!Application::IsGame())
+	{
+		Text& t = (Text&)GUI::Get(idFPS);
+		t.text = String::ToString(Time::GetFPS());
 	}
 
 	MyUpdate();
@@ -248,6 +250,7 @@ void AddPlane()
 {
 	Mesh m;
 	m.name = L"plane.obj";
+	m.scale = Vector3(100, 1, 100);
 	ObjectManager::Add(m);
 }
 
@@ -260,38 +263,23 @@ void AddSphere()
 
 void Start()
 {
-	Matrix arr;
-
 	DirectionalLight dir;
-	dir.color = Color(0.5, 0.5, 0.5);
-	dir.direction = Vector3(0.7f, -0.7f, 0.7f);
-	ObjectManager::Add(dir);
+	dir.color = Color(1, 1, 1);
+	dir.direction = Vector3(0.0f, 0.0f, -1.0f);
+	//ObjectManager::Add(dir);
 
 	Mesh m;
-	m.name = L"house.obj";
+	m.name = L"sponza.obj";
 	m.position = Vector3(0.0, 0.0, 0.0);
 	m.scale = Vector3(1.0, 1.0, 1.0);
+	m.rotation = Vector3(0, 0, 0);
 	m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
-	Camera::SetPosition(Vector3(0, 4, 0));
-	Camera::SetRotationX(45.0f);
+	Camera::SetPosition(Vector3(0, 2, -10));
+	Camera::SetRotationX(0.0f);
 	Camera::SetFar(0.1f);
-	Camera::SetNear(1000000.0f);
-
-	BufferManager::SetEnable(TypeBuffer::SelectMap, true);
-	BufferManager::SetEnable(TypeBuffer::DepthMap, true);
-
-	for (int i = -40; i <= 40; i++)
-	{
-		for (int j = -40; j <= 40; j++)
-		{
-			Mesh m1;
-			m1.name = L"box.obj";
-			m1.position = Vector3(float(i), 0.0f, float(j));
-			//ObjectManager::Add(m1);
-		}
-	}
+	Camera::SetNear(10000.0f);
 
 	if (Application::IsGame()) return;
 
@@ -304,9 +292,9 @@ void Start()
 	int idCaption = GUI::Add(s);
 
 	s.x = 0;
-	s.y = 100;
-	s.width = 300;
-	s.height = 150;
+	s.y = Application::GetCaptionHeight() + 10;
+	s.width = 200;
+	s.height = 100;
 	s.alignm.horizontal = ALIGNM_RIGHT;
 	s.alignm.vertical = ALIGNM_TOP;
 	s.color = Color(0.7f, 0.7f, 0.7f);
@@ -357,15 +345,17 @@ void Start()
 	t.text = L"";
 	t.x = 10;
 	t.alignm.horizontal = ALIGNM_LEFT;
-	t.alignm.vertical = ALIGNM_CENTER_V;
+	t.alignm.vertical = ALIGNM_TOP;
 	idFPS = GUI::AddChild(idCaption, t);
 
-	t.x = 0;
-	t.text = L"x: 0.0\ny: 0.0\nz: 0.0";
-	t.alignm.horizontal = ALIGNM_CENTER_H;
+	t.x = 10;
+	t.text = L"x: " + String::ToString(0.0f) + L"\ny: " + String::ToString(0.0f) + L"\nz: " + String::ToString(0.0f);
+	t.alignm.horizontal = ALIGNM_LEFT;
 	t.alignm.vertical = ALIGNM_CENTER_V;
 	idPos = GUI::AddChild(infoRect, t);
 
+	t.x = 0;
+	t.alignm.horizontal = ALIGNM_CENTER_H;
 	t.text = L"AddBox";
 	GUI::AddChild(idAddBox, t);
 
@@ -374,53 +364,31 @@ void Start()
 
 	t.text = L"AddPlane";
 	GUI::AddChild(idAddPlane, t);
-
-	Static s2;
-	s2.x = -100;
-	s2.y = 0;
-	s2.width = 300;
-	s2.height = 500;
-	s2.color = Color(0.7f, 0.7f, 0.7f);
-	s2.alignm.horizontal = ALIGNM_RIGHT;
-	s2.alignm.vertical = ALIGNM_BOTTOM;
-	int s2ID = GUI::Add(s2);
-
-	but.x = 0;
-	but.y = 0;
-	but.alignm.horizontal = ALIGNM_CENTER_H;
-	but.alignm.vertical = ALIGNM_CENTER_V;
-	GUI::AddChild(s2ID, but);
-
-	but.x = 0;
-	but.y = 60;
-	but.alignm.horizontal = ALIGNM_CENTER_H;
-	but.alignm.vertical = ALIGNM_CENTER_V;
-	GUI::AddChild(s2ID, but);
 }
-
 
 APPCLASS Setting()
 {
 	APPCLASS app;
-	app.captionHeight = 50;
-	app.isGame = false;
+
+	app.captionHeight = 100;
+	app.isGame = true;
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;
 	app.camera.rotationSmooth = 500;
-	app.camera.moveSmooth = 1000;
+	app.camera.moveSmooth = 10;
 	app.fpsMax = 0;
 
 	app.game.width = 1920;
 	app.game.height = 1080;
-	app.game.color = Color(1.0f, 0.0f, 0.0f);
+	app.game.color = Color(1.0f, 1.0f, 1.0f);
 
 	app.editor.color = Color(1.0f, 1.0f, 1.0f);
 
 	app.scene.x = 0;
-	app.scene.y = 60;
-	app.scene.width = 800;
-	app.scene.height = 600;
+	app.scene.y = app.captionHeight + 10;
+	app.scene.width = 1200;
+	app.scene.height = 800;
 	app.scene.color = Color(0.7f, 0.7f, 0.7f);
 
 	return app;

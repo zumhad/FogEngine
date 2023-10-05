@@ -19,9 +19,9 @@
 #include "Static.h"
 #include "Picking.h"
 #include "Text.h"
-#include "BufferManager.h"
 #include "RayCasting.h"
 #include "Utility.h"
+#include "CustomArray.h"
 
 #define CREATE_APPLICATION(x)\
 int wmain()\

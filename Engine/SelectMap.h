@@ -3,6 +3,7 @@
 #include "Core.h"
 
 #include "ConstantBuffer.h"
+#include "Mesh.h"
 
 #include <d3d11.h>
 
@@ -11,6 +12,7 @@ class Application;
 class ObjectManager;
 class BufferManager;
 class Picking;
+class PipelineState;
 
 class FOG_API SelectMap
 {
@@ -19,25 +21,18 @@ class FOG_API SelectMap
 	friend class ObjectManager;
 	friend class BufferManager;
 	friend class Picking;
-
-public:
-	static bool GetEnable();
-	static bool GetDraw();
+	friend class PipelineState;
 
 private:
 	static void Setup();
 	static void Shotdown();
 
-	static void Bind(Mesh& mesh);
-	static void BindSRV();
-	static void BindRTV();
-	static void UnbindRTV();
+	static void Clear();
+	static void UpdateBuffer(Mesh& mesh);
 
-	static void SetEnable(bool enable);
-	static void SetDraw(bool draw);
-
-	static ID3D11ShaderResourceView* GetSRV();
+	static ID3D11ShaderResourceView* const* GetSRV();
 	static ID3D11RenderTargetView* GetRTV();
+	static ID3D11Buffer* const* GetBuffer();
 
 private:
 	static ID3D11RenderTargetView* mRenderTargetView;
@@ -49,8 +44,5 @@ private:
 	};
 
 	static ConstantBuffer<SelectBuffer> mSelectBuffer;
-
-	static bool mEnable;
-	static bool mDraw;
 };
 

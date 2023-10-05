@@ -10,32 +10,27 @@
 #include "Static.h"
 #include "Timer.h"
 #include "Text.h"
+#include "Utility.h"
+#include "Direct3D.h"
 
 #include <d2d1_3.h>
 #include <vector>
 
 using namespace DirectX;
 using namespace D2D1;
-using namespace std;
 
-GUI::Data* GUI::mData = 0;
+Array<Control*> GUI::mArr;
+int GUI::mSize = 0;
+Control* GUI::mFocusControl = 0;
+ID2D1Factory3* GUI::mFactory = 0;
+ID2D1RenderTarget* GUI::mRenderTarget = 0;
 
-struct GUI::Data
+ID2D1RenderTarget* GUI::RenderTarget()
 {
-public:
-	Data();
-	~Data();
+	return mRenderTarget;
+}
 
-public:
-	vector<Control*> v;
-	int size;
-	Control* focusControl;
-
-	ID2D1Factory3* factory;
-	ID2D1RenderTarget* renderTarget;
-}; 
-
-GUI::Data::Data() : size(0), renderTarget(0), factory(0), focusControl(0)
+void GUI::Setup()
 {
 	D2D1_FACTORY_OPTIONS factoryOptions{};
 
@@ -43,24 +38,14 @@ GUI::Data::Data() : size(0), renderTarget(0), factory(0), focusControl(0)
 	factoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
 #endif
 
-	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&factory));
-}
-
-ID2D1RenderTarget* GUI::RenderTarget()
-{
-	return mData->renderTarget;
-}
-
-void GUI::Setup()
-{
-	mData = new Data;
+	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&mFactory));
 
 	Resize();
 }
 
 void GUI::Release()
 {
-	SAFE_RELEASE(mData->renderTarget);
+	SAFE_RELEASE(mRenderTarget);
 }
 
 void GUI::Resize()
@@ -73,16 +58,16 @@ void GUI::Resize()
 	properties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
 	properties.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 
-	FOG_TRACE(mData->factory->CreateDxgiSurfaceRenderTarget(surface, &properties, &mData->renderTarget));
+	FOG_TRACE(mFactory->CreateDxgiSurfaceRenderTarget(surface, &properties, &mRenderTarget));
 	SAFE_RELEASE(surface);
 }
 
 Control& GUI::Get(int id)
 { 
-	if (id >= mData->size || id < 0)
+	if (id >= mSize || id < 0)
 		Application::Close();
 
-	return *(mData->v[id]);
+	return *(mArr[id]);
 }
 
 void GUI::Draw()
@@ -95,8 +80,8 @@ void GUI::Draw()
 	color.b = c.b;
 	color.a = c.a;
 
-	mData->renderTarget->BeginDraw();
-	mData->renderTarget->Clear(color);
+	mRenderTarget->BeginDraw();
+	mRenderTarget->Clear(color);
 
 	int size = Size();
 	for (int i = 0; i < size; i++)
@@ -129,15 +114,15 @@ void GUI::Draw()
 		}
 	}
 
-	FOG_TRACE(mData->renderTarget->EndDraw());
+	FOG_TRACE(mRenderTarget->EndDraw());
 }
 
 void GUI::Update()
 {
-	if (mData->focusControl)
+	if (mFocusControl)
 	{
-		mData->focusControl->SetFocus(false);
-		mData->focusControl = 0;
+		mFocusControl->SetFocus(false);
+		mFocusControl = 0;
 	}
 
 	int size = Size();
@@ -150,14 +135,14 @@ void GUI::Update()
 		{
 			Button& b = (Button&)control;
 
-			int x = Cursor::GetPosition(CURSOR_X); // fix!!!
-			int y = Cursor::GetPosition(CURSOR_Y); // fix!!!
+			int x = Cursor::GetPosition(CURSOR_X);
+			int y = Cursor::GetPosition(CURSOR_Y);
 
 			bool isFocus = (x >= b.mRect.left) && (x <= b.mRect.right) && (y >= b.mRect.top) && (y <= b.mRect.bottom);
 
 			if (isFocus)
 			{
-				mData->focusControl = &control;
+				mFocusControl = &control;
 				b.SetFocus(true);
 				break;
 			}
@@ -168,9 +153,9 @@ void GUI::Update()
 
 	if (!Input::Down(MOUSE_LEFT)) return;
 
-	if (mData->focusControl)
+	if (mFocusControl)
 	{
-		Control& control = *(mData->focusControl);
+		Control& control = *(mFocusControl);
 		Button& b = (Button&)control;
 		TypeControl type = b.GetType();
 		
@@ -183,58 +168,26 @@ void GUI::Update()
 
 bool GUI::IsFocus()
 {
-	return mData->focusControl;
+	return mFocusControl;
 }
 
 int GUI::Size()
 { 
-	return mData->size; 
+	return mSize; 
 }
 
 void GUI::Shotdown()
 {
-	SAFE_DELETE(mData);
-}
+	SAFE_RELEASE(mRenderTarget);
+	SAFE_RELEASE(mFactory);
 
-GUI::Data::~Data()
-{
-	SAFE_RELEASE(renderTarget);
-	SAFE_RELEASE(factory);
-
-	for (int i = 0; i < size; i++)
+	for (int i = 0; i < mSize; i++)
 	{
-		TypeControl type = v[i]->GetType();
+		TypeControl type = mArr[i]->GetType();
 
-		if (type == TypeControl::Control) delete (Control*)v[i];
-		if (type == TypeControl::Button) delete (Button*)v[i];
-		if (type == TypeControl::Static) delete (Static*)v[i];
-		if (type == TypeControl::Text) delete (Text*)v[i];
+		if (type == TypeControl::Control) delete (Control*)mArr[i];
+		if (type == TypeControl::Button) delete (Button*)mArr[i];
+		if (type == TypeControl::Static) delete (Static*)mArr[i];
+		if (type == TypeControl::Text) delete (Text*)mArr[i];
 	}
-}
-
-template<typename T>
-int GUI::Add(T& control)
-{
-	T* t = new T(control);
-
-	mData->v.push_back(t);
-	int id = mData->size++;
-
-	return id;
-}
-
-template<typename T>
-int GUI::AddChild(int parent, T& child)
-{
-	Control* c = &Get(parent);
-
-	//c->mChild = new T
-	c->mChild = new T(child);
-
-	c->mChild->mParent = c;
-
-	mData->v.push_back(c->mChild);
-	int id = mData->size++;
-
-	return id;
 }

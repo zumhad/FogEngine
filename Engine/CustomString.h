@@ -1,55 +1,60 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable : 4251)
+
 #include "Core.h"
 
-#include "CustomTypes.h"
-#include "Vector3.h"
-#include "Color.h"
+#include <string>
+
+class Vector3;
+class Vector4;
+class Color;
 
 class FOG_API String
 {
 public:
-	String();
+	String() : mStr() {}
 	String(const CHAR* str);
-	String(const WCHAR* str);
-	String(const String& str);
-	~String();
+	String(const WCHAR* str) : mStr(str) {}
+	String(const String& str) : mStr(str.mStr) {}
 
-	static void Strcat(WCHAR* dest, const WCHAR* src);
-	static void Strcpy(WCHAR* dest, const WCHAR* src);
-	static void Strcpy(WCHAR* dest, const WCHAR* src, int start, int end);
-	static int Strlen(const WCHAR* str);
-	static int Strlen(const CHAR* str);
-	static bool IsFind(const WCHAR* dest, const WCHAR* src);
-	static bool IsFindCh(const WCHAR* dest, const WCHAR ch);
-	static bool Equal(const WCHAR* str1, const WCHAR* str2);
-	static int FindCh(const WCHAR* str, const WCHAR ch);
-	static int Atoi(const WCHAR* str);
-	static bool Atob(const WCHAR* str);
-	static int CountCh(const WCHAR* dest, const WCHAR ch);
-	static bool IsInt(const WCHAR* str);
-	static int FindStr(const WCHAR* dest, const WCHAR* str);
-	static String ToStr(int value);
-	static String ToStr(Vector3 v);
-	static String ToStr(Color c);
-	static String ToStr(DirectX::FXMVECTOR v);
-	static String ToStr(DirectX::XMFLOAT4 v);
-	static String ToStr(float f);
-	int Length() { return mSize; }
-	const WCHAR* Str() { return mStr; }
-	CHAR* ToUTF8();
+	int Size();
+	WCHAR* GetWCHAR();
+	CHAR* GetCHAR();
 
-	operator WCHAR* () { return mStr; }
-	String operator+= (const String& str);
+	static String ToString(int _Val);
+	static String ToString(unsigned int _Val);
+	static String ToString(long _Val);
+	static String ToString(unsigned long _Val);
+	static String ToString(long long _Val);
+	static String ToString(unsigned long long _Val);
+	static String ToString(double _Val);
+	static String ToString(float _Val);
+	static String ToString(long double _Val);
+	static String ToString(const Vector3& _Val);
+	static String ToString(const Vector4& _Val);
+	static String ToString(const Color& _Val);
+
+	static int Find(const String& str, const String& f);
+	static void Copy(String& dest, const String& src, int start, int end);
+
+	String& operator+= (WCHAR ch);
+	String& operator+= (const WCHAR* str);
+	String& operator+= (const String& str);
+
+	String& operator= (WCHAR ch);
+	String& operator= (const WCHAR* str);
 	String& operator= (const String& str);
 
-	friend FOG_API String operator+ (const String& str1, const String& str2);
-	friend FOG_API String operator+ (const WCHAR* str1, const String& str2);
+	bool operator== (const WCHAR* str);
+	bool operator== (const String& str);
+
+	FOG_API friend String operator+ (const String& str1, const String& str2);
 
 private:
-	WCHAR* mStr = 0;
-	int mSize = 0;
+	std::wstring mStr;
+	std::string mBuffer;
 };
 
-//String operator+ (const String& str1, const String& str2);
-//String operator+ (const WCHAR* str1, const String& str2);
+#pragma warning(pop)

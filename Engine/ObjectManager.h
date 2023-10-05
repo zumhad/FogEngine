@@ -9,8 +9,7 @@
 #include "Light.h"
 #include "Mesh.h"
 #include "LightHelper.h"
-
-#include <vector>
+#include "CustomArray.h"
 
 class Application;
 class Direct3D;
@@ -35,21 +34,21 @@ public:
     static void Clear();
 
 private:
-    static void Setup();
     static void Shotdown();
-    static void Draw();
-
-    static void PrePass();
-    static void Pass();
 
 private:
     static int mSize;
-    static std::vector<Object*> mArr;
+    static Array<Object*> mArr;
 };
 
-template FOG_API void ObjectManager::Add<Object>(Object&);
-template FOG_API void ObjectManager::Add<Mesh>(Mesh&);
-template FOG_API void ObjectManager::Add<PointLight>(PointLight&);
-template FOG_API void ObjectManager::Add<DirectionalLight>(DirectionalLight&);
+template<typename T>
+void ObjectManager::Add(T& obj)
+{
+    T* temp = new T(obj);
+    temp->mID = mSize;
+
+    mArr.Add(temp);
+    mSize++;
+}
 
 #pragma warning(pop)

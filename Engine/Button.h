@@ -2,7 +2,6 @@
 
 #include "Core.h"
 
-#include "Direct3D.h"
 #include "Control.h"
 #include "Color.h"
 #include "Matrix.h"

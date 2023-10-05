@@ -15,6 +15,7 @@ public:
 public:
 	Color color;
 	Vector3 direction;
+	float power;
 
 private:
 	static int mCount;
@@ -29,8 +30,9 @@ public:
 public:
 	Color color;
 	Vector3 position;
-	float range;
+	float radius;
 	float power;
+	float gloss;
 
 private:
 	static int mCount;

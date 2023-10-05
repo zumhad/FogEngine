@@ -1,6 +1,12 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable: 4251)
+
 #include "Core.h"
+
+#include "CustomArray.h"
+#include "Control.h"
 
 #include <d2d1_3.h>
 #include <d3d11.h>
@@ -42,16 +48,37 @@ private:
 	static ID2D1RenderTarget* RenderTarget();
 
 private:
-	struct Data;
-	static Data* mData;
+	static Array<Control*> mArr;
+	static int mSize;
+
+	static Control* mFocusControl;
+
+	static ID2D1Factory3* mFactory;
+	static ID2D1RenderTarget* mRenderTarget;
 };
 
-template FOG_API int GUI::Add<Control>(Control&);
-template FOG_API int GUI::Add<Button>(Button&);
-template FOG_API int GUI::Add<Static>(Static&);
-template FOG_API int GUI::Add<Text>(Text&);
+template<typename T>
+int GUI::Add(T& control)
+{
+	T* t = new T(control);
 
-template FOG_API int GUI::AddChild<Control>(int, Control&);
-template FOG_API int GUI::AddChild<Button>(int, Button&);
-template FOG_API int GUI::AddChild<Static>(int, Static&);
-template FOG_API int GUI::AddChild<Text>(int, Text&);
+	mArr.Add(t);
+	int id = mSize++;
+
+	return id;
+}
+
+template<typename T>
+int GUI::AddChild(int parent, T& child)
+{
+	Control* c = &Get(parent);
+	c->mChild = new T(child);
+	c->mChild->mParent = c;
+
+	mArr.Add(c->mChild);
+	int id = mSize++;
+
+	return id;
+}
+
+#pragma warning(pop)

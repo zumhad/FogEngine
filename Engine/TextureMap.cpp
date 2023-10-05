@@ -4,60 +4,57 @@
 #include "Shader.h"
 #include "CustomString.h"
 #include "PathHelper.h"
+#include "Utility.h"
+#include "VertexBuffer.h"
+#include "CustomArray.h"
 
 #include <DirectXMath.h>
 
 using namespace DirectX;
 
-ID3D11Buffer* TextureMap::mVertexBuffer = 0;
-ID3D11Buffer* TextureMap::mIndexBuffer = 0;
+VertexBuffer TextureMap::mVertexBuffer;
+IndexBuffer TextureMap::mIndexBuffer;
 
 void TextureMap::Setup()
 {
-	XMFLOAT2 vertices[] =
-	{
-		XMFLOAT2{ 0.0f, 0.0f },
-		XMFLOAT2{ 1.0f, 0.0f },
-		XMFLOAT2{ 1.0f, 1.0f },
-		XMFLOAT2{ 0.0f, 1.0f }
-	};
+	Array<XMFLOAT2> vertices;
+	vertices.Add(XMFLOAT2{ 0.0f, 0.0f });
+	vertices.Add(XMFLOAT2{ 1.0f, 0.0f });
+	vertices.Add(XMFLOAT2{ 0.0f, 1.0f });
+	vertices.Add(XMFLOAT2{ 1.0f, 1.0f });
 
-	UINT indices[] =
-	{
-		0, 1, 2,
-		0, 2, 3
-	};
+	Array<UINT> indices;
+	indices.Add(0);
+	indices.Add(1);
+	indices.Add(2);
+	indices.Add(1);
+	indices.Add(3);
+	indices.Add(2);
 
-	D3D11_BUFFER_DESC bd{};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(XMFLOAT2) * ARRAYSIZE(vertices);
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData{};
-	InitData.pSysMem = vertices;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mVertexBuffer));
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(UINT) * ARRAYSIZE(indices);
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = indices;
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mIndexBuffer));
+	mVertexBuffer.Create(vertices);
+	mIndexBuffer.Create(indices);
 }
 
 void TextureMap::Bind()
 {
-	static UINT stride = sizeof(XMFLOAT2);
-	static UINT offset = 0;
+	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, mVertexBuffer.Get(), mVertexBuffer.Stride(), mVertexBuffer.Offset());
+	Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
-	Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	Direct3D::DeviceContext()->DrawIndexed(mIndexBuffer.Count(), 0, 0);
+}
 
-	Direct3D::DeviceContext()->DrawIndexed(6, 0, 0);
+VertexBuffer& TextureMap::GetVertexBuffer()
+{
+	return mVertexBuffer;
+}
+
+IndexBuffer& TextureMap::GetIndexBuffer()
+{
+	return mIndexBuffer;
 }
 
 void TextureMap::Shotdown()
 {
-	SAFE_RELEASE(mVertexBuffer);
-	SAFE_RELEASE(mIndexBuffer);
+	mVertexBuffer.Release();
+	mIndexBuffer.Release();
 }

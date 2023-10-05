@@ -2,6 +2,7 @@
 
 #include "GUI.h"
 #include "Application.h"
+#include "Utility.h"
 
 Static::Static()
 {
@@ -19,7 +20,7 @@ Static::Static(Static& obj)
 	color = obj.color;
 	alignm = obj.alignm;
 
-	D2D1_COLOR_F c;
+	D2D1_COLOR_F c = {};
 	c.r = color.r;
 	c.g = color.g;
 	c.b = color.b;

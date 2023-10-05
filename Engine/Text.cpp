@@ -3,6 +3,7 @@
 #include "Timer.h"
 #include "GUI.h"
 #include "Application.h"
+#include "Utility.h"
 
 #include <d2d1_3.h>
 #include <dwrite.h>
@@ -57,7 +58,7 @@ Text::Text(Text& t)
 	text = t.text;
 	color = t.color;
 
-	D2D1_COLOR_F c;
+	D2D1_COLOR_F c = {};
 	c.r = color.r;
 	c.g = color.g;
 	c.b = color.b;
@@ -113,5 +114,5 @@ void Text::Draw()
 		mRect.bottom = (float)Application::GetEditorHeight() + y;
 	}
 
-	GUI::RenderTarget()->DrawText(text, text.Length(), mData->textFormat, &mRect, mBrush);
+	GUI::RenderTarget()->DrawText(text.GetWCHAR(), text.Size(), mData->textFormat, &mRect, mBrush);
 }

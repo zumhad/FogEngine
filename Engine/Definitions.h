@@ -25,3 +25,5 @@
 
 #define MAX_DIRECTIONAL_LIGHT 16
 #define MAX_POINT_LIGHT 16
+
+#define ARRAY_SIZE(x) ARRAYSIZE(x)

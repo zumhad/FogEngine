@@ -108,16 +108,10 @@
     <ClCompile Include="Text.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="BufferManager.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="ColorMap.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="DepthMap.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="PassMap.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="SelectMap.cpp">
@@ -130,6 +124,16 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="PipelineState.cpp" />
+    <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
+    <ClCompile Include="InputLayout.cpp" />
+    <ClCompile Include="RasterizerState.cpp" />
+    <ClCompile Include="SamplerState.cpp" />
+    <ClCompile Include="NormalMap.cpp" />
+    <ClCompile Include="DepthStencilState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -142,9 +146,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="CustomString.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="CustomTypes.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Definitions.h">
@@ -243,16 +244,10 @@
     <ClInclude Include="Text.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="BufferManager.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="ColorMap.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="DepthMap.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="PassMap.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="RayCasting.h">
@@ -265,15 +260,32 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Utility.h" />
+    <ClInclude Include="PipelineState.h" />
+    <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="CustomArray.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="IndexBuffer.h" />
+    <ClInclude Include="VertexShader.h" />
+    <ClInclude Include="InputLayout.h" />
+    <ClInclude Include="RasterizerState.h" />
+    <ClInclude Include="SamplerState.h" />
+    <ClInclude Include="NormalMap.h" />
+    <ClInclude Include="DepthStencilState.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\shader.hlsl">
-      <Filter>stuff</Filter>
-    </None>
     <None Include="Assets\PrePass.hlsl">
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\Pass.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\fxaa.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\PostProcess.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\Light.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

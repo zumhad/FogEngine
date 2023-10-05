@@ -7,4 +7,6 @@
 #endif
 
 #include "Definitions.h"
-#include "Utility.h"
+
+typedef char				CHAR;
+typedef wchar_t				WCHAR;

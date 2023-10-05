@@ -1,28 +1,35 @@
 #include "PathHelper.h"
 
-#include "CustomString.h"
 #include "Application.h"
 
-void PathHelper::GetAssetsPath(String& dest)
+String PathHelper::GetAssetsPath()
 {
-    dest = Application::GetPath();
-    dest += L"Engine\\Assets\\";
+    String str = Application::GetPath();
+    str += L"Engine\\Assets\\";
+
+    return str;
 }
 
-void PathHelper::GetEnginePath(String& dest)
+String PathHelper::GetEnginePath()
 {
-    dest = Application::GetPath();
-    dest += L"Engine\\";
+    String str = Application::GetPath();
+    str += L"Engine\\";
+
+    return str;
 }
 
-void PathHelper::GetProjectPath(String& dest)
+String PathHelper::GetProjectPath()
 {
-    dest = Application::GetPath();
-    dest += L"Project\\";
+    String str = Application::GetPath();
+    str += L"Project\\";
+
+    return str;
 }
 
-void PathHelper::GetEditorPath(String& dest)
+String PathHelper::GetEditorPath()
 {
-    dest = Application::GetPath();
-    dest += L"Editor\\";
+    String str = Application::GetPath();
+    str += L"Editor\\";
+
+    return str;
 }

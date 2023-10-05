@@ -1,55 +1,58 @@
-cbuffer cbDefaultBuffer : register(b0)
+cbuffer cbPrePassBuffer : register(b0)
 {
 	float4x4 gWorldViewProj;
 	float4x4 gWorld;
+	float4x4 gWorldInvTranspose;
 };
 
-cbuffer cbSelectBuffer : register(b1)
+cbuffer cbColorBuffer : register(b1)
+{
+	float4 gColor;
+};
+
+cbuffer cbSelectBuffer : register(b2)
 {
 	uint gID; float3 pad;
 };
 
 struct VS_INPUT
 {
-	float3 PosL : POSITION;
+	float3 pos : POSITION;
+	float3 normal : NORMAL;
 };
 
 struct VS_OUTPUT
 {
-	float4 PosH : SV_POSITION;
-
-#ifdef SELECT_MAP
-	float3 PosW : POSITION;
-#endif
+	float4 pos : SV_POSITION;
+	float3 posW : POSITION;
+	float3 normal : NORMAL;
 };
+
 
 VS_OUTPUT VS(VS_INPUT input)
 {
 	VS_OUTPUT output;
-
-	output.PosH = mul(gWorldViewProj, float4(input.PosL, 1.0f));
-
-#ifdef SELECT_MAP
-	output.PosW = mul(gWorld, float4(input.PosL, 1.0f)).xyz;
-#endif
+	output.pos = mul(gWorldViewProj, float4(input.pos, 1.0f));
+	output.posW = mul(gWorld, float4(input.pos, 1.0f)).xyz;
+	output.normal = mul(float4(input.normal, 1.0f), gWorldInvTranspose).xyz;
 
 	return output;
 }
 
 struct PS_OUTPUT
 {
-#ifdef SELECT_MAP
-	float4 pos_id : SV_TARGET0;
-#endif
+	float4 color : SV_TARGET0;
+	float4 position : SV_TARGET1;
+	float4 normal : SV_TARGET2;
 };
 
 PS_OUTPUT PS(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
-#ifdef SELECT_MAP
-	output.pos_id = float4(input.PosW, gID);
-#endif
-	
+	output.color = gColor;
+	output.position = float4(input.posW, gID);
+	output.normal = float4(input.normal, 0.0f);
+
 	return output;
 }

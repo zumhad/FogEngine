@@ -1,45 +1,41 @@
 #include "SelectMap.h"
 
-#pragma warning(disable : 6387)
-
 #include "Direct3D.h"
 #include "Application.h"
 #include "ObjectManager.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "PathHelper.h"
+#include "PipelineState.h"
 
 ID3D11RenderTargetView* SelectMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* SelectMap::mShaderResourceView = 0;
 
 ConstantBuffer<SelectMap::SelectBuffer> SelectMap::mSelectBuffer;
 
-bool SelectMap::mEnable = false;
-bool SelectMap::mDraw = false;
-
 void SelectMap::Setup()
 {
-	float width, height;
+	int width, height;
 
 	if (Application::IsGame())
 	{
-		width = (float)Application::GetGameWidth();
-		height = (float)Application::GetGameHeight();
+		width = Application::GetGameWidth();
+		height = Application::GetGameHeight();
 	}
 	else
 	{
-		width = (float)Application::GetSceneWidth();
-		height = (float)Application::GetSceneHeight();
+		width = Application::GetSceneWidth();
+		height = Application::GetSceneHeight();
 	}
 
 	ID3D11Texture2D* texture = 0;
 	{
 		D3D11_TEXTURE2D_DESC desc{};
-		desc.Width = (UINT)width;
-		desc.Height = (UINT)height;
+		desc.Width = width;
+		desc.Height = height;
 		desc.MipLevels = 1;
 		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R32G32B32A32_TYPELESS;
+		desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -65,38 +61,18 @@ void SelectMap::Setup()
 	mSelectBuffer.Create();
 }
 
-void SelectMap::Bind(Mesh& mesh)
+void SelectMap::Clear()
 {
-	if (!mEnable) return;
+	static const float color[4]{ 0.0f, 0.0f, 0.0f, -1.0f };
+	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
+}
 
+void SelectMap::UpdateBuffer(Mesh& mesh)
+{
 	static SelectBuffer buffer{};
 	buffer.id = mesh.GetID();
 
 	mSelectBuffer.Bind(buffer);
-}
-
-void SelectMap::BindSRV()
-{
-	if (!mEnable) return;
-
-	static FLOAT color[4]{0, 0, 0, -1};
-	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
-
-	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mSelectBuffer.Get());
-}
-
-void SelectMap::BindRTV()
-{
-	if (!mDraw) return;
-
-	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, &mShaderResourceView);
-}
-
-void SelectMap::UnbindRTV()
-{
-	if (!mDraw) return;
-
-	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, Direct3D::NullSRV());
 }
 
 void SelectMap::Shotdown()
@@ -107,36 +83,17 @@ void SelectMap::Shotdown()
 	mSelectBuffer.Release();
 }
 
-void SelectMap::SetEnable(bool enable)
+ID3D11ShaderResourceView* const* SelectMap::GetSRV()
 {
-	mEnable = enable;
-}
-
-bool SelectMap::GetEnable()
-{
-	return mEnable;
-}
-
-void SelectMap::SetDraw(bool draw)
-{
-	mDraw = draw;
-}
-
-bool SelectMap::GetDraw()
-{
-	return mDraw;
-}
-
-ID3D11ShaderResourceView* SelectMap::GetSRV()
-{
-	if (!mEnable) return 0;
-
-	return mShaderResourceView;
+	return &mShaderResourceView;
 }
 
 ID3D11RenderTargetView* SelectMap::GetRTV()
 {
-	if (!mEnable) return 0;
-	
 	return mRenderTargetView;
+}
+
+ID3D11Buffer* const* SelectMap::GetBuffer()
+{
+	return mSelectBuffer.Get();
 }

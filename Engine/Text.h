@@ -4,6 +4,7 @@
 
 #include "Control.h"
 #include "CustomString.h"
+#include "Color.h"
 
 class GUI;
 class Application;

@@ -63,7 +63,7 @@ void Picking::Pick()
 	box.back = 1;
 
 	ID3D11Resource* texture = 0;
-	SelectMap::GetSRV()->GetResource(&texture);
+	(*SelectMap::GetSRV())->GetResource(&texture);
 
 	Direct3D::DeviceContext()->CopySubresourceRegion(mStaging, 0, 0, 0, 0, texture, 0, &box);
 

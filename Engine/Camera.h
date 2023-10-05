@@ -14,6 +14,7 @@ class Cursor;
 class DepthMap;
 class SelectMap;
 class PassMap;
+class PipelineState;
 
 class FOG_API Camera
 {
@@ -23,6 +24,7 @@ class FOG_API Camera
 	friend class DepthMap;
 	friend class SelectMap;
 	friend class PassMap;
+	friend class PipelineState;
 
 public:
 	static void SetPosition(Vector3 position);

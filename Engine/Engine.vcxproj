@@ -108,6 +108,10 @@
       <Profile>true</Profile>
       <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>6.6</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)Assets\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -126,6 +130,10 @@
       <Profile>true</Profile>
       <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <FxCompile>
+      <ShaderModel>6.6</ShaderModel>
+      <ObjectFileOutput>$(ProjectDir)Assets\%(Filename).cso</ObjectFileOutput>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -145,9 +153,10 @@
       <Profile>true</Profile>
     </Link>
     <FxCompile>
-      <ShaderType>Compute</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-      <AdditionalIncludeDirectories>Assets\;</AdditionalIncludeDirectories>
+      <ShaderModel>6.6</ShaderModel>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <ObjectFileOutput>$(ProjectDir)Assets\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -165,7 +174,7 @@
       <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -175,15 +184,15 @@
       <Profile>true</Profile>
     </Link>
     <FxCompile>
-      <ShaderType>Compute</ShaderType>
-      <ShaderModel>5.0</ShaderModel>
-      <AdditionalIncludeDirectories>Assets\;</AdditionalIncludeDirectories>
+      <ShaderModel>6.6</ShaderModel>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+      <ObjectFileOutput>$(ProjectDir)Assets\%(Filename).cso</ObjectFileOutput>
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ColorMap.cpp" />
-    <ClCompile Include="BufferManager.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
@@ -193,22 +202,29 @@
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
     <ClCompile Include="DepthMap.cpp" />
+    <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="FrustumCulling.cpp" />
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="NormalMap.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="PassMap.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Picking.cpp" />
+    <ClCompile Include="PipelineState.cpp" />
+    <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="Quaternion.cpp" />
+    <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="RayCasting.cpp" />
+    <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="SelectMap.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Static.cpp" />
@@ -220,12 +236,13 @@
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="Vector3.cpp" />
     <ClCompile Include="Vector4.cpp" />
+    <ClCompile Include="VertexBuffer.cpp" />
+    <ClCompile Include="VertexShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ApplicationHelper.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="ColorMap.h" />
-    <ClInclude Include="BufferManager.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
@@ -233,30 +250,37 @@
     <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Cursor.h" />
+    <ClInclude Include="CustomArray.h" />
     <ClInclude Include="CustomFile.h" />
     <ClInclude Include="CustomString.h" />
-    <ClInclude Include="CustomTypes.h" />
     <ClInclude Include="Definitions.h" />
     <ClInclude Include="DepthMap.h" />
+    <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
     <ClCompile Include="GenerateFiles.cpp" />
     <ClInclude Include="FrustumCulling.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputHelper.h" />
+    <ClInclude Include="InputLayout.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="NormalMap.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="PassMap.h" />
     <ClInclude Include="PathHelper.h" />
     <ClInclude Include="Picking.h" />
+    <ClInclude Include="PipelineState.h" />
+    <ClInclude Include="PixelShader.h" />
     <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="RayCasting.h" />
+    <ClInclude Include="SamplerState.h" />
     <ClInclude Include="SelectMap.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Static.h" />
@@ -268,20 +292,12 @@
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Vector4.h" />
+    <ClInclude Include="VertexBuffer.h" />
+    <ClInclude Include="VertexShader.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\shader.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+    <None Include="Assets\PrePass.hlsl">
       <FileType>Document</FileType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.5</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.5</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">VS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">VS</EntryPointName>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -290,7 +306,17 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\PrePass.hlsl">
+    <None Include="Assets\FXAA.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\PostProcess.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Light.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

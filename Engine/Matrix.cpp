@@ -2,6 +2,8 @@
 
 #pragma warning(disable : 26495)
 
+#include "Utility.h"
+
 #include <cstring>
 
 using namespace DirectX;

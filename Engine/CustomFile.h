@@ -4,6 +4,8 @@
 
 #include "CustomString.h"
 
+#include <windows.h>
+
 enum class FileOpenMode
 {
     Read,

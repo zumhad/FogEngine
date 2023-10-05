@@ -4,7 +4,7 @@
 
 #include "Color.h"
 
-struct APPCLASS
+struct FOG_API APPCLASS
 {
     struct
     {

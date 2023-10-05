@@ -3,6 +3,7 @@
 #include "Core.h"
 
 #include "Direct3D.h"
+#include "Utility.h"
 
 #include <d3d11.h>
 

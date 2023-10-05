@@ -6,6 +6,7 @@
 #include "PathHelper.h"
 #include "ObjectManager.h"
 #include "Application.h"
+#include "Utility.h"
 
 #include <WaveFrontReader.h>
 
@@ -22,6 +23,7 @@ public:
     Matrix worldInvTranspose;
 
     BoundingBox bb;
+    Texture texture;
 
     int indexCount;
     int vertexSize;
@@ -33,6 +35,8 @@ Mesh::Data::~Data()
 {
     SAFE_RELEASE(indexBuffer);
     SAFE_RELEASE(vertexBuffer);
+
+    texture.Release();
 }
 
 Mesh::Mesh()
@@ -44,6 +48,7 @@ Mesh::Mesh()
     rotation = Vector3(0.0f, 0.0f, 0.0f);
     scale = Vector3(1.0f, 1.0f, 1.0f);
     lighting = true;
+    texture = L"";
 }
 
 Mesh::Mesh(Mesh& mesh)
@@ -57,13 +62,12 @@ Mesh::Mesh(Mesh& mesh)
     material = mesh.material;
     name = mesh.name;
 
-    String path;
-    PathHelper::GetAssetsPath(path);
+    String path = PathHelper::GetAssetsPath();
     path += name;
 
     // читаем файл
     WaveFrontReader<UINT> wfReader;
-    FOG_TRACE(wfReader.Load(path));
+    FOG_TRACE(wfReader.Load(path.GetWCHAR()));
     mData->bb = wfReader.bounds;
 
     D3D11_BUFFER_DESC bd = {};
@@ -84,6 +88,8 @@ Mesh::Mesh(Mesh& mesh)
 
     mData->indexCount = (int)wfReader.indices.size();
     mData->vertexSize = sizeof(wfReader.vertices[0]);
+
+    mData->texture.Create(texture);
 }
 
 void Mesh::Bind()

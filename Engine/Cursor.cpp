@@ -16,6 +16,8 @@ int Cursor::mY = 0;
 
 void Cursor::Update()
 {
+	if (Application::IsPaused()) return;
+
 	POINT p;
 	GetCursorPos(&p);
 	ScreenToClient(Application::GetHWND(), &p);
