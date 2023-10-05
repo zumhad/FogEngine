@@ -19,6 +19,8 @@ public:
 	String(const WCHAR* str) : mStr(str) {}
 	String(const String& str) : mStr(str.mStr) {}
 
+	operator const char* ();
+
 	int Size();
 	WCHAR* GetWCHAR();
 	CHAR* GetCHAR();

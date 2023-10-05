@@ -17,6 +17,11 @@ String::String(const CHAR* str)
 	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, mStr.data(), size);
 }
 
+String::operator const char* ()
+{
+	return GetCHAR();
+}
+
 String& String::operator= (const String& str)
 {
 	mStr = str.mStr;

@@ -48,7 +48,7 @@ Mesh::Mesh()
     rotation = Vector3(0.0f, 0.0f, 0.0f);
     scale = Vector3(1.0f, 1.0f, 1.0f);
     lighting = true;
-    texture = L"";
+    texture = L"white.png";
 }
 
 Mesh::Mesh(Mesh& mesh)
@@ -61,6 +61,7 @@ Mesh::Mesh(Mesh& mesh)
     lighting = mesh.lighting;
     material = mesh.material;
     name = mesh.name;
+    texture = mesh.texture;
 
     String path = PathHelper::GetAssetsPath();
     path += name;
@@ -99,7 +100,7 @@ void Mesh::Bind()
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mData->vertexBuffer, &stride, &offset);
     Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-    //mTexture->Bind();
+    mData->texture.Bind();
 
     Direct3D::DeviceContext()->DrawIndexed(mData->indexCount, 0, 0);
 }

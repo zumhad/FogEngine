@@ -60,6 +60,7 @@ void PipelineState::Setup()
 		Array<String> input;
 		input.Add(L"POSITION");
 		input.Add(L"NORMAL");
+		input.Add(L"TEXCOORD");
 		mPrePassIL.Create(mPrePassVS.GetBlob(), input);
 	}
 
@@ -112,6 +113,7 @@ void PipelineState::Bind()
 
 	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetRenderTargets(mRenderTargetView.Size(), mRenderTargetView.Data(), DepthMap::GetDSV());
 	Direct3D::DeviceContext()->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
 

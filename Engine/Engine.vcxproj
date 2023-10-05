@@ -82,17 +82,15 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
-    <LibraryPath>$(SolutionDir)Libs\Debug\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Libs\Debug\include;$(IncludePath)</IncludePath>
-    <ExternalIncludePath>$(SolutionDir)Libs\Debug\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>$(SolutionDir)Libs\directxtk\lib\debug;$(SolutionDir)Libs\libpng\lib\debug;$(SolutionDir)Libs\zlib\lib\debug;$(SolutionDir)Libs\directxmesh\lib\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\directxtk\include;$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\directxmesh\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Release\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
-    <LibraryPath>$(SolutionDir)Libs\Release\lib;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Libs\Release\include;$(IncludePath)</IncludePath>
-    <ExternalIncludePath>$(SolutionDir)Libs\Release\include;$(ExternalIncludePath)</ExternalIncludePath>
+    <LibraryPath>$(SolutionDir)Libs\directxtk\lib\release;$(SolutionDir)Libs\libpng\lib\release;$(SolutionDir)Libs\zlib\lib\release;$(SolutionDir)Libs\directxmesh\lib\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\directxtk\include;$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\directxmesh\include;$(IncludePath)</IncludePath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -149,7 +147,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;directxtk.lib;d2d1.lib;dwrite.lib;zlib.lib;libpng.lib;directxmesh.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
     <FxCompile>
@@ -178,7 +176,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;DirectXTK.lib;d2d1.lib;dwrite.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;directxtk.lib;d2d1.lib;dwrite.lib;zlib.lib;libpng.lib;directxmesh.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <Profile>true</Profile>

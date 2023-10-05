@@ -53,38 +53,32 @@ void fpstest()
 
 void Update()
 {
-	float moveSpeed = 30.0f;
-	float rotationSpeed = 100.0f;
+	float moveSpeed = 0.01f;
+	float rotationSpeed = 50.0f;
 
 	static Vector3 pos = Camera::GetPosition();
 	static Vector3 rot = Camera::GetRotation();
 
-	float move = (float)Input::GetAxis(MOUSE_SCROLL);
-	move *= moveSpeed;
-
-	pos.z += move;
-
-	static bool isMove = false;
-	if (Input::Down(MOUSE_RIGHT) && Application::CursorInScene())
-	{
-		isMove = true;
-	}
-
-	if (!Input::Press(MOUSE_RIGHT)) isMove = false;
-
-	if (isMove)
+	static bool isRotate = false;
+	if (Input::Down(MOUSE_RIGHT) && Application::CursorInScene()) isRotate = true;
+	if (Input::Up(MOUSE_RIGHT)) isRotate = false;
+	if (isRotate)
 	{
 		rot.y += Input::GetAxis(MOUSE_X) * rotationSpeed;
 		rot.x += Input::GetAxis(MOUSE_Y) * rotationSpeed;
+
+		if (rot.x > 89.9f) rot.x = 89.9f;
+		if (rot.x < -89.9f) rot.x = -89.9f;
+
+		Camera::SetRotation(rot);
 	}
 
-	if (rot.x > 89.9f) rot.x = 89.9f;
-	if (rot.x < -89.9f) rot.x = -89.9f;
+	float moveZ = (Input::Press(KEY_W) - Input::Press(KEY_S)) * moveSpeed;
+	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed;
 
-	Vector3 targetPos = Vector3::Rotate(pos, Quaternion::Euler(rot.x, rot.y, 0));
-
-	Camera::SetPosition(targetPos);
-	Camera::LookAt(Vector3::Zero());
+	Vector3 move = Vector3(moveX, 0.0f, moveZ);
+	move = move.Rotate(move, Quaternion::Euler(rot.x, rot.y, 0.0f));
+	Camera::Move(Vector3(move.x, move.y, move.z));
 
 	static Object* obj = 0;
 	static Vector4 plane;
@@ -103,25 +97,11 @@ void Update()
 
 	if (Input::Down(MOUSE_LEFT) && Application::CursorInScene())
 	{
-		static Object* prevObj = 0;
-
 		Picking::Pick();
 		obj = Picking::GetPickObject();
 
-		if (obj != prevObj)
-		{
-			if (prevObj)
-			{
-				Mesh& prevMesh = (Mesh&)(*prevObj);
-				prevMesh.drawOutline = false;
-			}
-		}
-
 		if (obj)
 		{
-			Mesh& mesh = (Mesh&)(*obj);
-			mesh.drawOutline = true;
-
 			Vector3 r = Camera::GetDirection();
 
 			float angX = Math::Abs(Vector3::Angle(r, Vector3(1, 0, 0)) - 90.0f);
@@ -179,8 +159,6 @@ void Update()
 
 			Vector3 test = RayCasting::RayCast(Vector3(0, -1, 1), Vector3(0, 5, -5), Vector4(0, 1, 0, 0));
 		}
-
-		if (obj != prevObj) prevObj = obj;
 	}
 
 	if (Input::Press(MOUSE_LEFT))
@@ -269,7 +247,8 @@ void Start()
 	//ObjectManager::Add(dir);
 
 	Mesh m;
-	m.name = L"sponza.obj";
+	m.name = L"house.obj";
+	m.texture = L"png.png";
 	m.position = Vector3(0.0, 0.0, 0.0);
 	m.scale = Vector3(1.0, 1.0, 1.0);
 	m.rotation = Vector3(0, 0, 0);
@@ -371,7 +350,7 @@ APPCLASS Setting()
 	APPCLASS app;
 
 	app.captionHeight = 100;
-	app.isGame = true;
+	app.isGame = false;
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;

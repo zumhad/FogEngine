@@ -7,7 +7,6 @@
 #include "ObjectManager.h"
 
 #include <DirectXCollision.h>
-#include <SimpleMath.h>
 
 using namespace DirectX;
 
