@@ -5,7 +5,7 @@
 #include "Control.h"
 #include "Color.h"
 
-class GUI;
+class FOG_API GUI;
 
 class FOG_API Static : public Control
 {

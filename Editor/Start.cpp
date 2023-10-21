@@ -3,9 +3,9 @@
 #include "Events.h"
 
 int idFPS = -1;
-int idSliderX = -1;
-int idSliderY = -1;
-int idSliderZ = -1;
+int idPosX = -1;
+int idPosY = -1;
+int idPosZ = -1;
 
 void MyUpdate()
 {
@@ -27,7 +27,7 @@ void MyUpdate()
 		m.name = L"sphere.obj";
 		m.position = Vector3(0.0f, 1.0f, 0.0f);
 		m.scale = Vector3(0.1f, 0.1f, 0.1f);
-		m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
+		m.color = Color(1.0f, 1.0f, 1.0f);
 		m.texture = L"png.png";
 		//ObjectManager::Add(m);
 	}
@@ -119,23 +119,23 @@ void Update()
 		Picking::Pick();
 		obj = Picking::GetPickObject();
 
-		Text& sliderX = GUI::Get<Text>(idSliderX);
+		/*Text& sliderX = GUI::Get<Text>(idSliderX);
 		Text& sliderY = GUI::Get<Text>(idSliderY);
 		Text& sliderZ = GUI::Get<Text>(idSliderZ);
 
 		sliderX.enable = false;
 		sliderY.enable = false;
-		sliderZ.enable = false;
+		sliderZ.enable = false;*/
 
 		if (obj)
 		{
-			sliderX.enable = true;
+			/*sliderX.enable = true;
 			sliderY.enable = true;
 			sliderZ.enable = true;
 
 			sliderX.text = String::ToString(((Mesh&)(*obj)).position.x);
 			sliderY.text = String::ToString(((Mesh&)(*obj)).position.y);
-			sliderZ.text = String::ToString(((Mesh&)(*obj)).position.z);
+			sliderZ.text = String::ToString(((Mesh&)(*obj)).position.z);*/
 
 			Vector3 r = Camera::GetDirection();
 
@@ -197,9 +197,9 @@ void Update()
 
 	if (Input::Press(MOUSE_LEFT))
 	{
-		Text& sliderX = GUI::Get<Text>(idSliderX);
-		Text& sliderY = GUI::Get<Text>(idSliderY);
-		Text& sliderZ = GUI::Get<Text>(idSliderZ);
+		//Text* sliderX = GUI::GetChild<Text>(idPosX);
+		//Text& sliderY = GUI::Get<Text>(idSliderY);
+		//Text& sliderZ = GUI::Get<Text>(idSliderZ);
 
 		if (obj)
 		{
@@ -229,9 +229,9 @@ void Update()
 					str += L"y: " + String::ToString(mesh.position.y) + L"\n";
 					str += L"z: " + String::ToString(mesh.position.z);
 
-					sliderX.text = String::ToString(mesh.position.x);
-					sliderY.text = String::ToString(mesh.position.y);
-					sliderZ.text = String::ToString(mesh.position.z);
+					//sliderX.text = String::ToString(mesh.position.x);
+					//sliderY.text = String::ToString(mesh.position.y);
+					//sliderZ.text = String::ToString(mesh.position.z);
 				}
 			}
 		}
@@ -244,8 +244,12 @@ void Update()
 
 	if (!Application::IsGame())
 	{
-		Text& t = GUI::Get<Text>(idFPS);
-		t.text = String::ToString(Time::GetFPS());
+		Text* text = GUI::Get<Text>(idFPS);
+
+		if (text)
+		{
+			text->text = String::ToString(Time::GetFPS());
+		}
 	}
 
 	MyUpdate();
@@ -265,7 +269,7 @@ void Start()
 	m.position = Vector3(0.0, 0.0, 0.0);
 	m.scale = Vector3(1.0, 1.0, 1.0);
 	m.rotation = Vector3(0, 0, 0);
-	m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
+	m.color = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
 	Camera::SetPosition(Vector3(0, 0, 0));
@@ -298,33 +302,29 @@ void Start()
 	pos.width = 140;
 	pos.height = 50;
 	pos.color = Color(0.25, 0.25, 0.25);
-	int idPosX = GUI::AddChild(infoRect, pos);
+	pos.event.focus = Focus;
+	pos.event.focusOn = FocusOn;
+	pos.event.focusOff = FocusOffX;
+	idPosX = GUI::AddChild(infoRect, pos);
 
 	pos.x += pos.width + 10;
-	int idPosY = GUI::AddChild(infoRect, pos);
+	pos.event.focusOff = FocusOffY;
+	idPosY = GUI::AddChild(infoRect, pos);
 
+	pos.event.focusOff = FocusOffZ;
 	pos.x += pos.width + 10;
-	int idPosZ = GUI::AddChild(infoRect, pos);
+	idPosZ = GUI::AddChild(infoRect, pos);
 
 	Text textBox;
 	textBox.alignm.horizontal = ALIGNM_LEFT;
 	textBox.alignm.vertical = ALIGNM_CENTER_V;
 	textBox.x = 5;
-	textBox.event.focus = Focus;
-	textBox.event.focusOn = FocusOn;
-	textBox.event.focusOff = FocusOffX;
 	textBox.enable = false;
 	textBox.color = Color(1.0f, 1.0f, 1.0f);
 	textBox.size = 16;
-	idSliderX = GUI::AddChild(idPosX, textBox);
-
-	//textBox.x += textBox.width + 10;
-	textBox.event.focusOff = FocusOffY;
-	idSliderY = GUI::AddChild(idPosY, textBox);
-
-	//textBox.x += textBox.width + 10;
-	textBox.event.focusOff = FocusOffZ;
-	idSliderZ = GUI::AddChild(idPosZ, textBox);
+	GUI::AddChild(idPosX, textBox);
+	GUI::AddChild(idPosY, textBox);
+	GUI::AddChild(idPosZ, textBox);
 
 	int size = 40;
 	Static but;
@@ -373,8 +373,8 @@ void Start()
 	t.alignm.horizontal = ALIGNM_LEFT;
 	t.alignm.vertical = ALIGNM_TOP;
 	idFPS = GUI::AddChild(idCaption, t);
-	t.size = 16;
 
+	t.size = 16;
 	t.x = 0;
 	t.alignm.horizontal = ALIGNM_CENTER_H;
 	t.alignm.vertical = ALIGNM_CENTER_V;

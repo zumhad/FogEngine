@@ -6,6 +6,7 @@
 #include "SelectMap.h"
 #include "DepthMap.h"
 #include "ColorMap.h"
+#include "Utility.h"
 
 #include <d3dcompiler.h>
 #include <cstdlib>

@@ -2,22 +2,22 @@
 
 #include "Core.h"
 
-#include "Application.h"
-#include "Matrix.h"
-#include "Vector3.h"
-#include "Frustum.h"
-
 #include <DirectXMath.h>
 
-class Application;
-class ObjectManager;
-class Cursor;
-class DepthMap;
-class SelectMap;
-class PassMap;
-class PipelineState;
-class ShadowMap;
-class LightMap;
+class FOG_API Application;
+class FOG_API ObjectManager;
+class FOG_API Cursor;
+class FOG_API DepthMap;
+class FOG_API SelectMap;
+class FOG_API PassMap;
+class FOG_API PipelineState;
+class FOG_API ShadowMap;
+class FOG_API LightMap;
+class FOG_API Frustum;
+class FOG_API Vector3;
+class FOG_API Matrix;
+
+struct FOG_API APPCLASS;
 
 class FOG_API Camera
 {
@@ -47,12 +47,12 @@ public:
 	static void LookAt(Vector3 pos);
 	static void Move(Vector3 v);
 	static void Rotate(Vector3 v);
-	static float GetRotateX() { return mRotation.x; };
-	static float GetRotateY() { return mRotation.y; };
-	static float GetRotateZ() { return mRotation.z; };
+	static float GetRotateX();
+	static float GetRotateY();
+	static float GetRotateZ();
 
-	static Vector3 GetPosition() { return mPosition; }
-	static Vector3 GetRotation() { return mRotation; }
+	static Vector3 GetPosition();
+	static Vector3 GetRotation();
 	static Vector3 GetDirection();
 
 	static void SetFOV(float fov);
@@ -60,9 +60,9 @@ public:
 	static void SetFar(float farZ);
 
 private:
-	static Matrix GetTest() { return mTest; }
-	static Matrix GetViewMatrix() { return mView; }
-	static Matrix GetProjMatrix() { return mProj; }
+	static Matrix GetTest();
+	static Matrix GetViewMatrix();
+	static Matrix GetProjMatrix();
 	static void Setup(APPCLASS& app);
 	static void Update();
 

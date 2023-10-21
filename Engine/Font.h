@@ -2,8 +2,6 @@
 
 #include "Core.h"
 
-#include "Texture.h"
-
 #include <d3d11.h>
 
 class FOG_API Font

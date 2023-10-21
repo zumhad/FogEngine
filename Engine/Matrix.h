@@ -7,8 +7,6 @@
 
 #include <DirectXMath.h>
 
-//struct FOG_API DirectX::XMFLOAT4X4;
-
 class FOG_API Matrix
 {
 public:

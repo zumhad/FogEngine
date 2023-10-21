@@ -2,13 +2,15 @@
 
 #include "Core.h"
 
-#include "CustomArray.h"
 #include "CustomString.h"
 
 #include <d3d11.h>
 
-class PipelineState;
-class GUI;
+template <typename T>
+class Array;
+
+class FOG_API PipelineState;
+class FOG_API GUI;
 
 class FOG_API InputLayout
 {

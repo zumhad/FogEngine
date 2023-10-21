@@ -1,6 +1,13 @@
 #include "PostProcess.h"
 
 #include "Application.h"
+#include "ConstantBuffer.h"
+
+struct PostProcess::PostProcessBuffer
+{
+	float invWidth;
+	float invHeight; float pad[2];
+};
 
 ConstantBuffer<PostProcess::PostProcessBuffer> PostProcess::mPostProcessBuffer;
 

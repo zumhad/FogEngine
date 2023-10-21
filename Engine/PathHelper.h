@@ -2,7 +2,7 @@
 
 #include "Core.h"
 
-#include "CustomString.h"
+class FOG_API String;
 
 class PathHelper
 {

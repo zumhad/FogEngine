@@ -7,43 +7,21 @@
 #include "ObjectManager.h"
 #include "Application.h"
 #include "Utility.h"
+#include "Quaternion.h"
 
 #include <WaveFrontReader.h>
 
 using namespace DirectX;
 
-struct Mesh::Data
-{
-public:
-    Data() : indexCount(0), vertexBuffer(0), indexBuffer(0), vertexSize(0) {}
-    ~Data();
-
-public:
-    Matrix world;
-    Matrix worldInvTranspose;
-
-    BoundingBox bb;
-    Texture texture;
-
-    int indexCount;
-    int vertexSize;
-    ID3D11Buffer* vertexBuffer;
-    ID3D11Buffer* indexBuffer;
-};
-
-Mesh::Data::~Data()
-{
-    SAFE_RELEASE(indexBuffer);
-    SAFE_RELEASE(vertexBuffer);
-
-    texture.Release();
-}
-
 Mesh::Mesh()
 {
-    mData = 0;
+    mIndexCount = 0;
+    mVertexSize = 0;
+    mIndexBuffer = 0;
+    mVertexBuffer = 0;
 
     name = L"";
+    color = Color(1.0f, 1.0f, 1.0f);
     position = Vector3(0.0f, 0.0f, 0.0f);
     rotation = Vector3(0.0f, 0.0f, 0.0f);
     scale = Vector3(1.0f, 1.0f, 1.0f);
@@ -53,23 +31,19 @@ Mesh::Mesh()
 
 Mesh::Mesh(Mesh& mesh)
 {
-    mData = new Data;
-
     position = mesh.position;
     rotation = mesh.rotation;
     scale = mesh.scale;
     lighting = mesh.lighting;
-    material = mesh.material;
+    color = mesh.color;
     name = mesh.name;
     texture = mesh.texture;
 
     String path = PathHelper::GetAssetsPath();
     path += name;
 
-    // читаем файл
     WaveFrontReader<UINT> wfReader;
     wfReader.Load(path.GetWCHAR());
-    mData->bb = wfReader.bounds;
 
     D3D11_BUFFER_DESC bd = {};
     bd.Usage = D3D11_USAGE_DEFAULT;
@@ -78,71 +52,53 @@ Mesh::Mesh(Mesh& mesh)
     bd.CPUAccessFlags = 0;
     D3D11_SUBRESOURCE_DATA InitData = {};
     InitData.pSysMem = wfReader.vertices.data();
-    FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mData->vertexBuffer));
+    FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mVertexBuffer));
 
     bd.Usage = D3D11_USAGE_DEFAULT;
     bd.ByteWidth = (UINT)sizeof(wfReader.indices[0]) * (UINT)wfReader.indices.size();
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
     InitData.pSysMem = wfReader.indices.data();
-    FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mData->indexBuffer));
+    FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mIndexBuffer));
 
-    mData->indexCount = (int)wfReader.indices.size();
-    mData->vertexSize = sizeof(wfReader.vertices[0]);
+    mIndexCount = (int)wfReader.indices.size();
+    mVertexSize = sizeof(wfReader.vertices[0]);
 
-    mData->texture.Create(texture);
+    mTexture.Create(texture);
 }
 
 void Mesh::Bind()
 {
-    static UINT stride = mData->vertexSize;
+    static UINT stride = mVertexSize;
     static UINT offset = 0;
-    Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mData->vertexBuffer, &stride, &offset);
-    Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+    Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-    Direct3D::DeviceContext()->DrawIndexed(mData->indexCount, 0, 0);
+    Direct3D::DeviceContext()->DrawIndexed(mIndexCount, 0, 0);
 }
 
 void Mesh::BindTexture()
 {
-    mData->texture.Bind();
-}
-
-BoundingBox Mesh::GetBoundingBox()
-{
-    BoundingBox bb = mData->bb;
-
-    XMVECTOR orig = XMVectorSet(0, 0, 0, 1);
-    XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-    XMVECTOR sc = scale;
-    XMVECTOR pos = position;
-
-    XMMATRIX m = XMMatrixTransformation(orig, q, sc, orig, q, pos);
-    bb.Transform(bb, m);
-
-    return bb;
+    mTexture.Bind();
 }
 
 Matrix Mesh::GetWorldMatrix()
 {
     XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-    Matrix m = XMMatrixAffineTransformation(scale, XMVectorSet(0, 0, 0, 1), q, position);
-
-    return m;
+    return XMMatrixAffineTransformation(scale, XMVectorSet(0, 0, 0, 1), q, position);;
 }
 
-Matrix Mesh::GetWorldInvTransposeMatrix()
+Matrix Mesh::GetWorldInvTransposeMatrix(Matrix& world)
 {
-    Matrix m = mData->world;
-    m = XMMatrixTranspose(XMMatrixInverse(0, m));
-    mData->worldInvTranspose = m;
-
-    return m;
+    return XMMatrixTranspose(XMMatrixInverse(0, world));
 }
 
 Mesh::~Mesh()
 {
-    SAFE_DELETE(mData);
+    SAFE_RELEASE(mIndexBuffer);
+    SAFE_RELEASE(mVertexBuffer);
+
+    mTexture.Release();
 }
 
 

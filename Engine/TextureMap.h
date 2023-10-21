@@ -2,16 +2,14 @@
 
 #include "Core.h"
 
-#include "CustomString.h"
-#include "VertexBuffer.h"
-#include "IndexBuffer.h"
-
 #include <d3d11.h>
 
-class ObjectManager;
-class Application;
-class Direct3D;
-class PipelineState;
+class FOG_API ObjectManager;
+class FOG_API Application;
+class FOG_API Direct3D;
+class FOG_API PipelineState;
+class FOG_API VertexBuffer;
+class FOG_API IndexBuffer;
 
 class FOG_API TextureMap
 {

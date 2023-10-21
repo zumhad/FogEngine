@@ -2,26 +2,27 @@
 
 #include "Core.h"
 
-#include "CustomArray.h"
-#include "ConstantBuffer.h"
-#include "Matrix.h"
-#include "Mesh.h"
-#include "Light.h"
-
 #include <d3d11.h>
 
-class PixelShader;
-class VertexBuffer;
-class IndexBuffer;
-class VertexShader;
-class InputLayout;
-class RasterizerState;
-class ScissorRect;
-class RenderTargetView;
-class SamplerState;
-class DepthStencilState;
+template <typename T>
+class FOG_API Array;
 
-class PipelineState
+template <typename T>
+class FOG_API ConstantBuffer;
+
+class FOG_API PixelShader;
+class FOG_API VertexBuffer;
+class FOG_API IndexBuffer;
+class FOG_API VertexShader;
+class FOG_API InputLayout;
+class FOG_API RasterizerState;
+class FOG_API ScissorRect;
+class FOG_API RenderTargetView;
+class FOG_API SamplerState;
+class FOG_API DepthStencilState;
+class FOG_API Mesh;
+
+class FOG_API PipelineState
 {
 public:
 	static void Setup();
@@ -40,6 +41,7 @@ private:
 	static Array<ID3D11ShaderResourceView*> mShaderResourceView;
 	static SamplerState mShadowSamplerState;
 	static SamplerState mSamplerState;
+	static SamplerState mPostProcessSamplerState;
 	static DepthStencilState mDepthStencilState;
 
 	static VertexShader mPrePassVS;
@@ -58,12 +60,7 @@ private:
 	static PixelShader mShadowPassPS;
 	static InputLayout mShadowPassIL;
 
-	struct PrePassBuffer
-	{
-		Matrix worldViewProj;
-		Matrix world;
-		Matrix worldInvTranspose;
-	};
+	struct PrePassBuffer;
 	static ConstantBuffer<PrePassBuffer> mPrePassBuffer;
 };
 

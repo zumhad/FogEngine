@@ -2,7 +2,7 @@
 
 #include "Core.h"
 
-class Application;
+class FOG_API Application;
 
 class FOG_API Time
 {

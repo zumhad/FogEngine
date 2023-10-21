@@ -7,6 +7,33 @@
 #include "PipelineState.h"
 #include "Camera.h"
 #include "ShadowMap.h"
+#include "Light.h"
+#include "Matrix.h"
+#include "ConstantBuffer.h"
+
+struct FOG_API LightMap::LightBuffer
+{
+	struct
+	{
+		Color color;
+		Vector3 dir;
+		float power;
+	} dirLight[16]{};
+	struct
+	{
+		Color color;
+		Vector3 position;
+		float radius;
+		float power; float pad[3];
+	} pointLight[16]{};
+	Vector3 cameraPos;
+	int dirCount = 0;
+	int pointCount = 0;
+	int width = 0;
+	int height = 0;
+	float texelSize = 0.0f;
+	Matrix shadowTransform;
+};
 
 ID3D11RenderTargetView* LightMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* LightMap::mShaderResourceView = 0;

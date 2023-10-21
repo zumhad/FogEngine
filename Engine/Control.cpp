@@ -15,7 +15,6 @@ Control::Control()
 	mClick = false;
 	mHover = false;
 	mID = 0;
-	mChild = 0;
 	mParent = 0;
 	mRect = {};
 

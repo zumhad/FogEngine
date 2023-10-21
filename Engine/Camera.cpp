@@ -1,9 +1,10 @@
 #include "Camera.h"
 
 #include "MathHelper.h"
-#include "FrustumCulling.h"
 #include "Quaternion.h"
 #include "CustomArray.h"
+#include "Frustum.h"
+#include "Application.h"
 
 using namespace DirectX;
 
@@ -21,6 +22,45 @@ float Camera::mFOV;
 float Camera::mAspectRatio;
 float Camera::mNearZ;
 float Camera::mFarZ;
+
+float Camera::GetRotateX() 
+{
+	return mRotation.x; 
+}
+
+float Camera::GetRotateY() 
+{
+	return mRotation.y;
+}
+
+float Camera::GetRotateZ()
+{ 
+	return mRotation.z;
+}
+
+Vector3 Camera::GetPosition()
+{ 
+	return mPosition;
+}
+
+Vector3 Camera::GetRotation()
+{
+	return mRotation; 
+}
+
+Matrix Camera::GetTest()
+{ 
+	return mTest; 
+}
+
+Matrix Camera::GetViewMatrix()
+{
+	return mView;
+}
+Matrix Camera::GetProjMatrix()
+{ 
+	return mProj; 
+}
 
 Vector3 Camera::GetDirection()
 {

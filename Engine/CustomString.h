@@ -7,9 +7,9 @@
 
 #include <string>
 
-class Vector3;
-class Vector4;
-class Color;
+class FOG_API Vector3;
+class FOG_API Vector4;
+class FOG_API Color;
 
 class FOG_API String
 {

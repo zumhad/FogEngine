@@ -12,7 +12,7 @@ enum class FileOpenMode
     Write
 };
 
-class File
+class FOG_API File
 {
 public:
     File(String name, FileOpenMode mode);
@@ -24,7 +24,7 @@ public:
     int Size();
     void Write(const void* data, size_t size);
 
-    static bool Exists(String& name);
+    static bool Exists(String name);
 
 private:
     HANDLE mFile;

@@ -1,16 +1,15 @@
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable: 4251)
-
 #include "Core.h"
 
-#include "ConstantBuffer.h"
-#include "Matrix.h"
-#include "Mesh.h"
+#include <d3d11.h>
 
-class Application;
-class PipelineState;
+template <typename T>
+class FOG_API ConstantBuffer;
+
+class FOG_API Application;
+class FOG_API PipelineState;
+class FOG_API Mesh;
 
 class FOG_API ShadowMap
 {
@@ -37,13 +36,8 @@ private:
 	static ID3D11DepthStencilView* mDepthStencilView;
 	static ID3D11ShaderResourceView* mShaderResourceView;
 
-	struct ShadowBuffer
-	{
-		Matrix worldViewProj;
-	};
+	struct ShadowBuffer;
 	static ConstantBuffer<ShadowBuffer> mShadowBuffer;
 
 	static int mResolution;
 };
-
-#pragma warning(pop)

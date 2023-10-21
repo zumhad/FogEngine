@@ -10,7 +10,7 @@ enum class RasterizerStateType
 	Shadow
 };
 
-class PipelineState;
+class FOG_API PipelineState;
 
 class FOG_API RasterizerState
 {

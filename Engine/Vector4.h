@@ -4,7 +4,7 @@
 
 #include <DirectXMath.h>
 
-class Vector3;
+class FOG_API Vector3;
 
 class FOG_API Vector4
 {

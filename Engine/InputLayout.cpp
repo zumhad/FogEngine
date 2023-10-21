@@ -2,6 +2,7 @@
 
 #include "Direct3D.h"
 #include "Utility.h"
+#include "CustomArray.h"
 
 InputLayout::InputLayout()
 {

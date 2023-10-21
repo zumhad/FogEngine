@@ -8,6 +8,11 @@
 #include "Direct3D.h"
 #include "Font.h"
 
+struct Text::TextBuffer
+{
+	Color color;
+};
+
 Text::Text()
 {
 	text = L"";
@@ -43,6 +48,7 @@ void Text::Draw()
 	mTextBuffer.Bind(buffer);
 
 	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mTextBuffer.Get());
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &mRect);
 
 	static UINT stride = mVertexSize;
 	static UINT offset = 0;
@@ -67,6 +73,8 @@ void Text::Update()
 	static Array<Vertex> vertex;
 	vertex.Resize(4 * mText.Size());
 	mVertexSize = sizeof(Vertex);
+
+	int xOffset, yOffset;
 
 	if (mParent)
 	{
@@ -103,6 +111,14 @@ void Text::Update()
 			mRect.top = y + rect.bottom - height;
 			mRect.bottom = mRect.top + height;
 		}
+
+		xOffset = mRect.left;
+		yOffset = mRect.top;
+
+		if (mRect.left < rect.left) mRect.left = rect.left;
+		if (mRect.right > rect.right) mRect.right = rect.right;
+		if (mRect.top < rect.top) mRect.top = rect.top;
+		if (mRect.bottom > rect.bottom) mRect.bottom = rect.bottom;
 	}
 	else
 	{
@@ -137,13 +153,21 @@ void Text::Update()
 			mRect.top = y + Application::GetEditorHeight() - height;
 			mRect.bottom = mRect.top + height;
 		}
+
+		xOffset = mRect.left;
+		yOffset = mRect.top;
+
+		if (mRect.left < 0) mRect.left = 0;
+		if (mRect.right > Application::GetEditorWidth()) mRect.right = Application::GetEditorWidth();
+		if (mRect.top < 0) mRect.top = 0;
+		if (mRect.bottom > Application::GetEditorHeight()) mRect.bottom = Application::GetEditorHeight();
 	}
 
 	int textSize = mText.Size();
 	for (int i = 0; i < textSize; i++)
 	{
-		float xPos = (float)i * size + mRect.left;
-		float yPos = (float)mRect.top;
+		float xPos = (float)i * size + xOffset;
+		float yPos = (float)yOffset;
 		float uvWidth = 32.0f / 3008.0f;
 
 		static Vertex v;

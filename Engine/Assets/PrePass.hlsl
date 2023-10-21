@@ -37,7 +37,7 @@ VS_OUTPUT VS(VS_INPUT input)
 
 	output.pos = mul(gWorldViewProj, float4(input.pos, 1.0f));
 	output.posW = mul(gWorld, float4(input.pos, 1.0f)).xyz;
-	output.normal = mul(float4(input.normal, 1.0f), gWorldInvTranspose).xyz;
+	output.normal = mul(gWorldInvTranspose, float4(input.normal, 1.0f)).xyz;
 	output.uv = input.uv;
 
 	return output;

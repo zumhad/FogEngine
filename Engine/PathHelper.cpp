@@ -1,6 +1,7 @@
 #include "PathHelper.h"
 
 #include "Application.h"
+#include "CustomString.h"
 
 String PathHelper::GetAssetsPath()
 {

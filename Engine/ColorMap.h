@@ -1,16 +1,15 @@
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable: 4251)
-
 #include "Core.h"
 
-#include "ConstantBuffer.h"
-#include "Color.h"
+#include <d3d11.h>
 
-class Application;
-class PipelineState;
-class Mesh;
+template <typename T>
+class FOG_API ConstantBuffer;
+
+class FOG_API Application;
+class FOG_API PipelineState;
+class FOG_API Mesh;
 
 class FOG_API ColorMap
 {
@@ -32,11 +31,6 @@ private:
 	static ID3D11RenderTargetView* mRenderTargetView;
 	static ID3D11ShaderResourceView* mShaderResourceView;
 
-	struct ColorBuffer
-	{
-		Color color;
-	};
+	struct ColorBuffer;
 	static ConstantBuffer<ColorBuffer> mColorBuffer;
 };
-
-#pragma warning(pop)

@@ -4,7 +4,7 @@
 
 #include "InputHelper.h"
 
-class Application;
+class FOG_API Application;
 
 class FOG_API Input
 {

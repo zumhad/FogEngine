@@ -203,7 +203,6 @@
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Frustum.cpp" />
-    <ClCompile Include="FrustumCulling.cpp" />
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
@@ -263,13 +262,11 @@
     <ClCompile Include="GenerateFiles.cpp" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Frustum.h" />
-    <ClInclude Include="FrustumCulling.h" />
     <ClInclude Include="GUI.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputHelper.h" />
     <ClInclude Include="InputLayout.h" />
-    <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightMap.h" />

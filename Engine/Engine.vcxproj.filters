@@ -72,9 +72,6 @@
     <ClCompile Include="MathHelper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="FrustumCulling.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Color.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -184,9 +181,6 @@
     <ClInclude Include="CustomFile.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="LightHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="Control.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -206,9 +200,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="InputHelper.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="FrustumCulling.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">

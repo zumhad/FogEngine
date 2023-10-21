@@ -51,6 +51,11 @@ void Static::Draw()
 			mRect.top = y + rect.bottom - height;
 			mRect.bottom = mRect.top + height;
 		}
+
+		if (mRect.left < rect.left) mRect.left = rect.left;
+		if (mRect.right > rect.right) mRect.right = rect.right;
+		if (mRect.top < rect.top) mRect.top = rect.top;
+		if (mRect.bottom > rect.bottom) mRect.bottom = rect.bottom;
 	}
 	else
 	{
@@ -85,7 +90,13 @@ void Static::Draw()
 			mRect.top = y + Application::GetEditorHeight() - height;
 			mRect.bottom = mRect.top + height;
 		}
+
+		if (mRect.left < 0) mRect.left = 0;
+		if (mRect.right > Application::GetEditorWidth()) mRect.right = Application::GetEditorWidth();
+		if (mRect.top < 0) mRect.top = 0;
+		if (mRect.bottom > Application::GetEditorHeight()) mRect.bottom = Application::GetEditorHeight();
 	}
 
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &mRect);
 	Direct3D::DeviceContext()->ClearView(*Direct3D::GetRTV(), color, &mRect, 1);
 }

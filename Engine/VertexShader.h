@@ -6,8 +6,8 @@
 
 #include <d3d11.h>
 
-class PipelineState;
-class GUI;
+class FOG_API PipelineState;
+class FOG_API GUI;
 
 class FOG_API VertexShader
 {

@@ -7,9 +7,16 @@
 #include "Shader.h"
 #include "PathHelper.h"
 #include "PipelineState.h"
+#include "ConstantBuffer.h"
+#include "Mesh.h"
 
 ID3D11RenderTargetView* SelectMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* SelectMap::mShaderResourceView = 0;
+
+struct SelectMap::SelectBuffer
+{
+	unsigned int id; float pad[3];
+};
 
 ConstantBuffer<SelectMap::SelectBuffer> SelectMap::mSelectBuffer;
 

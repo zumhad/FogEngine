@@ -8,7 +8,6 @@
 #include "Input.h"
 #include "GUI.h"
 #include "Cursor.h"
-#include "FrustumCulling.h"
 #include "MathHelper.h"
 #include "Text.h"
 #include "DepthMap.h"
@@ -151,7 +150,6 @@ void Application::InitModules(APPCLASS app)
     GUI::Setup();
     Time::Setup();
     Camera::Setup(app);
-    FrustumCulling::Setup();
     PipelineState::Setup();
 }
 
@@ -214,7 +212,6 @@ void Application::Shotdown() //exit
     UnregisterClass(APP_CLASS, 0);
 
     PipelineState::Shotdown();
-    FrustumCulling::Shotdown();
     ObjectManager::Shotdown();
     GUI::Shotdown();
     DepthMap::Shotdown();

@@ -5,6 +5,7 @@
 #include "Cursor.h"
 #include "SelectMap.h"
 #include "ObjectManager.h"
+#include "Vector3.h"
 
 #include <DirectXCollision.h>
 
@@ -83,7 +84,7 @@ void Picking::Pick()
 
 		if (id >= 0)
 		{
-			mPickObject = &ObjectManager::Get(id);
+			mPickObject = ObjectManager::Get<Object>(id);
 			mPickPosition = pos;
 		}
 		else

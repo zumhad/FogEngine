@@ -3,20 +3,20 @@
 #include "Core.h"
 
 #include "Object.h"
-#include "CustomString.h"
 #include "Vector3.h"
 #include "Matrix.h"
 #include "Texture.h"
+#include "Color.h"
 
-#include <DirectXCollision.h>
+#include <d3d11.h>
 
-class ObjectManager;
-class Picking;
-class DepthMap;
-class SelectMap;
-class PassMap;
-class PipelineState;
-class ShadowMap;
+class FOG_API ObjectManager;
+class FOG_API Picking;
+class FOG_API DepthMap;
+class FOG_API SelectMap;
+class FOG_API PassMap;
+class FOG_API PipelineState;
+class FOG_API ShadowMap;
 
 class FOG_API Mesh : public Object
 {
@@ -51,13 +51,12 @@ public:
 private:
 	void Bind();
 	void BindTexture();
-	DirectX::BoundingBox GetBoundingBox();
 	Matrix GetWorldMatrix();
-	Matrix GetWorldInvTransposeMatrix();
+	Matrix GetWorldInvTransposeMatrix(Matrix& world);
 
 public:
 	String name;
-	Material material;
+	Color color;
 	bool lighting;
 
 	Vector3 position;
@@ -67,7 +66,11 @@ public:
 	String texture;
 
 private:
-	struct Data;
-	Data* mData;
+	Texture mTexture;
+
+	int mIndexCount;
+	int mVertexSize;
+	ID3D11Buffer* mVertexBuffer;
+	ID3D11Buffer* mIndexBuffer;
 };
 

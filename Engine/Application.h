@@ -3,13 +3,13 @@
 #include "Core.h"
 
 #include "ApplicationHelper.h"
-#include "CustomString.h"
 
 #include <windows.h>
 
-class Engine;
-class Cursor;
-class Direct3D;
+class FOG_API String;
+class FOG_API Engine;
+class FOG_API Cursor;
+class FOG_API Direct3D;
 
 class FOG_API Application
 {

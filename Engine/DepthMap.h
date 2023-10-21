@@ -2,14 +2,10 @@
 
 #include "Core.h"
 
-#include "ConstantBuffer.h"
-#include "CustomString.h"
-#include "Mesh.h"
-
 #include <d3d11.h>
 
-class Application;
-class PipelineState;
+class FOG_API Application;
+class FOG_API PipelineState;
 
 class FOG_API DepthMap
 {

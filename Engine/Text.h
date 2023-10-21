@@ -1,7 +1,7 @@
 #pragma once
 
 #pragma warning(push)
-#pragma warning(disable: 4251)
+#pragma warning(disable : 4251)
 
 #include "Core.h"
 
@@ -12,9 +12,9 @@
 
 #include <d3d11.h>
 
-class GUI;
-class Application;
-class Button;
+class FOG_API GUI;
+class FOG_API Application;
+class FOG_API Button;
 
 class FOG_API Text : public Control
 {
@@ -40,10 +40,7 @@ private:
 	String mText;
 	int mVertexSize;
 
-	struct TextBuffer
-	{
-		Color color;
-	};
+	struct TextBuffer;
 	ConstantBuffer<TextBuffer> mTextBuffer;
 };
 

@@ -22,6 +22,7 @@
 #include "Utility.h"
 #include "CustomArray.h"
 #include "ShadowMap.h"
+#include "Vector4.h"
 
 #define CREATE_APPLICATION(x)\
 int wmain()\

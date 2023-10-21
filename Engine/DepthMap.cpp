@@ -3,10 +3,10 @@
 #include "ObjectManager.h"
 #include "Application.h"
 #include "Direct3D.h"
-#include "FrustumCulling.h"
 #include "Camera.h"
 #include "Shader.h"
 #include "PathHelper.h"
+#include "Utility.h"
 
 using namespace DirectX;
 

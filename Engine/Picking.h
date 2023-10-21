@@ -2,13 +2,11 @@
 
 #include "Core.h"
 
-#include "Vector3.h"
-#include "Vector4.h"
-#include "Object.h"
-
 #include <d3d11.h>
 
-class Application;
+class FOG_API Application;
+class FOG_API Object;
+class FOG_API Vector3;
 
 class FOG_API Picking
 {

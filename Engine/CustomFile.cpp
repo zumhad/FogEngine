@@ -61,7 +61,7 @@ void File::Write(const void* data, size_t size)
     WriteFile(mFile, data, static_cast<DWORD>(size), &bytesWritten, NULL);
 }
 
-bool File::Exists(String& name)
+bool File::Exists(String name)
 {
     if (FILE* file = _wfopen(name.GetWCHAR(), L"r"))
     {

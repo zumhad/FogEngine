@@ -1,5 +1,6 @@
 #include "PipelineState.h"
 
+#include "Application.h"
 #include "Direct3D.h"
 #include "PixelShader.h"
 #include "VertexBuffer.h"
@@ -21,11 +22,14 @@
 #include "LightMap.h"
 #include "PostProcess.h"
 #include "ShadowMap.h"
+#include "Matrix.h"
+#include "Mesh.h"
 
 RasterizerState PipelineState::mShadowRasterizerState;
 RasterizerState PipelineState::mRasterizerState;
 SamplerState PipelineState::mShadowSamplerState;
 SamplerState PipelineState::mSamplerState;
+SamplerState PipelineState::mPostProcessSamplerState;
 DepthStencilState PipelineState::mDepthStencilState;
 
 Array<ID3D11RenderTargetView*> PipelineState::mRenderTargetView;
@@ -49,6 +53,13 @@ VertexShader PipelineState::mShadowPassVS;
 PixelShader PipelineState::mShadowPassPS;
 InputLayout PipelineState::mShadowPassIL;
 
+struct PipelineState::PrePassBuffer
+{
+	Matrix worldViewProj;
+	Matrix world;
+	Matrix worldInvTranspose;
+};
+
 void PipelineState::Setup()
 {
 	mRenderTargetView.Add(ColorMap::GetRTV());
@@ -59,6 +70,7 @@ void PipelineState::Setup()
 
 	mSamplerState.Create();
 	mShadowSamplerState.Create(SamplerStateType::Shadow);
+	mPostProcessSamplerState.Create(SamplerStateType::PostProcess);
 	mDepthStencilState.Create();
 	mRasterizerState.Create();
 	mShadowRasterizerState.Create(RasterizerStateType::Shadow);
@@ -104,6 +116,7 @@ void PipelineState::Setup()
 
 void PipelineState::Shotdown()
 {
+	mPostProcessSamplerState.Release();
 	mShadowSamplerState.Release();
 	mShadowRasterizerState.Release();
 	mRasterizerState.Release();
@@ -144,18 +157,18 @@ void PipelineState::Bind()
 	int size = ObjectManager::Size();
 	for (int i = 0; i < size; i++)
 	{
-		Object& obj = ObjectManager::Get(i);
-		TypeObject type = obj.GetType();
+		Object* obj = ObjectManager::Get<Object>(i);
+		TypeObject type = obj->GetType();
 
 		switch (type)
 		{
 			case TypeObject::Mesh:
 			{
-				Mesh& mesh = (Mesh&)obj;
+				Mesh* mesh = ObjectManager::Get<Mesh>(obj);
 
-				ShadowMap::UpdateBuffer(mesh);
+				ShadowMap::UpdateBuffer(*mesh);
 
-				mesh.Bind();
+				mesh->Bind();
 
 				break;
 			}
@@ -187,37 +200,37 @@ void PipelineState::Bind()
 
 	for (int i = 0; i < size; i++)
 	{
-		Object& obj = ObjectManager::Get(i);
-		TypeObject type = obj.GetType();
+		Object* obj = ObjectManager::Get<Object>(i);
+		TypeObject type = obj->GetType();
 
 		switch (type)
 		{
 			case TypeObject::DirectionalLight:
 			{
-				DirectionalLight& light = (DirectionalLight&)obj;
-				LightMap::UpdateBuffer(light);
+				DirectionalLight* light = ObjectManager::Get<DirectionalLight>(obj);
+				LightMap::UpdateBuffer(*light);
 
 				break;
 			}
 
 			case TypeObject::PointLight:
 			{
-				PointLight& light = (PointLight&)obj;
-				LightMap::UpdateBuffer(light);
+				PointLight* light = ObjectManager::Get<PointLight>(obj);
+				LightMap::UpdateBuffer(*light);
 
 				break;
 			}
 
 			case TypeObject::Mesh:
 			{
-				Mesh& mesh = (Mesh&)obj;
+				Mesh* mesh = ObjectManager::Get<Mesh>(obj);
 
-				UpdatePrePassBuffer(mesh);
-				ColorMap::UpdateBuffer(mesh);
-				SelectMap::UpdateBuffer(mesh);
+				UpdatePrePassBuffer(*mesh);
+				ColorMap::UpdateBuffer(*mesh);
+				SelectMap::UpdateBuffer(*mesh);
 
-				mesh.BindTexture();
-				mesh.Bind();
+				mesh->BindTexture();
+				mesh->Bind();
 
 				break;
 			}
@@ -258,7 +271,7 @@ void PipelineState::Bind()
 
 	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
-	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mPostProcessSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetRenderTargets(1, Direct3D::GetRTV(), 0);
 
 	Direct3D::DeviceContext()->IASetInputLayout(mPostProcessIL.Get());
@@ -338,7 +351,7 @@ void PipelineState::UpdatePrePassBuffer(Mesh& mesh)
 	Matrix world = mesh.GetWorldMatrix();
 	Matrix view = Camera::GetViewMatrix();
 	Matrix proj = Camera::GetProjMatrix();
-	Matrix inv = mesh.GetWorldInvTransposeMatrix();
+	Matrix inv = mesh.GetWorldInvTransposeMatrix(world);
 
 	static PrePassBuffer buffer{};
 	buffer.worldViewProj = world * view * proj;

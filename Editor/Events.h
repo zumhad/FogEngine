@@ -4,7 +4,7 @@
 
 void Focus(Control& control)
 {
-	Text& text = GUI::Get<Text>(control);
+	/*Text& text = GUI::Get<Text>(control);
 	
 	if (Input::Down(KEY_BACK))
 	{
@@ -28,47 +28,47 @@ void Focus(Control& control)
 		{
 			text.text += L"-";
 		}
-	}
+	}*/
 }
 
 void FocusOn(Control& control)
 {
-	Text& text = GUI::Get<Text>(control);
+	//Text& text = GUI::Get<Text>(control);
 
-	text.color = Color(0.5f, 0.5f, 1.0f);
+	//text.color = Color(0.5f, 0.5f, 1.0f);
 }
 
 void FocusOffX(Control& control)
 {
-	Text& text = GUI::Get<Text>(control);
+	/*Text& text = GUI::Get<Text>(control);
 
 	text.color = Color(1.0f, 1.0f, 1.0f);
 	text.text = String::ToString(atof(text.text));
 
 	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.x = atof(text.text);
+	mesh->position.x = atof(text.text);*/
 }
 
 void FocusOffY(Control& control)
 {
-	Text& text = GUI::Get<Text>(control);
+	/*Text& text = GUI::Get<Text>(control);
 
 	text.color = Color(0.05f, 0.05f, 0.05f);
 	text.text = String::ToString(atof(text.text));
 
 	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.y = atof(text.text);
+	mesh->position.y = atof(text.text);*/
 }
 
 void FocusOffZ(Control& control)
 {
-	Text& text = GUI::Get<Text>(control);
+	/*Text& text = GUI::Get<Text>(control);
 
 	text.color = Color(0.05f, 0.05f, 0.05f);
 	text.text = String::ToString(atof(text.text));
 
 	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.z = atof(text.text);
+	mesh->position.z = atof(text.text);*/
 }
 
 void AddBox(Control&)
@@ -95,14 +95,14 @@ void AddSphere(Control&)
 
 void HoverOn(Control& control)
 {
-	Static& s = GUI::Get<Static>(control);
-	s.color.r = 1.0f;
+	//Static& s = GUI::Get<Static>(control);
+	//s.color.r = 1.0f;
 }
 
 void HoverOff(Control& control)
 {
-	Static& s = GUI::Get<Static>(control);
-	s.color.r = 0.05f;
+	//Static& s = GUI::Get<Static>(control);
+	//s.color.r = 0.05f;
 }
 
 void Close(Control&)

@@ -4,7 +4,7 @@
 
 #include <DirectXMath.h>
 
-class Quaternion;
+class FOG_API Quaternion;
 
 class FOG_API Vector3
 {

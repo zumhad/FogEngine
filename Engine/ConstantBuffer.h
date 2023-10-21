@@ -1,8 +1,5 @@
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable : 4251)
-
 #include "Core.h"
 
 #include "Direct3D.h"
@@ -68,5 +65,3 @@ ID3D11Buffer* const* ConstantBuffer<T>::Get()
 {
 	return &mBuffer;
 }
-
-#pragma warning(pop)

@@ -4,6 +4,14 @@
 
 #include "Application.h"
 #include "Camera.h"
+#include "Matrix.h"
+#include "ConstantBuffer.h"
+#include "Mesh.h"
+
+struct ShadowMap::ShadowBuffer
+{
+	Matrix worldViewProj;
+};
 
 ID3D11DepthStencilView* ShadowMap::mDepthStencilView = 0;
 ID3D11ShaderResourceView* ShadowMap::mShaderResourceView = 0;

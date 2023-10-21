@@ -5,6 +5,7 @@
 #include "Vector4.h"
 #include "Matrix.h"
 #include "Camera.h"
+#include "Vector3.h"
 
 #include <DirectXMath.h>
 

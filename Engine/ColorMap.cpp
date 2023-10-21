@@ -3,11 +3,20 @@
 #include "Application.h"
 #include "Utility.h"
 #include "PipelineState.h"
+#include "Direct3D.h"
+#include "ConstantBuffer.h"
+#include "Color.h"
+#include "Mesh.h"
 
 ID3D11RenderTargetView* ColorMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* ColorMap::mShaderResourceView = 0;
 
 ConstantBuffer<ColorMap::ColorBuffer> ColorMap::mColorBuffer;
+
+struct ColorMap::ColorBuffer
+{
+	Color color;
+};
 
 void ColorMap::Setup()
 {
@@ -60,7 +69,7 @@ void ColorMap::Setup()
 void ColorMap::UpdateBuffer(Mesh& mesh)
 {
 	static ColorBuffer buffer{};
-	buffer.color = mesh.material.diffuse;
+	buffer.color = mesh.color;
 
 	mColorBuffer.Bind(buffer);
 }

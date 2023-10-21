@@ -1,28 +1,24 @@
 #pragma once
 
-#pragma warning(push)
-#pragma warning(disable: 4251)
-
 #include "Core.h"
-
-#include "ConstantBuffer.h"
-#include "Mesh.h"
 
 #include <d3d11.h>
 
-class Direct3D;
-class Application;
-class ObjectManager;
-class BufferManager;
-class Picking;
-class PipelineState;
+template <typename T>
+class FOG_API ConstantBuffer;
+
+class FOG_API Direct3D;
+class FOG_API Application;
+class FOG_API ObjectManager;
+class FOG_API Picking;
+class FOG_API PipelineState;
+class FOG_API Mesh;
 
 class FOG_API SelectMap
 {
 	friend class Direct3D;
 	friend class Application;
 	friend class ObjectManager;
-	friend class BufferManager;
 	friend class Picking;
 	friend class PipelineState;
 
@@ -41,12 +37,6 @@ private:
 	static ID3D11RenderTargetView* mRenderTargetView;
 	static ID3D11ShaderResourceView* mShaderResourceView;
 
-	struct SelectBuffer
-	{
-		unsigned int id; float pad[3];
-	};
-
+	struct SelectBuffer;
 	static ConstantBuffer<SelectBuffer> mSelectBuffer;
 };
-
-#pragma warning(pop)

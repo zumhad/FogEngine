@@ -8,7 +8,7 @@
 
 #include <d3d11.h>
 
-class TextureMap;
+class FOG_API TextureMap;
 
 class FOG_API IndexBuffer
 {

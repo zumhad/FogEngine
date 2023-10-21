@@ -124,14 +124,7 @@ void GUI::UpdateViewport()
 	viewport.Width = (FLOAT)width;
 	viewport.Height = (FLOAT)height;
 
-	static D3D11_RECT rect{};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = width;
-	rect.bottom = height;
-
 	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
-	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
 void GUI::Update()

@@ -1,28 +1,25 @@
 #pragma once
 
 #pragma warning(push)
-#pragma warning(disable: 4251)
+#pragma warning(disable : 4251)
 
 #include "Core.h"
 
 #include "CustomArray.h"
 #include "Control.h"
-#include "CustomString.h"
-#include "Utility.h"
 #include "ConstantBuffer.h"
 
 #include <d3d11.h>
 
-class DepthStencilState;
-class SamplerState;
-class VertexShader;
-class PixelShader;
-class InputLayout;
-class Application;
-class Direct3D;
-class Control;
-class Static;
-class Text;
+class FOG_API DepthStencilState;
+class FOG_API SamplerState;
+class FOG_API VertexShader;
+class FOG_API PixelShader;
+class FOG_API InputLayout;
+class FOG_API Application;
+class FOG_API Direct3D;
+class FOG_API Static;
+class FOG_API Text;
 
 class FOG_API GUI
 {
@@ -40,10 +37,22 @@ public:
 	static int AddChild(int parent, T& child);
 
 	template <class T>
-	static T& Get(int id);
+	static T* Get(int id);
 
 	template <class T>
-	static T& Get(Control& control);
+	static T* Get(Control& control);
+
+	template <class T>
+	static T* Get(Control* control);
+
+	template <class T>
+	static T* GetParent(int id);
+
+	template <class T>
+	static T* GetParent(Control& control);
+
+	template <class T>
+	static T* GetParent(Control* control);
 
 	static int Size();
 
@@ -77,24 +86,55 @@ private:
 };
 
 template <class T>
-T& GUI::Get(int id)
+T* GUI::GetParent(int id)
 {
 	for (int i = 0; i < mArr.Size(); i++)
 	{
 		if (mArr[i]->mID == id)
 		{
-			return (T&)(*mArr[i]);
+			return (T*)(mArr[i]->mParent);
 		}
 	}
 
-	FOG_ERROR(String("GUI ERROR"));
-	return (T&)(*mNull);
+	return 0;
 }
 
 template <class T>
-T& GUI::Get(Control& control)
+T* GUI::GetParent(Control& control)
 {
-	return (T&)(control);
+	return (T*)(control.mParent);
+}
+
+template <class T>
+T* GUI::GetParent(Control* control)
+{
+	return (T*)(control->mParent);
+}
+
+template <class T>
+T* GUI::Get(int id)
+{
+	for (int i = 0; i < mArr.Size(); i++)
+	{
+		if (mArr[i]->mID == id)
+		{
+			return (T*)(mArr[i]);
+		}
+	}
+
+	return 0;
+}
+
+template <class T>
+T* GUI::Get(Control& control)
+{
+	return (T*)(&control);
+}
+
+template <class T>
+T* GUI::Get(Control* control)
+{
+	return (T*)(control);
 }
 
 template<typename T>
@@ -111,12 +151,14 @@ int GUI::Add(T& control)
 template<typename T>
 int GUI::AddChild(int parent, T& child)
 {
-	Control* c = &Get<Control>(parent);
-	c->mChild = new T(child);
-	c->mChild->mParent = c;
-	c->mChild->mID = mSize;
+	Control* p = Get<Control>(parent);
+	Control* c = new T(child);
 
-	mArr.Add(c->mChild);
+	p->mChild.Add(c);
+	c->mParent = p;
+	c->mID = mSize;
+
+	mArr.Add(c);
 
 	return mSize++;
 }

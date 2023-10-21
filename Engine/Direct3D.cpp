@@ -9,15 +9,11 @@
 #include "GUI.h"
 #include "Shader.h"
 #include "Mesh.h"
-#include "FrustumCulling.h"
 #include "Cursor.h"
 #include "PipelineState.h"
+#include "Utility.h"
 
-#include <d3dcompiler.h>
-#include <directxcolors.h>
 #include <dxgidebug.h>
-#include <d2d1_3.h>
-#include <dwrite.h>
 
 using namespace DirectX;
 

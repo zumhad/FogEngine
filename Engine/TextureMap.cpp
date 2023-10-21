@@ -8,6 +8,7 @@
 #include "VertexBuffer.h"
 #include "CustomArray.h"
 #include "Vector2.h"
+#include "IndexBuffer.h"
 
 #include <DirectXMath.h>
 

@@ -2,13 +2,13 @@
 
 #include "Core.h"
 
-#include "CustomString.h"
-
 enum class ImageType
 {
 	RGBA,
 	A
 };
+
+class FOG_API String;
 
 class FOG_API Image
 {

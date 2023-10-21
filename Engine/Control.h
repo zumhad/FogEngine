@@ -1,6 +1,11 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable : 4251)
+
 #include "Core.h"
+
+#include "CustomArray.h"
 
 #include <d3d11.h>
 
@@ -18,9 +23,9 @@ enum VerticalAlignm
 	ALIGNM_CENTER_V
 };
 
-class GUI;
-class Static;
-class Text;
+class FOG_API GUI;
+class FOG_API Static;
+class FOG_API Text;
 
 class FOG_API Control
 {
@@ -59,7 +64,7 @@ public:
 	bool enable;
 
 protected:
-	Control* mChild;
+	Array<Control*> mChild;
 	Control* mParent;
 	D3D11_RECT mRect;
 	int mID;
@@ -68,3 +73,4 @@ protected:
 	bool mFocus;
 };
 
+#pragma warning(pop)

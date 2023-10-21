@@ -2,8 +2,8 @@
 
 #include "Core.h"
 
-#include "Vector3.h"
-#include "Vector4.h"
+class FOG_API Vector3;
+class FOG_API Vector4;
 
 class FOG_API RayCasting
 {
