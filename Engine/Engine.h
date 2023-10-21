@@ -15,13 +15,13 @@
 #include "Mesh.h"
 #include "Cursor.h"
 #include "Quaternion.h"
-#include "Button.h"
 #include "Static.h"
 #include "Picking.h"
 #include "Text.h"
 #include "RayCasting.h"
 #include "Utility.h"
 #include "CustomArray.h"
+#include "ShadowMap.h"
 
 #define CREATE_APPLICATION(x)\
 int wmain()\

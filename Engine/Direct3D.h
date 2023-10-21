@@ -24,7 +24,7 @@ public:
 
 	static IDXGISwapChain* SwapChain() { return mSwapChain1; }
 	static ID3D11Device* Device() { return mDevice; }
-	static ID3D11DeviceContext* DeviceContext() { return mDeviceContext; }
+	static ID3D11DeviceContext1* DeviceContext() { return mDeviceContext1; }
 
 private:
 	static ID3D11Device* mDevice;

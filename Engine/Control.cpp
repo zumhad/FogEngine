@@ -9,11 +9,15 @@ Control::Control()
 
 	x = 0, y = 0;
 	width = 0, height = 0;
+	enable = true;
 
 	mFocus = false;
-
-	mChildCount = 0;
+	mClick = false;
+	mHover = false;
+	mID = 0;
 	mChild = 0;
 	mParent = 0;
 	mRect = {};
+
+	event = {};
 }

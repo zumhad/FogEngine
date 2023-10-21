@@ -16,6 +16,7 @@ class DepthMap;
 class SelectMap;
 class PassMap;
 class PipelineState;
+class ShadowMap;
 
 class FOG_API Mesh : public Object
 {
@@ -25,6 +26,7 @@ class FOG_API Mesh : public Object
 	friend class SelectMap;
 	friend class PassMap;
 	friend class PipelineState;
+	friend class ShadowMap;
 
 public:
 	TypeObject GetType() override { return TypeObject::Mesh; }
@@ -48,6 +50,7 @@ public:
 
 private:
 	void Bind();
+	void BindTexture();
 	DirectX::BoundingBox GetBoundingBox();
 	Matrix GetWorldMatrix();
 	Matrix GetWorldInvTransposeMatrix();

@@ -29,13 +29,11 @@ VS_OUTPUT VS(VS_INPUT input)
     return output;
 }
 
-float3 Uncharted2ToneMapping(float3 color)
+cbuffer cbPostProcessBuffer : register(b0)
 {
-    color *= 16;
-    color = color / (1 + color);
-    color = pow(abs(color), 1.0 / 2.2);
-    return color;
-}
+    float gInvWidth;
+    float gInvHeight; float2 pad;
+};
 
 struct PS_OUTPUT
 {
@@ -49,16 +47,15 @@ PS_OUTPUT PS(VS_OUTPUT input)
 {
     PS_OUTPUT output;
 
-    //FxaaTex tex;
-    //tex.smpl = gSampler;
-    //tex.tex = gTextureColor;
-    //FxaaFloat2 fxaaQualityRcpFrame = float2(0.00125f, 0.00167f);
-    //FxaaFloat fxaaQualitySubpix = 1.0f;
-    //FxaaFloat fxaaQualityEdgeThreshold = 0.063f;
-    //FxaaFloat fxaaQualityEdgeThresholdMin = 0.0312f;
-    //output.color = FxaaPixelShader(input.uv, tex, fxaaQualityRcpFrame, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin);
+    FxaaTex tex;
+    tex.smpl = gSampler;
+    tex.tex = gTextureColor;
+    FxaaFloat2 fxaaQualityRcpFrame = float2(gInvWidth, gInvHeight);
+    FxaaFloat fxaaQualitySubpix = 1.0f;
+    FxaaFloat fxaaQualityEdgeThreshold = 0.063f;
+    FxaaFloat fxaaQualityEdgeThresholdMin = 0.0312f;
+    output.color = FxaaPixelShader(input.uv, tex, fxaaQualityRcpFrame, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin);
 
-    output.color = gTextureColor.Sample(gSampler, input.uv.xy);
     output.color.a = 1.0f;
 
     return output;

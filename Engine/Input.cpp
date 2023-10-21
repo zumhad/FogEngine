@@ -11,6 +11,7 @@ IDirectInputDevice8A* Input::mKeyboard;
 DIMOUSESTATE2 Input::mMouseState;
 unsigned char Input::mKeyboardState[KeyInput::COUNT_KEY];
 
+char Input::mChar = 0;
 bool Input::mButtons[2][KeyInput::COUNT_KEY];
 float Input::mHoldDuration[KeyInput::COUNT_KEY];
 float Input::mAnalogs[MouseInput::COUNT_MOUSE];
@@ -96,6 +97,26 @@ void Input::Update()
 				mHoldDuration[i] += Time::DeltaTime();
 		}
 	}
+}
+
+void Input::UpdateChar(char ch)
+{
+	mChar = ch;
+}
+
+void Input::UpdateChar()
+{
+	mChar = 0;
+}
+
+char Input::GetNumber()
+{
+	if (mChar >= '0' && mChar <= '9')
+	{
+		return mChar;
+	}
+
+	return 0;
 }
 
 bool Input::Press(KeyInput di)

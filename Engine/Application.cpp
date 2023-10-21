@@ -19,6 +19,10 @@
 #include "Utility.h"
 #include "PipelineState.h"
 #include "NormalMap.h"
+#include "LightMap.h"
+#include "PostProcess.h"
+#include "ShadowMap.h"
+#include "Font.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -69,7 +73,6 @@ void Application::InitWindow()
         width = GetSystemMetrics(SM_CXSCREEN);
         height = GetSystemMetrics(SM_CYSCREEN);
         style = WS_POPUP;
-
     }
     else
     {
@@ -120,7 +123,7 @@ void Application::InitApp(APPCLASS app)
     if (app.foo.start)
         app.foo.start();
 
-    //InitBuffers();
+    InitBuffers();
     mStarted = true;
 }
 
@@ -134,6 +137,10 @@ void Application::CheckDebug()
 void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
+    Font::Setup();
+    ShadowMap::Setup();
+    PostProcess::Setup();
+    LightMap::Setup();
     NormalMap::Setup();
     ColorMap::Setup();
     Picking::Setup();
@@ -142,7 +149,6 @@ void Application::InitModules(APPCLASS app)
     DepthMap::Setup();
     Input::Setup();
     GUI::Setup();
-    Text::Setup();
     Time::Setup();
     Camera::Setup(app);
     FrustumCulling::Setup();
@@ -210,14 +216,17 @@ void Application::Shotdown() //exit
     PipelineState::Shotdown();
     FrustumCulling::Shotdown();
     ObjectManager::Shotdown();
-    Text::Shotdown();
     GUI::Shotdown();
     DepthMap::Shotdown();
     SelectMap::Shotdown();
     TextureMap::Shotdown();
     Picking::Shotdown();
     ColorMap::Shotdown();
-    NormalMap::Shotdown();
+    NormalMap::Shotdown();    
+    LightMap::Shotdown();
+    PostProcess::Shotdown();
+    ShadowMap::Shotdown();
+    Font::Shotdown();
     Direct3D::Shotdown();
 }
 
@@ -409,5 +418,6 @@ void Application::OpenFileDialog()
 void Application::Close() { PostQuitMessage(0); }
 void Application::Minimize() { ShowWindow(mHwnd, SW_MINIMIZE); }
 bool Application::IsPaused() { return mPaused; }
+bool Application::IsResized() { return mResizing; }
 String& Application::GetPath() { return mPath; }
 bool Application::IsGame() { return mIsGame; }

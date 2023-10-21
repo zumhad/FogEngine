@@ -191,7 +191,6 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="ColorMap.cpp" />
-    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
@@ -202,12 +201,16 @@
     <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="Direct3D.cpp" />
+    <ClCompile Include="Font.cpp" />
+    <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FrustumCulling.cpp" />
     <ClCompile Include="GUI.cpp" />
+    <ClCompile Include="Image.cpp" />
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="LightMap.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
@@ -219,12 +222,14 @@
     <ClCompile Include="Picking.cpp" />
     <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="PixelShader.cpp" />
+    <ClCompile Include="PostProcess.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="RayCasting.cpp" />
     <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="SelectMap.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Static.cpp" />
     <ClCompile Include="Text.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -241,7 +246,6 @@
     <ClInclude Include="ApplicationHelper.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="ColorMap.h" />
-    <ClInclude Include="Button.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="ConstantBuffer.h" />
@@ -257,14 +261,18 @@
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
     <ClCompile Include="GenerateFiles.cpp" />
+    <ClInclude Include="Font.h" />
+    <ClInclude Include="Frustum.h" />
     <ClInclude Include="FrustumCulling.h" />
     <ClInclude Include="GUI.h" />
+    <ClInclude Include="Image.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputHelper.h" />
     <ClInclude Include="InputLayout.h" />
     <ClInclude Include="LightHelper.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="LightMap.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
@@ -275,12 +283,14 @@
     <ClInclude Include="Picking.h" />
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PixelShader.h" />
+    <ClInclude Include="PostProcess.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="RayCasting.h" />
     <ClInclude Include="SamplerState.h" />
     <ClInclude Include="SelectMap.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Static.h" />
     <ClInclude Include="Text.h" />
     <ClInclude Include="Texture.h" />
@@ -299,7 +309,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Pass.hlsl">
+    <None Include="Assets\LightPass.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -315,6 +325,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Light.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\ShadowPass.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Text.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

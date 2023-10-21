@@ -8,10 +8,12 @@
 #include <d3d11.h>
 
 class PipelineState;
+class GUI;
 
 class FOG_API InputLayout
 {
 	friend class PipelineState;
+	friend class GUI;
 
 private:
 	InputLayout();

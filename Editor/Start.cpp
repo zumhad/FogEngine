@@ -1,7 +1,11 @@
 #include "Engine.h"
 
+#include "Events.h"
+
 int idFPS = -1;
-int idPos = -1;
+int idSliderX = -1;
+int idSliderY = -1;
+int idSliderZ = -1;
 
 void MyUpdate()
 {
@@ -13,18 +17,29 @@ void MyUpdate()
 	if (Input::Down(KEY_L))
 	{
 		PointLight light;
-		light.position.y = 100;
-		light.position.z = 2;
-		light.radius = 10.0f;
-		light.power = 1000.0f;
+		light.position.y = 10;
+		light.position.z = 0;
+		light.radius = 1.0f;
+		light.power = 100.0f;
 		ObjectManager::Add(light);
 
 		Mesh m;
 		m.name = L"sphere.obj";
-		m.position = Vector3(0.0, 10, 2.0);
-		m.scale = Vector3(1.0, 1.0, 1.0);
-		m.material.diffuse = Color(1.0f, 0.0f, 0.0f);
-		ObjectManager::Add(m);
+		m.position = Vector3(0.0f, 1.0f, 0.0f);
+		m.scale = Vector3(0.1f, 0.1f, 0.1f);
+		m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
+		m.texture = L"png.png";
+		//ObjectManager::Add(m);
+	}
+
+	if (Input::Down(KEY_UP))
+	{
+		ShadowMap::SetResolution(ShadowMap::GetResolution() * 2);
+	}
+
+	if (Input::Down(KEY_DOWN))
+	{
+		ShadowMap::SetResolution(ShadowMap::GetResolution() / 2);
 	}
 }
 
@@ -53,11 +68,11 @@ void fpstest()
 
 void Update()
 {
-	float moveSpeed = 0.01f;
+	float moveSpeed = 10.0f;
 	float rotationSpeed = 50.0f;
 
 	static Vector3 pos = Camera::GetPosition();
-	static Vector3 rot = Camera::GetRotation();
+	Vector3 rot = Camera::GetRotation();
 
 	static bool isRotate = false;
 	if (Input::Down(MOUSE_RIGHT) && Application::CursorInScene()) isRotate = true;
@@ -67,18 +82,22 @@ void Update()
 		rot.y += Input::GetAxis(MOUSE_X) * rotationSpeed;
 		rot.x += Input::GetAxis(MOUSE_Y) * rotationSpeed;
 
-		if (rot.x > 89.9f) rot.x = 89.9f;
-		if (rot.x < -89.9f) rot.x = -89.9f;
+		if (rot.x > 90.0f) rot.x = 90.0f;
+		if (rot.x < -90.0f) rot.x = -90.0f;
 
 		Camera::SetRotation(rot);
 	}
 
-	float moveZ = (Input::Press(KEY_W) - Input::Press(KEY_S)) * moveSpeed;
-	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed;
+	float moveZ = (Input::Press(KEY_W) - Input::Press(KEY_S)) * moveSpeed * Time::DeltaTime();
+	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed * Time::DeltaTime();
 
 	Vector3 move = Vector3(moveX, 0.0f, moveZ);
 	move = move.Rotate(move, Quaternion::Euler(rot.x, rot.y, 0.0f));
-	Camera::Move(Vector3(move.x, move.y, move.z));
+	pos += move;
+
+	Vector3 vel;
+	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 15.0f);
+	Camera::SetPosition(res);
 
 	static Object* obj = 0;
 	static Vector4 plane;
@@ -100,8 +119,24 @@ void Update()
 		Picking::Pick();
 		obj = Picking::GetPickObject();
 
+		Text& sliderX = GUI::Get<Text>(idSliderX);
+		Text& sliderY = GUI::Get<Text>(idSliderY);
+		Text& sliderZ = GUI::Get<Text>(idSliderZ);
+
+		sliderX.enable = false;
+		sliderY.enable = false;
+		sliderZ.enable = false;
+
 		if (obj)
 		{
+			sliderX.enable = true;
+			sliderY.enable = true;
+			sliderZ.enable = true;
+
+			sliderX.text = String::ToString(((Mesh&)(*obj)).position.x);
+			sliderY.text = String::ToString(((Mesh&)(*obj)).position.y);
+			sliderZ.text = String::ToString(((Mesh&)(*obj)).position.z);
+
 			Vector3 r = Camera::GetDirection();
 
 			float angX = Math::Abs(Vector3::Angle(r, Vector3(1, 0, 0)) - 90.0f);
@@ -133,8 +168,7 @@ void Update()
 			if (x && y && !z) zPlane = true;
 
 			Vector3 pickPos = Picking::GetPickPosition();
-			Vector3 camPos = Camera::GetPosition();
-			Vector3 dir = pickPos - camPos;
+			Vector3 dir = Cursor::GetDirection();
 
 			if (xPlane)
 			{
@@ -155,7 +189,7 @@ void Update()
 				sign = Math::Sign(dir.z);
 			}
 
-			pick1 = RayCasting::RayCast(dir, camPos, plane);
+			pick1 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
 
 			Vector3 test = RayCasting::RayCast(Vector3(0, -1, 1), Vector3(0, 5, -5), Vector4(0, 1, 0, 0));
 		}
@@ -163,6 +197,10 @@ void Update()
 
 	if (Input::Press(MOUSE_LEFT))
 	{
+		Text& sliderX = GUI::Get<Text>(idSliderX);
+		Text& sliderY = GUI::Get<Text>(idSliderY);
+		Text& sliderZ = GUI::Get<Text>(idSliderZ);
+
 		if (obj)
 		{
 			if (Application::CursorInScene())
@@ -191,60 +229,35 @@ void Update()
 					str += L"y: " + String::ToString(mesh.position.y) + L"\n";
 					str += L"z: " + String::ToString(mesh.position.z);
 
-					Text& t = (Text&)GUI::Get(idPos);
-					t.text = str;
+					sliderX.text = String::ToString(mesh.position.x);
+					sliderY.text = String::ToString(mesh.position.y);
+					sliderZ.text = String::ToString(mesh.position.z);
 				}
 			}
 		}
-		else
-		{
-			String str = L"";
-			str += L"x: " + String::ToString(0.0f) + L"\n";
-			str += L"y: " + String::ToString(0.0f) + L"\n";
-			str += L"z: " + String::ToString(0.0f);
+	}
 
-			Text& t = (Text&)GUI::Get(idPos);
-			t.text = str;
-		}
+	if (Input::Up(MOUSE_LEFT))
+	{
+		obj = 0;
 	}
 
 	if (!Application::IsGame())
 	{
-		Text& t = (Text&)GUI::Get(idFPS);
+		Text& t = GUI::Get<Text>(idFPS);
 		t.text = String::ToString(Time::GetFPS());
 	}
 
 	MyUpdate();
 }
 
-void AddBox()
-{
-	Mesh m;
-	m.name = L"box.obj";
-	ObjectManager::Add(m);
-}
-
-void AddPlane()
-{
-	Mesh m;
-	m.name = L"plane.obj";
-	m.scale = Vector3(100, 1, 100);
-	ObjectManager::Add(m);
-}
-
-void AddSphere()
-{
-	Mesh m;
-	m.name = L"sphere.obj";
-	ObjectManager::Add(m);
-}
-
 void Start()
 {
 	DirectionalLight dir;
 	dir.color = Color(1, 1, 1);
-	dir.direction = Vector3(0.0f, 0.0f, -1.0f);
-	//ObjectManager::Add(dir);
+	dir.direction = Vector3(0.0f, -1.0f, -1.0f);
+	dir.power = 1.2f;
+	ObjectManager::Add(dir);
 
 	Mesh m;
 	m.name = L"house.obj";
@@ -255,10 +268,10 @@ void Start()
 	m.material.diffuse = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
-	Camera::SetPosition(Vector3(0, 2, -10));
+	Camera::SetPosition(Vector3(0, 0, 0));
 	Camera::SetRotationX(0.0f);
-	Camera::SetFar(0.1f);
-	Camera::SetNear(10000.0f);
+	Camera::SetFar(0.001f);
+	Camera::SetNear(1000.0f);
 
 	if (Application::IsGame()) return;
 
@@ -267,74 +280,104 @@ void Start()
 	s.y = 0;
 	s.width = Application::GetEditorWidth();
 	s.height = Application::GetCaptionHeight();
-	s.color = Color(0.7f, 0.7f, 0.7f);
+	s.color = Color(0.05f, 0.05f, 0.05f);
 	int idCaption = GUI::Add(s);
 
-	s.x = 0;
+	s.x = -10;
 	s.y = Application::GetCaptionHeight() + 10;
-	s.width = 200;
-	s.height = 100;
+	s.width = 460;
+	s.height = Application::GetEditorHeight() - Application::GetCaptionHeight() - 20;
 	s.alignm.horizontal = ALIGNM_RIGHT;
 	s.alignm.vertical = ALIGNM_TOP;
-	s.color = Color(0.7f, 0.7f, 0.7f);
+	s.color = Color(0.18f, 0.18f, 0.18f);
 	int infoRect = GUI::Add(s);
 
+	Static pos;
+	pos.x = 10;
+	pos.y = 10;
+	pos.width = 140;
+	pos.height = 50;
+	pos.color = Color(0.25, 0.25, 0.25);
+	int idPosX = GUI::AddChild(infoRect, pos);
+
+	pos.x += pos.width + 10;
+	int idPosY = GUI::AddChild(infoRect, pos);
+
+	pos.x += pos.width + 10;
+	int idPosZ = GUI::AddChild(infoRect, pos);
+
+	Text textBox;
+	textBox.alignm.horizontal = ALIGNM_LEFT;
+	textBox.alignm.vertical = ALIGNM_CENTER_V;
+	textBox.x = 5;
+	textBox.event.focus = Focus;
+	textBox.event.focusOn = FocusOn;
+	textBox.event.focusOff = FocusOffX;
+	textBox.enable = false;
+	textBox.color = Color(1.0f, 1.0f, 1.0f);
+	textBox.size = 16;
+	idSliderX = GUI::AddChild(idPosX, textBox);
+
+	//textBox.x += textBox.width + 10;
+	textBox.event.focusOff = FocusOffY;
+	idSliderY = GUI::AddChild(idPosY, textBox);
+
+	//textBox.x += textBox.width + 10;
+	textBox.event.focusOff = FocusOffZ;
+	idSliderZ = GUI::AddChild(idPosZ, textBox);
+
 	int size = 40;
-	Button but;
+	Static but;
 
 	but.x = 0;
 	but.y = 0;
 	but.width = size;
 	but.height = size;
-	but.color = Color(0.5f, 0.5f, 0.5f);
-	but.focus = Color(1.0f, 0.7f, 0.7f);
-	but.action = Application::Close;
+	but.color = Color(0.05f, 0.05f, 0.05f);
+	but.event.hoverOn = HoverOn;
+	but.event.hoverOff = HoverOff;
+	but.event.leftClick = Close;
 	but.alignm.horizontal = ALIGNM_RIGHT;
 	GUI::Add(but);
 
 	but.x -= size;
-	but.color = Color(0.5f, 0.5f, 0.5f);
-	but.action = Application::Restore;
+	but.event.leftClick = Restore;
 	GUI::Add(but);
 
 	but.x -= size;
-	but.color = Color(0.5f, 0.5f, 0.5f);
-	but.action = Application::Minimize;
+	but.event.leftClick = Minimize;
 	GUI::Add(but);
 
 	but.x = 10;
 	but.y = -10;
 	but.width = 200;
 	but.height = 50;
-	but.color = Color(0.5f, 0.5f, 0.5f);
-	but.action = AddBox;
+	but.color = Color(0.05f, 0.05f, 0.05f);
+	but.event.leftClick = AddBox;
 	but.alignm.horizontal = ALIGNM_LEFT;
 	but.alignm.vertical = ALIGNM_BOTTOM;
 	int idAddBox = GUI::Add(but);
 
 	but.x += 210;
-	but.action = AddSphere;
+	but.event.leftClick = AddSphere;
 	int idAddSphere = GUI::Add(but);
 
 	but.x += 210;
-	but.action = AddPlane;
+	but.event.leftClick = AddPlane;
 	int idAddPlane = GUI::Add(but);
 
 	Text t;
 	t.text = L"";
 	t.x = 10;
+	t.color = Color(1.0f, 1.0f, 1.0f);
 	t.alignm.horizontal = ALIGNM_LEFT;
 	t.alignm.vertical = ALIGNM_TOP;
 	idFPS = GUI::AddChild(idCaption, t);
-
-	t.x = 10;
-	t.text = L"x: " + String::ToString(0.0f) + L"\ny: " + String::ToString(0.0f) + L"\nz: " + String::ToString(0.0f);
-	t.alignm.horizontal = ALIGNM_LEFT;
-	t.alignm.vertical = ALIGNM_CENTER_V;
-	idPos = GUI::AddChild(infoRect, t);
+	t.size = 16;
 
 	t.x = 0;
 	t.alignm.horizontal = ALIGNM_CENTER_H;
+	t.alignm.vertical = ALIGNM_CENTER_V;
 	t.text = L"AddBox";
 	GUI::AddChild(idAddBox, t);
 
@@ -354,7 +397,7 @@ APPCLASS Setting()
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;
-	app.camera.rotationSmooth = 500;
+	app.camera.rotationSmooth = 50;
 	app.camera.moveSmooth = 10;
 	app.fpsMax = 0;
 
@@ -362,13 +405,13 @@ APPCLASS Setting()
 	app.game.height = 1080;
 	app.game.color = Color(1.0f, 1.0f, 1.0f);
 
-	app.editor.color = Color(1.0f, 1.0f, 1.0f);
+	app.editor.color = Color(0.1f, 0.1f, 0.1f);
 
 	app.scene.x = 0;
 	app.scene.y = app.captionHeight + 10;
-	app.scene.width = 1200;
+	app.scene.width = 1440;
 	app.scene.height = 800;
-	app.scene.color = Color(0.7f, 0.7f, 0.7f);
+	app.scene.color = Color(0.3f, 0.4f, 0.9f);
 
 	return app;
 }

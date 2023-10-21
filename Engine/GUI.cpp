@@ -6,188 +6,279 @@
 #include "Cursor.h"
 #include "PathHelper.h"
 #include "Input.h"
-#include "Button.h"
-#include "Static.h"
 #include "Timer.h"
 #include "Text.h"
 #include "Utility.h"
 #include "Direct3D.h"
-
-#include <d2d1_3.h>
-#include <vector>
-
-using namespace DirectX;
-using namespace D2D1;
+#include "DepthStencilState.h"
+#include "SamplerState.h"
+#include "PixelShader.h"
+#include "VertexShader.h"
+#include "InputLayout.h"
 
 Array<Control*> GUI::mArr;
 int GUI::mSize = 0;
-Control* GUI::mFocusControl = 0;
-ID2D1Factory3* GUI::mFactory = 0;
-ID2D1RenderTarget* GUI::mRenderTarget = 0;
+Control* GUI::mNull = 0;
 
-ID2D1RenderTarget* GUI::RenderTarget()
-{
-	return mRenderTarget;
-}
+DepthStencilState GUI::mDepthStencilState;
+SamplerState GUI::mSamplerState;
+VertexShader GUI::mVertexShader;
+PixelShader GUI::mPixelShader;
+InputLayout GUI::mInputLayout;	
+ConstantBuffer<GUI::FrameBuffer> GUI::mFrameBuffer;
 
 void GUI::Setup()
 {
-	D2D1_FACTORY_OPTIONS factoryOptions{};
+	mDepthStencilState.Create(DepthStencilStateType::GUI);
+	mSamplerState.Create(SamplerStateType::GUI);
+	mFrameBuffer.Create();
 
-#ifdef _DEBUG
-	factoryOptions.debugLevel = D2D1_DEBUG_LEVEL_INFORMATION;
-#endif
+	{
+		mVertexShader.Create(L"Text.hlsl");
+		mPixelShader.Create(L"Text.hlsl");
 
-	FOG_TRACE(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED, __uuidof(ID2D1Factory3), &factoryOptions, (void**)&mFactory));
-
-	Resize();
+		Array<String> input;
+		input.Add(L"TEXPOS");
+		input.Add(L"TEXCOORD");
+		mInputLayout.Create(mVertexShader.GetBlob(), input);
+	}
 }
 
-void GUI::Release()
+bool GUI::IsEnable(Control& control)
 {
-	SAFE_RELEASE(mRenderTarget);
-}
+	bool enable = false;
 
-void GUI::Resize()
-{
-	IDXGISurface* surface;
-	FOG_TRACE(Direct3D::SwapChain()->GetBuffer(0, IID_PPV_ARGS(&surface)));
+	Control* ptr = &control;
+	while (true)
+	{
+		if (!ptr->enable)
+		{
+			break;
+		}
+		else
+		{
+			if (ptr->mParent)
+			{
+				ptr = ptr->mParent;
+				continue;
+			}
+			else
+			{
+				enable = ptr->enable;
+				break;
+			}
+		}
+	}
 
-	D2D1_RENDER_TARGET_PROPERTIES properties{};
-	properties.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
-	properties.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
-	properties.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
-
-	FOG_TRACE(mFactory->CreateDxgiSurfaceRenderTarget(surface, &properties, &mRenderTarget));
-	SAFE_RELEASE(surface);
-}
-
-Control& GUI::Get(int id)
-{ 
-	if (id >= mSize || id < 0)
-		Application::Close();
-
-	return *(mArr[id]);
+	return enable;
 }
 
 void GUI::Draw()
 {
-	static D2D1_COLOR_F color{};
+	UpdateViewport();
 
-	Color c = Application::GetEditorColor();
-	color.r = c.r;
-	color.g = c.g;
-	color.b = c.b;
-	color.a = c.a;
+	Direct3D::DeviceContext()->ClearRenderTargetView(*Direct3D::GetRTV(), Application::GetEditorColor());
 
-	mRenderTarget->BeginDraw();
-	mRenderTarget->Clear(color);
+	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	//Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, Direct3D::GetRTV(), 0);
+	Direct3D::DeviceContext()->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+
+	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout.Get());
+	Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPixelShader.Get(), 0, 0);
+
+	UpdateBuffer();
 
 	int size = Size();
 	for (int i = 0; i < size; i++)
 	{
-		Control& control = Get(i);
-		TypeControl type = control.GetType();
-
-		switch (type)
-		{
-			case TypeControl::Button:
-			{
-				Button& button = (Button&)control;
-				button.Draw();
-				break;
-			}
-
-			case TypeControl::Static:
-			{
-				Static& st = (Static&)control;
-				st.Draw();
-				break;
-			}
-
-			case TypeControl::Text:
-			{
-				Text& text = (Text&)control;
-				text.Draw(); // fix!!!
-				break;
-			}
-		}
+		if (IsEnable(*mArr[i]))
+			mArr[i]->Draw();
 	}
 
-	FOG_TRACE(mRenderTarget->EndDraw());
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Direct3D::NullSRV());
+}
+
+void GUI::UpdateBuffer()
+{
+	static FrameBuffer buffer{};
+	buffer.invWidth = 1.0f / Application::GetEditorWidth();
+	buffer.invHeight = 1.0f / Application::GetEditorHeight();
+
+	mFrameBuffer.Bind(buffer);
+	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mFrameBuffer.Get());
+}
+
+void GUI::UpdateViewport()
+{
+	int width = Application::GetEditorWidth();
+	int height = Application::GetEditorHeight();
+
+	static D3D11_VIEWPORT viewport{};
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = (FLOAT)width;
+	viewport.Height = (FLOAT)height;
+
+	static D3D11_RECT rect{};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = width;
+	rect.bottom = height;
+
+	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
 void GUI::Update()
 {
-	if (mFocusControl)
-	{
-		mFocusControl->SetFocus(false);
-		mFocusControl = 0;
-	}
-
 	int size = Size();
 	for (int i = 0; i < size; i++)
 	{
-		Control& control = Get(i);
-		TypeControl type = control.GetType();
+		Control& control = *(mArr[i]);
 
-		if (type == TypeControl::Button)
+		if (!IsEnable(control)) continue;
+
+		int x = Cursor::GetPosition(CURSOR_X);
+		int y = Cursor::GetPosition(CURSOR_Y);
+
+		bool hover = (x >= control.mRect.left) && (x <= control.mRect.right) && (y >= control.mRect.top) && (y <= control.mRect.bottom);
+
+		if (hover)
 		{
-			Button& b = (Button&)control;
-
-			int x = Cursor::GetPosition(CURSOR_X);
-			int y = Cursor::GetPosition(CURSOR_Y);
-
-			bool isFocus = (x >= b.mRect.left) && (x <= b.mRect.right) && (y >= b.mRect.top) && (y <= b.mRect.bottom);
-
-			if (isFocus)
+			if (!control.mHover)
 			{
-				mFocusControl = &control;
-				b.SetFocus(true);
-				break;
+				if (control.event.hoverOn)
+					control.event.hoverOn(control);
+
+				control.mHover = true;
 			}
-			else
-				b.SetFocus(false);
+
+			if (Input::Down(MOUSE_LEFT))
+			{
+				control.mClick = true;
+			}
+
+			if (Input::Up(MOUSE_LEFT))
+			{
+				if (control.mClick)
+				{
+					if (control.event.leftClick)
+						control.event.leftClick(control);
+
+					if((control.event.focusOn))
+						control.event.focusOn(control);
+
+					control.mClick = false;
+					control.mFocus = true;
+				}
+			}
 		}
-	}
-
-	if (!Input::Down(MOUSE_LEFT)) return;
-
-	if (mFocusControl)
-	{
-		Control& control = *(mFocusControl);
-		Button& b = (Button&)control;
-		TypeControl type = b.GetType();
-		
-		if (type == TypeControl::Button)
+	    else
 		{
-			b.Action();
+			if (control.mHover)
+			{
+				if(control.event.hoverOff)
+					control.event.hoverOff(control);
+
+				control.mHover = false;
+			}
+
+			if (Input::Down(MOUSE_LEFT) || Input::Down(MOUSE_RIGHT))
+			{
+				if (control.mFocus)
+				{
+					if ((control.event.focusOff))
+						control.event.focusOff(control);
+
+					control.mFocus = false;
+				}
+			}
+
+			if (Input::Up(MOUSE_LEFT))
+			{
+				if (control.mClick)
+				{
+					control.mClick = false;
+				}
+			}
+		}
+
+		if (Input::Down(KEY_RETURN))
+		{
+			if (control.mFocus)
+			{
+				if ((control.event.focusOff))
+					control.event.focusOff(control);
+
+				control.mFocus = false;
+			}
+		}
+
+		if (Input::Press(MOUSE_LEFT))
+		{
+			if (control.mClick)
+			{
+				if (control.event.leftPress)
+					control.event.leftPress(control);
+			}
+		}
+
+		if (control.mFocus)
+		{
+			if (control.event.focus)
+				control.event.focus(control);
 		}
 	}
 }
 
-bool GUI::IsFocus()
+bool GUI::IsEvent()
 {
-	return mFocusControl;
+	int size = Size();
+	for (int i = 0; i < size; i++)
+	{
+		Control& control = *(mArr[i]);
+
+		int x = Cursor::GetPosition(CURSOR_X);
+		int y = Cursor::GetPosition(CURSOR_Y);
+
+		bool hover = (x >= control.mRect.left) && (x <= control.mRect.right) && (y >= control.mRect.top) && (y <= control.mRect.bottom);
+
+		if (hover)
+		{
+			if (control.event.hoverOn) return true;
+			if (control.event.hoverOff) return true;
+			if (control.event.leftClick) return true;
+			if (control.event.rightClick) return true;
+			if (control.event.rightPress) return true;
+			if (control.event.leftPress) return true;
+		}
+	}
+
+	return false;
 }
 
 int GUI::Size()
 { 
-	return mSize; 
+	return mArr.Size(); 
 }
 
 void GUI::Shotdown()
 {
-	SAFE_RELEASE(mRenderTarget);
-	SAFE_RELEASE(mFactory);
+	mDepthStencilState.Release();
+	mSamplerState.Release();
+	mVertexShader.Release();
+	mPixelShader.Release();
+	mInputLayout.Release();
+	mFrameBuffer.Release();
 
-	for (int i = 0; i < mSize; i++)
+	int size = mArr.Size();
+	for (int i = 0; i < size; i++)
 	{
-		TypeControl type = mArr[i]->GetType();
-
-		if (type == TypeControl::Control) delete (Control*)mArr[i];
-		if (type == TypeControl::Button) delete (Button*)mArr[i];
-		if (type == TypeControl::Static) delete (Static*)mArr[i];
-		if (type == TypeControl::Text) delete (Text*)mArr[i];
+		delete mArr[i];
 	}
 }

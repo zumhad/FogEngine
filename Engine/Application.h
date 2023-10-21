@@ -59,6 +59,7 @@ public:
 
     static bool CursorInScene();
     static bool IsPaused();
+    static bool IsResized();
     static bool IsGame();
     static String& GetPath();
 

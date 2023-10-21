@@ -18,8 +18,13 @@
 #include "VertexShader.h"
 #include "InputLayout.h"
 #include "NormalMap.h"
+#include "LightMap.h"
+#include "PostProcess.h"
+#include "ShadowMap.h"
 
+RasterizerState PipelineState::mShadowRasterizerState;
 RasterizerState PipelineState::mRasterizerState;
+SamplerState PipelineState::mShadowSamplerState;
 SamplerState PipelineState::mSamplerState;
 DepthStencilState PipelineState::mDepthStencilState;
 
@@ -27,18 +32,22 @@ Array<ID3D11RenderTargetView*> PipelineState::mRenderTargetView;
 Array<ID3D11ShaderResourceView*> PipelineState::mShaderResourceView;
 
 ConstantBuffer<PipelineState::PrePassBuffer> PipelineState::mPrePassBuffer;
-ConstantBuffer<PipelineState::PassBuffer> PipelineState::mPassBuffer;
-ConstantBuffer<PipelineState::LightBuffer> PipelineState::mLightBuffer;
 
 VertexShader PipelineState::mPrePassVS;
 PixelShader PipelineState::mPrePassPS;
+InputLayout PipelineState::mPrePassIL;
+
 VertexShader PipelineState::mPassVS;
 PixelShader PipelineState::mPassPS;
-InputLayout PipelineState::mPrePassIL;
 InputLayout PipelineState::mPassIL;
+
 VertexShader PipelineState::mPostProcessVS;
 PixelShader PipelineState::mPostProcessPS;
 InputLayout PipelineState::mPostProcessIL;
+
+VertexShader PipelineState::mShadowPassVS;
+PixelShader PipelineState::mShadowPassPS;
+InputLayout PipelineState::mShadowPassIL;
 
 void PipelineState::Setup()
 {
@@ -47,11 +56,12 @@ void PipelineState::Setup()
 	mRenderTargetView.Add(NormalMap::GetRTV());
 
 	mPrePassBuffer.Create();
-	mPassBuffer.Create();
-	mLightBuffer.Create();
+
 	mSamplerState.Create();
+	mShadowSamplerState.Create(SamplerStateType::Shadow);
 	mDepthStencilState.Create();
 	mRasterizerState.Create();
+	mShadowRasterizerState.Create(RasterizerStateType::Shadow);
 
 	{
 		mPrePassVS.Create(L"PrePass.hlsl");
@@ -65,8 +75,8 @@ void PipelineState::Setup()
 	}
 
 	{
-		mPassVS.Create(L"Pass.hlsl");
-		mPassPS.Create(L"Pass.hlsl");
+		mPassVS.Create(L"LightPass.hlsl");
+		mPassPS.Create(L"LightPass.hlsl");
 
 		Array<String> input;
 		input.Add(L"TEXCOORD");
@@ -81,16 +91,25 @@ void PipelineState::Setup()
 		input.Add(L"TEXCOORD");
 		mPostProcessIL.Create(mPostProcessVS.GetBlob(), input);
 	}
+
+	{
+		mShadowPassVS.Create(L"ShadowPass.hlsl");
+		mShadowPassPS.Create(L"ShadowPass.hlsl");
+
+		Array<String> input;
+		input.Add(L"POSITION");
+		mShadowPassIL.Create(mShadowPassVS.GetBlob(), input);
+	}
 }
 
 void PipelineState::Shotdown()
 {
+	mShadowSamplerState.Release();
+	mShadowRasterizerState.Release();
 	mRasterizerState.Release();
 	mDepthStencilState.Release();
-	mLightBuffer.Release();
 	mSamplerState.Release();
 	mPrePassBuffer.Release();
-	mPassBuffer.Release();
 	mPrePassVS.Release();
 	mPrePassPS.Release();
 	mPrePassIL.Release();
@@ -100,10 +119,51 @@ void PipelineState::Shotdown()
 	mPostProcessVS.Release();
 	mPostProcessPS.Release();
 	mPostProcessIL.Release();
+	mShadowPassVS.Release();
+	mShadowPassPS.Release();
+	mShadowPassIL.Release();
 }
 
 void PipelineState::Bind()
 {
+	UpdateShadowPassViewport();
+
+	ShadowMap::Clear();
+
+	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Direct3D::DeviceContext()->RSSetState(mShadowRasterizerState.Get());
+	Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, ShadowMap::GetDSV());
+	Direct3D::DeviceContext()->OMSetDepthStencilState(mDepthStencilState.Get(), 0);
+	
+	Direct3D::DeviceContext()->IASetInputLayout(mShadowPassIL.Get());
+	Direct3D::DeviceContext()->VSSetShader(mShadowPassVS.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mShadowPassPS.Get(), 0, 0);
+
+	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, ShadowMap::GetBuffer());
+
+	int size = ObjectManager::Size();
+	for (int i = 0; i < size; i++)
+	{
+		Object& obj = ObjectManager::Get(i);
+		TypeObject type = obj.GetType();
+
+		switch (type)
+		{
+			case TypeObject::Mesh:
+			{
+				Mesh& mesh = (Mesh&)obj;
+
+				ShadowMap::UpdateBuffer(mesh);
+
+				mesh.Bind();
+
+				break;
+			}
+		}
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+
 	UpdatePrePassViewport();
 
 	DepthMap::Clear();
@@ -125,12 +185,6 @@ void PipelineState::Bind()
 	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, ColorMap::GetBuffer());
 	Direct3D::DeviceContext()->PSSetConstantBuffers(2, 1, SelectMap::GetBuffer());
 
-	static LightBuffer buffer{};
-	buffer.cameraPos = Camera::GetPosition();
-	buffer.dirCount = 0;
-	buffer.pointCount = 0;
-
-	int size = ObjectManager::Size();
 	for (int i = 0; i < size; i++)
 	{
 		Object& obj = ObjectManager::Get(i);
@@ -141,11 +195,7 @@ void PipelineState::Bind()
 			case TypeObject::DirectionalLight:
 			{
 				DirectionalLight& light = (DirectionalLight&)obj;
-
-				buffer.dirLight[buffer.dirCount].color = light.color;
-				buffer.dirLight[buffer.dirCount].dir = light.direction;
-				buffer.dirLight[buffer.dirCount].power = light.power;
-				buffer.dirCount++;
+				LightMap::UpdateBuffer(light);
 
 				break;
 			}
@@ -153,25 +203,11 @@ void PipelineState::Bind()
 			case TypeObject::PointLight:
 			{
 				PointLight& light = (PointLight&)obj;
-
-				buffer.pointLight[buffer.pointCount].color = light.color;
-				buffer.pointLight[buffer.pointCount].position = light.position;
-				buffer.pointLight[buffer.pointCount].radius = light.radius;
-				buffer.pointLight[buffer.pointCount].power = light.power;
-				buffer.pointCount++;
+				LightMap::UpdateBuffer(light);
 
 				break;
 			}
-		}
-	}
 
-	for (int i = 0; i < size; i++)
-	{
-		Object& obj = ObjectManager::Get(i);
-		TypeObject type = obj.GetType();
-
-		switch (type)
-		{
 			case TypeObject::Mesh:
 			{
 				Mesh& mesh = (Mesh&)obj;
@@ -179,7 +215,8 @@ void PipelineState::Bind()
 				UpdatePrePassBuffer(mesh);
 				ColorMap::UpdateBuffer(mesh);
 				SelectMap::UpdateBuffer(mesh);
-				
+
+				mesh.BindTexture();
 				mesh.Bind();
 
 				break;
@@ -187,39 +224,55 @@ void PipelineState::Bind()
 		}
 	}
 
-	UpdatePassViewport();
+	//////////////////////////////////////////////////////////////////////////////////////////////
+
+	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(1, 1, mShadowSamplerState.Get());
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, LightMap::GetRTV(), 0);
+
+	Direct3D::DeviceContext()->IASetInputLayout(mPassIL.Get());
+	Direct3D::DeviceContext()->VSSetShader(mPassVS.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPassPS.Get(), 0, 0);
+
+	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, LightMap::GetBuffer());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, LightMap::GetBuffer());
+
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, ColorMap::GetSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, DepthMap::GetSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, SelectMap::GetSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, NormalMap::GetSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, ShadowMap::GetSRV());
+
+	LightMap::UpdateBuffer();
+	TextureMap::Bind();
+
+	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, Direct3D::NullSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, Direct3D::NullSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, Direct3D::NullSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, Direct3D::NullSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Direct3D::NullSRV());
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
 	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetRenderTargets(1, Direct3D::GetRTV(), 0);
 
-	Direct3D::DeviceContext()->IASetInputLayout(mPassIL.Get());
-	Direct3D::DeviceContext()->VSSetShader(mPassVS.Get(), 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mPassPS.Get(), 0, 0);
+	Direct3D::DeviceContext()->IASetInputLayout(mPostProcessIL.Get());
+	Direct3D::DeviceContext()->VSSetShader(mPostProcessVS.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPostProcessPS.Get(), 0, 0);
 
-	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mPassBuffer.Get());
-	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, mPassBuffer.Get());
-	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mLightBuffer.Get());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, PostProcess::GetBuffer());
 
-	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, ColorMap::GetSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, DepthMap::GetSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, SelectMap::GetSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, NormalMap::GetSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, LightMap::GetSRV());
 
-	UpdateLightBuffer(buffer);
-	UpdatePassBuffer();
+	PostProcess::UpdateBuffer();
 	TextureMap::Bind();
 
-	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, Direct3D::NullSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, Direct3D::NullSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, Direct3D::NullSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Direct3D::NullSRV());
-}
-
-void PipelineState::UpdateLightBuffer(LightBuffer& buffer)
-{
-	mLightBuffer.Bind(buffer);
 }
 
 void PipelineState::UpdatePrePassViewport()
@@ -257,43 +310,27 @@ void PipelineState::UpdatePrePassViewport()
 	}
 }
 
-void PipelineState::UpdatePassViewport()
+void PipelineState::UpdateShadowPassViewport()
 {
-	int x, y, width, height;
+	int width = ShadowMap::GetResolution();
+	int height = ShadowMap::GetResolution();
 
-	if (Application::IsGame())
-	{
-		x = 0;
-		y = 0;
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		x = Application::GetSceneX();
-		y = Application::GetSceneY();
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
+	static D3D11_VIEWPORT viewport{};
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = (FLOAT)width;
+	viewport.Height = (FLOAT)height;
 
-	{
-		static D3D11_VIEWPORT viewport{};
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = (FLOAT)x;
-		viewport.TopLeftY = (FLOAT)y;
-		viewport.Width = (FLOAT)width;
-		viewport.Height = (FLOAT)height;
+	static D3D11_RECT rect{};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = width;
+	rect.bottom = height;
 
-		static D3D11_RECT rect{};
-		rect.left = x;
-		rect.top = y;
-		rect.right = width + x;
-		rect.bottom = height + y;
-
-		Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
-		Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
-	}
+	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
 void PipelineState::UpdatePrePassBuffer(Mesh& mesh)
@@ -309,26 +346,4 @@ void PipelineState::UpdatePrePassBuffer(Mesh& mesh)
 	buffer.worldInvTranspose = inv;
 
 	mPrePassBuffer.Bind(buffer);
-}
-
-void PipelineState::UpdatePassBuffer()
-{
-	int width, height;
-
-	if (Application::IsGame())
-	{
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
-
-	static PassBuffer buffer{};
-	buffer.width = width;
-	buffer.height = height;
-
-	mPassBuffer.Bind(buffer);
 }

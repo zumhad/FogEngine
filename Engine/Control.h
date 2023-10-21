@@ -2,15 +2,7 @@
 
 #include "Core.h"
 
-#include <d2d1.h>
-
-enum class TypeControl
-{
-	Control,
-	Button,
-	Static,
-	Text
-};
+#include <d3d11.h>
 
 enum HorizontalAlignm
 {
@@ -27,24 +19,20 @@ enum VerticalAlignm
 };
 
 class GUI;
-class Text;
 class Static;
-class Button;
+class Text;
 
 class FOG_API Control
 {
 	friend class GUI;
-	friend class Text;
 	friend class Static;
-	friend class Button;
-
-public:
-	virtual TypeControl GetType() { return TypeControl::Control; }
-
-	Control();
+	friend class Text;
 
 private:
-	void SetFocus(bool focus) { mFocus = focus; }
+	virtual void Draw() = 0;
+	virtual ~Control() {};
+
+	Control();
 
 public:
 	struct
@@ -53,14 +41,30 @@ public:
 		VerticalAlignm vertical;
 	} alignm;
 
+	struct
+	{
+		void(*hoverOn)(Control&);
+		void(*hoverOff)(Control&);
+		void(*leftClick)(Control&);
+		void(*rightClick)(Control&);
+		void(*leftPress)(Control&);
+		void(*rightPress)(Control&);
+		void(*focusOn)(Control&);
+		void(*focus)(Control&);
+		void(*focusOff)(Control&);
+	} event;
+
 	int x, y;
 	int width, height;
+	bool enable;
 
 protected:
-	bool mFocus;
 	Control* mChild;
 	Control* mParent;
-	D2D1_RECT_F mRect;
-	int mChildCount;
+	D3D11_RECT mRect;
+	int mID;
+	bool mHover;
+	bool mClick;
+	bool mFocus;
 };
 

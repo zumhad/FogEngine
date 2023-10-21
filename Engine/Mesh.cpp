@@ -68,7 +68,7 @@ Mesh::Mesh(Mesh& mesh)
 
     // читаем файл
     WaveFrontReader<UINT> wfReader;
-    FOG_TRACE(wfReader.Load(path.GetWCHAR()));
+    wfReader.Load(path.GetWCHAR());
     mData->bb = wfReader.bounds;
 
     D3D11_BUFFER_DESC bd = {};
@@ -100,9 +100,12 @@ void Mesh::Bind()
     Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mData->vertexBuffer, &stride, &offset);
     Direct3D::DeviceContext()->IASetIndexBuffer(mData->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
-    mData->texture.Bind();
-
     Direct3D::DeviceContext()->DrawIndexed(mData->indexCount, 0, 0);
+}
+
+void Mesh::BindTexture()
+{
+    mData->texture.Bind();
 }
 
 BoundingBox Mesh::GetBoundingBox()
@@ -131,7 +134,6 @@ Matrix Mesh::GetWorldMatrix()
 Matrix Mesh::GetWorldInvTransposeMatrix()
 {
     Matrix m = mData->world;
-    //m.m. r[3] = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
     m = XMMatrixTranspose(XMMatrixInverse(0, m));
     mData->worldInvTranspose = m;
 
@@ -184,9 +186,9 @@ void Mesh::Rotate(Vector3 v)
     rotation += v;
 }
 
-void Mesh::Scale(Vector3 v)
+void Mesh::Scale(Vector3)
 {
-    v;
+    //scale = v;
 }
 
 Vector3 Mesh::GetDirection()

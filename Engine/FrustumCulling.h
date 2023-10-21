@@ -19,6 +19,7 @@ class FrustumCulling
 	friend class DepthMap;
 
 private:
+	static Matrix GetCascade();
 	static void Setup();
 	static void Shotdown();
 	static void Update(Matrix view, Matrix proj);

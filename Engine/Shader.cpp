@@ -45,7 +45,6 @@ void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3
 	if (pErrorBlob)
 	{
 		String str = (const CHAR*)pErrorBlob->GetBufferPointer();
-
 		FOG_ERROR(str);
 	}
 

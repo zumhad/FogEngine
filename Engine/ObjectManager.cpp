@@ -1,25 +1,6 @@
 #include "ObjectManager.h"
 
 #include "Application.h"
-#include "Light.h"
-#include "Mesh.h"
-#include "PathHelper.h"
-#include "Shader.h"
-#include "Direct3D.h"
-#include "Camera.h"
-#include "FrustumCulling.h"
-#include "CustomFile.h"
-#include "Cursor.h"
-#include "ConstantBuffer.h"
-#include "DepthMap.h"
-#include "SelectMap.h"
-#include "TextureMap.h"
-#include "ColorMap.h"
-#include "PipelineState.h"
-
-#include <DirectXCollision.h>
-
-using namespace DirectX;
 
 int ObjectManager::mSize = 0;
 Array<Object*> ObjectManager::mArr;

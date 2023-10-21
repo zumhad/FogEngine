@@ -8,18 +8,12 @@
 
 #include <d3d11.h>
 
-class Direct3D;
 class Application;
-class ObjectManager;
-class BufferManager;
 class PipelineState;
 
 class FOG_API DepthMap
 {
-	friend class Direct3D;
 	friend class Application;
-	friend class ObjectManager;
-	friend class BufferManager;
 	friend class PipelineState;
 
 private:

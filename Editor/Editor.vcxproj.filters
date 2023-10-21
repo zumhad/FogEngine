@@ -18,4 +18,7 @@
       <Filter>res</Filter>
     </Image>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Events.h" />
+  </ItemGroup>
 </Project>

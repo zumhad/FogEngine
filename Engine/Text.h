@@ -1,10 +1,16 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable: 4251)
+
 #include "Core.h"
 
 #include "Control.h"
 #include "CustomString.h"
 #include "Color.h"
+#include "ConstantBuffer.h"
+
+#include <d3d11.h>
 
 class GUI;
 class Application;
@@ -17,25 +23,28 @@ class FOG_API Text : public Control
 	friend class Button;
 
 public:
-	TypeControl GetType() override { return TypeControl::Text; }
-
 	Text();
 	~Text();
-	Text(Text& t);
 
 private:
-	static void Setup();
 	void Draw();
-	static void Shotdown();
+	void Update();
 
 public:
 	String text;
 	Color color;
+	int size;
 
 private:
-	struct Data;
-	static Data* mData;
+	ID3D11Buffer* mVertexBuffer;
+	String mText;
+	int mVertexSize;
 
-	ID2D1SolidColorBrush* mBrush;
+	struct TextBuffer
+	{
+		Color color;
+	};
+	ConstantBuffer<TextBuffer> mTextBuffer;
 };
 
+#pragma warning(pop)

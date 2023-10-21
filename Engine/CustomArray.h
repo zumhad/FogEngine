@@ -16,6 +16,8 @@ public:
 	void Add(T t);
 	int Size();
 	void Clear();
+	void Delete(int i);
+	void Resize(int size);
 	T* Data();
 	const T* Data() const;
 
@@ -55,6 +57,18 @@ template <typename T>
 void Array<T>::Clear()
 {
 	mArr.clear();
+}
+
+template <typename T>
+void Array<T>::Resize(int size)
+{
+	mArr.resize(size);
+}
+
+template <typename T>
+void Array<T>::Delete(int i)
+{
+	mArr.erase(mArr.begin() + i);
 }
 
 template <typename T>

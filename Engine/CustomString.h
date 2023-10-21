@@ -15,12 +15,16 @@ class FOG_API String
 {
 public:
 	String() : mStr() {}
+	String(CHAR ch);
+	String(WCHAR ch);
 	String(const CHAR* str);
 	String(const WCHAR* str) : mStr(str) {}
 	String(const String& str) : mStr(str.mStr) {}
 
 	operator const char* ();
+	operator const wchar_t* ();
 
+	void Delete(int i);
 	int Size();
 	WCHAR* GetWCHAR();
 	CHAR* GetCHAR();
@@ -49,10 +53,11 @@ public:
 	String& operator= (const WCHAR* str);
 	String& operator= (const String& str);
 
-	bool operator== (const WCHAR* str);
-	bool operator== (const String& str);
+	wchar_t operator[] (int i);
 
 	FOG_API friend String operator+ (const String& str1, const String& str2);
+	FOG_API friend bool operator== (const String& str1, const WCHAR* str2);
+	FOG_API friend bool operator== (const String& str1, const String& str2);
 
 private:
 	std::wstring mStr;

@@ -5,6 +5,7 @@
 #include "Application.h"
 #include "Matrix.h"
 #include "Vector3.h"
+#include "Frustum.h"
 
 #include <DirectXMath.h>
 
@@ -15,6 +16,8 @@ class DepthMap;
 class SelectMap;
 class PassMap;
 class PipelineState;
+class ShadowMap;
+class LightMap;
 
 class FOG_API Camera
 {
@@ -25,6 +28,8 @@ class FOG_API Camera
 	friend class SelectMap;
 	friend class PassMap;
 	friend class PipelineState;
+	friend class ShadowMap;
+	friend class LightMap;
 
 public:
 	static void SetPosition(Vector3 position);
@@ -55,17 +60,22 @@ public:
 	static void SetFar(float farZ);
 
 private:
+	static Matrix GetTest() { return mTest; }
 	static Matrix GetViewMatrix() { return mView; }
 	static Matrix GetProjMatrix() { return mProj; }
 	static void Setup(APPCLASS& app);
 	static void Update();
 
 private:
+	static Frustum mFrustum;
+	static Matrix mProjLight;
+
 	static Vector3 mPosition;
 	static Vector3 mRotation;
 
 	static Matrix mView;
 	static Matrix mProj;
+	static Matrix mTest;
 
 	static float mFOV;
 	static float mAspectRatio;

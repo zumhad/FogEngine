@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma warning(push)
+#pragma warning(disable: 4251)
+
 #include "Core.h"
 
 #include "ConstantBuffer.h"
@@ -36,3 +39,4 @@ private:
 	static ConstantBuffer<ColorBuffer> mColorBuffer;
 };
 
+#pragma warning(pop)

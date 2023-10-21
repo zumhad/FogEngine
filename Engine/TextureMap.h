@@ -24,8 +24,6 @@ private:
 	static void Setup();
 	static void Shotdown();
 	static void Bind();
-	static VertexBuffer& GetVertexBuffer();
-	static IndexBuffer& GetIndexBuffer();
 
 private:
 	static VertexBuffer mVertexBuffer;

@@ -8,12 +8,29 @@ DepthStencilState::DepthStencilState()
 	mDepthStencilState = 0;
 }
 
-void DepthStencilState::Create()
+void DepthStencilState::Create(DepthStencilStateType type)
 {
 	D3D11_DEPTH_STENCIL_DESC desc{};
-	desc.DepthEnable = true;
-	desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-	desc.DepthFunc = D3D11_COMPARISON_GREATER;
+
+	switch (type)
+	{
+		case DepthStencilStateType::Default:
+		{
+			desc.DepthEnable = true;
+			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+			desc.DepthFunc = D3D11_COMPARISON_GREATER;
+
+			break;
+		}
+
+		case DepthStencilStateType::GUI:
+		{
+			desc.DepthEnable = false;
+
+			break;
+		}
+	}
+
 	FOG_TRACE(Direct3D::Device()->CreateDepthStencilState(&desc, &mDepthStencilState));
 }
 

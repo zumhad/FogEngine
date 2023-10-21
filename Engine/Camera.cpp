@@ -3,14 +3,19 @@
 #include "MathHelper.h"
 #include "FrustumCulling.h"
 #include "Quaternion.h"
+#include "CustomArray.h"
 
 using namespace DirectX;
+
+Frustum Camera::mFrustum;
+Matrix Camera::mProjLight;
 
 Vector3 Camera::mPosition;
 Vector3 Camera::mRotation;
 
 Matrix Camera::mView;
 Matrix Camera::mProj;
+Matrix Camera::mTest;
 
 float Camera::mFOV;
 float Camera::mAspectRatio;
@@ -150,11 +155,14 @@ void Camera::Update()
 
 	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(rotation);
 	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 1), q);
+	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 1), q);
+
 	XMVECTOR target = forward + position;
 	
 	mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
-	mView = XMMatrixLookAtLH(position, target, XMVectorSet(0, 1, 0, 1));
+	mView = XMMatrixLookAtLH(position, target, up);
 
-	FrustumCulling::Update(mView, mProj);
+	mProjLight = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, 10.0f, mFarZ);
+	mFrustum.Update(mView, mProjLight);
+	mTest = mFrustum.Cascade(Vector3(0.0f, -1.0f, -1.0f));
 }
-

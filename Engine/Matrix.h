@@ -7,10 +7,7 @@
 
 #include <DirectXMath.h>
 
-#include "Vector3.h"
-#include "Vector4.h"
-
-struct FOG_API DirectX::XMFLOAT4X4;
+//struct FOG_API DirectX::XMFLOAT4X4;
 
 class FOG_API Matrix
 {

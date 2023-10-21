@@ -32,6 +32,11 @@ void InputLayout::Create(ID3D10Blob* blob, Array<String>& name)
 			desc = { name[i].GetCHAR(), 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
 			layout.Add(desc);
 		}
+		else if (name[i] == L"TEXPOS")
+		{
+			desc = { name[i].GetCHAR(), 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+			layout.Add(desc);
+		}
 	}
 
 	FOG_TRACE(Direct3D::Device()->CreateInputLayout(layout.Data(), layout.Size(), blob->GetBufferPointer(), blob->GetBufferSize(), &mInputLayout));

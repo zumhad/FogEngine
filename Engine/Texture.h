@@ -6,7 +6,7 @@
 
 #include <d3d11.h>
 
-class Texture
+class FOG_API Texture
 {
 public:
 	Texture();

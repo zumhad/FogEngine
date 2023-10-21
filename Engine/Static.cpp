@@ -3,114 +3,89 @@
 #include "GUI.h"
 #include "Application.h"
 #include "Utility.h"
+#include "Direct3D.h"
 
 Static::Static()
 {
 	color = Color(0, 0, 0);
-
-	mBrush = 0;
-}
-
-Static::Static(Static& obj)
-{
-	x = obj.x;
-	y = obj.y;
-	width = obj.width;
-	height = obj.height;
-	color = obj.color;
-	alignm = obj.alignm;
-
-	D2D1_COLOR_F c = {};
-	c.r = color.r;
-	c.g = color.g;
-	c.b = color.b;
-	c.a = color.a;
-
-	FOG_TRACE(GUI::RenderTarget()->CreateSolidColorBrush(c, &mBrush));
 }
 
 Static::~Static()
 {
-	SAFE_RELEASE(mBrush);
 }
 
 void Static::Draw()
 {
 	if (mParent)
 	{
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+		D3D11_RECT rect = mParent->mRect;
+
+		if (alignm.horizontal == ALIGNM_LEFT)
 		{
-			mRect.left = (float)mParent->mRect.left + x;
-			mRect.right = (float)mParent->mRect.left + x + width;
+			mRect.left = x + rect.left;
+			mRect.right = mRect.left + width;
 		}
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+		if (alignm.horizontal == ALIGNM_CENTER_H)
 		{
-			mRect.left = (float)mParent->mRect.right - width + x;
-			mRect.right = (float)mParent->mRect.right + x;
+			mRect.left = rect.left + int((rect.right - rect.left - width) * 0.5f);
+			mRect.right = mRect.left + width;
 		}
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_CENTER_H)
+		if (alignm.horizontal == ALIGNM_RIGHT)
 		{
-			mRect.left = (float)mParent->mRect.left + (mParent->mRect.right - mParent->mRect.left - width) * 0.5f + x;
-			mRect.right = (float)mParent->mRect.left + (mParent->mRect.right - mParent->mRect.left + width) * 0.5f + x;
+			mRect.left = x + rect.right - width;
+			mRect.right = mRect.left + width;
 		}
 
-		if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
+		if (alignm.vertical == ALIGNM_TOP)
 		{
-			mRect.top = (float)mParent->mRect.top + y;
-			mRect.bottom = (float)mParent->mRect.top + y + height;
+			mRect.top = y + rect.top;
+			mRect.bottom = mRect.top + height;
 		}
-		if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+		if (alignm.vertical == ALIGNM_CENTER_V)
 		{
-			mRect.top = (float)mParent->mRect.bottom - height + y;
-			mRect.bottom = (float)mParent->mRect.bottom + y;
+			mRect.top = rect.top + int((rect.bottom - rect.top - height) * 0.5f);
+			mRect.bottom = mRect.top + height;
 		}
-		if (alignm.vertical == VerticalAlignm::ALIGNM_CENTER_V)
+		if (alignm.vertical == ALIGNM_BOTTOM)
 		{
-			mRect.top = (float)mParent->mRect.top + (mParent->mRect.bottom - mParent->mRect.top - height) * 0.5f + y;
-			mRect.bottom = (float)mParent->mRect.top + (mParent->mRect.bottom - mParent->mRect.top + height) * 0.5f + y;
+			mRect.top = y + rect.bottom - height;
+			mRect.bottom = mRect.top + height;
 		}
 	}
 	else
 	{
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_LEFT)
+		if (alignm.horizontal == ALIGNM_LEFT)
 		{
-			mRect.left = (float)x;
-			mRect.right = (float)x + width;
+			mRect.left = x;
+			mRect.right = mRect.left + width;
 		}
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_RIGHT)
+		if (alignm.horizontal == ALIGNM_CENTER_H)
 		{
-			mRect.left = (float)Application::GetEditorWidth() - width + x;
-			mRect.right = (float)Application::GetEditorWidth() + x;
+			mRect.left = x + int((Application::GetEditorWidth() - width) * 0.5f);
+			mRect.right = mRect.left + width;
 		}
-		if (alignm.horizontal == HorizontalAlignm::ALIGNM_CENTER_H)
+		if (alignm.horizontal == ALIGNM_RIGHT)
 		{
-			mRect.left = (float)(Application::GetEditorWidth() - width) * 0.5f + x;
-			mRect.right = (float)(Application::GetEditorWidth() + width) * 0.5f + x;
+			mRect.left = x + Application::GetEditorWidth() - width;
+			mRect.right = mRect.left + width;
 		}
 
-		if (alignm.vertical == VerticalAlignm::ALIGNM_TOP)
+		if (alignm.vertical == ALIGNM_TOP)
 		{
-			mRect.top = (float)y;
-			mRect.bottom = (float)y + height;
+			mRect.top = y;
+			mRect.bottom = mRect.top + height;
 		}
-		if (alignm.vertical == VerticalAlignm::ALIGNM_BOTTOM)
+		if (alignm.vertical == ALIGNM_CENTER_V)
 		{
-			mRect.top = (float)Application::GetEditorHeight() - height + y;
-			mRect.bottom = (float)Application::GetEditorHeight() + y;
+			mRect.top = y + int((Application::GetEditorHeight() - height) * 0.5f);
+			mRect.bottom = mRect.top + height;
 		}
-		if (alignm.vertical == VerticalAlignm::ALIGNM_CENTER_V)
+		if (alignm.vertical == ALIGNM_BOTTOM)
 		{
-			mRect.top = (float)(Application::GetEditorHeight() - height) * 0.5f + y;
-			mRect.bottom = (float)(Application::GetEditorHeight() + height) * 0.5f + y;
+			mRect.top = y + Application::GetEditorHeight() - height;
+			mRect.bottom = mRect.top + height;
 		}
 	}
 
-	static D2D1_COLOR_F c;
-	c.r = color.r;
-	c.g = color.g;
-	c.b = color.b;
-	c.a = color.a;
-
-	mBrush->SetColor(c);
-	GUI::RenderTarget()->FillRectangle(mRect, mBrush);
+	Direct3D::DeviceContext()->ClearView(*Direct3D::GetRTV(), color, &mRect, 1);
 }

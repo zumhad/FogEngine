@@ -11,7 +11,6 @@
 
 #include <windowsx.h>
 
-
 LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
     static bool isSnapshot = false;
@@ -26,18 +25,13 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 Time::Tick();
 
                 Cursor::Update();
+                Input::Update();
 
                 if (isClickWindow)
                 {
-                    Input::Update();
                     mPaused = false;
                     isClickWindow = false;
                 }
-                else
-                {
-                    Input::Update();
-                }
-
 
                 GUI::Update();
 
@@ -52,6 +46,8 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                     Direct3D::DrawEngine();
 
                 Direct3D::Present();
+
+                Input::UpdateChar();
             }
 
             if (GetAsyncKeyState(VK_SNAPSHOT) & 0x01)
@@ -59,6 +55,13 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
                 isSnapshot = true;
                 mPaused = true;
             }
+
+            return 0;
+        }
+
+        case WM_CHAR:
+        {
+            Input::UpdateChar(char(wparam));
 
             return 0;
         }
@@ -151,10 +154,7 @@ LRESULT CALLBACK Application::WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM
 
             if (mStarted && !mIsGame)
             {
-                GUI::Release();
                 Direct3D::Resize();
-                GUI::Resize();
-
                 InitBuffers();
             }
 
@@ -290,7 +290,7 @@ LRESULT Application::HitTest()
 
     if (y <= Application::GetCaptionHeight())
     {
-        if (GUI::IsFocus()) return HTCLIENT;
+        if (GUI::IsEvent()) return HTCLIENT;
         return HTCAPTION;
     }
 

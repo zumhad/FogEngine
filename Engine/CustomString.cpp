@@ -8,6 +8,20 @@
 
 using namespace std;
 
+String::String(CHAR ch)
+{
+	const CHAR* str = &ch;
+
+	mStr.resize(1);
+
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, mStr.data(), 1);
+}
+
+String::String(WCHAR ch)
+{
+	mStr += ch;
+}
+
 String::String(const CHAR* str)
 {
 	int size = (int)std::strlen(str);
@@ -20,6 +34,11 @@ String::String(const CHAR* str)
 String::operator const char* ()
 {
 	return GetCHAR();
+}
+
+String::operator const wchar_t* ()
+{
+	return GetWCHAR();
 }
 
 String& String::operator= (const String& str)
@@ -72,11 +91,20 @@ String& String::operator+= (const String& str)
 	return *this;
 }
 
+wchar_t String::operator[] (int i)
+{
+	return mStr[i];
+}
+
 int String::Size()
 {
 	return (int)mStr.size();
 }
 
+void String::Delete(int i)
+{
+	mStr.erase(i);
+}
 
 CHAR* String::GetCHAR()
 {
@@ -179,12 +207,12 @@ String String::ToString(const Color& _Val)
 	return res.c_str();
 }
 
-bool String::operator== (const WCHAR* str)
+FOG_API bool operator== (const String& left, const WCHAR* right)
 {
-	return mStr == str;
+	return left.mStr == right;
 }
 
-bool String::operator== (const String& str)
+FOG_API bool operator== (const String& left, const String& right)
 {
-	return mStr == str.mStr;
+	return left.mStr == right.mStr;
 }

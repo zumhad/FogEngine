@@ -4,16 +4,25 @@
 
 #include <d3d11.h>
 
+enum class SamplerStateType
+{
+	Default,
+	Shadow,
+	GUI
+};
+
 class PipelineState;
+class GUI;
 
 class FOG_API SamplerState
 {
 	friend class PipelineState;
+	friend class GUI;
 
 private:
 	SamplerState();
 
-	void Create();
+	void Create(SamplerStateType type = SamplerStateType::Default);
 	void Release();
 	ID3D11SamplerState* const* Get();
 

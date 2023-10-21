@@ -4,6 +4,8 @@
 
 #include <DirectXMath.h>
 
+class Vector3;
+
 class FOG_API Vector4
 {
 public:
@@ -16,6 +18,7 @@ public:
 
     operator DirectX::XMVECTOR() const;
     operator DirectX::XMFLOAT4() const;
+    operator Vector3() const;
 
     bool operator == (const Vector4& V);
     bool operator != (const Vector4& V);

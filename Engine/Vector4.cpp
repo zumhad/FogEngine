@@ -1,5 +1,7 @@
 #include "Vector4.h"
 
+#include "Vector3.h"
+
 using namespace DirectX;
 
 Vector4::Vector4(FXMVECTOR v)
@@ -22,6 +24,11 @@ Vector4::operator DirectX::XMVECTOR() const
 Vector4::operator DirectX::XMFLOAT4() const
 {
 	return XMFLOAT4(x, y, z, w);
+}
+
+Vector4::operator Vector3() const
+{
+	return Vector3(x, y, z);
 }
 
 bool Vector4::operator == (const Vector4& v)

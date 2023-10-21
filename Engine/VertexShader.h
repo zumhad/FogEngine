@@ -7,10 +7,12 @@
 #include <d3d11.h>
 
 class PipelineState;
+class GUI;
 
 class FOG_API VertexShader
 {
 	friend class PipelineState;
+	friend class GUI;
 
 private:
 	VertexShader();
