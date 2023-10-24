@@ -5,15 +5,6 @@
 #include "Utility.h"
 #include "Direct3D.h"
 
-Static::Static()
-{
-	color = Color(0, 0, 0);
-}
-
-Static::~Static()
-{
-}
-
 void Static::Draw()
 {
 	if (mParent)

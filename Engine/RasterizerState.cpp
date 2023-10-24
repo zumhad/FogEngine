@@ -30,7 +30,7 @@ void RasterizerState::Create(RasterizerStateType type)
 		case RasterizerStateType::Shadow:
 		{
 			desc.FillMode = D3D11_FILL_SOLID;
-			desc.CullMode = D3D11_CULL_FRONT;
+			desc.CullMode = D3D11_CULL_NONE;
 			desc.FrontCounterClockwise = false;
 			desc.DepthClipEnable = false;
 			desc.ScissorEnable = true;

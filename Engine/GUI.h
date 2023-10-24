@@ -140,7 +140,7 @@ T* GUI::Get(Control* control)
 template<typename T>
 int GUI::Add(T& control)
 {
-	T* t = new T(control);
+	T* t = new T(std::move(control));
 	t->mID = mSize;
 
 	mArr.Add(t);
@@ -152,7 +152,7 @@ template<typename T>
 int GUI::AddChild(int parent, T& child)
 {
 	Control* p = Get<Control>(parent);
-	Control* c = new T(child);
+	Control* c = new T(std::move(child));
 
 	p->mChild.Add(c);
 	c->mParent = p;

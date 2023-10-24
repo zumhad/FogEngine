@@ -2,85 +2,106 @@
 
 #include "Engine.h"
 
-void Focus(Control& control)
+int idFPS = -1;
+int idPosX = -1;
+int idPosY = -1;
+int idPosZ = -1;
+
+void ChangeText(Text& text)
 {
-	/*Text& text = GUI::Get<Text>(control);
-	
+	char ch = Input::GetNumber();
+	if (ch)
+		text.text += String::ToString(ch - '0');
+
 	if (Input::Down(KEY_BACK))
-	{
-		if(text.text.Size())
-			text.text.Delete(text.text.Size() - 1);
-	}
-	else
-	{
-		char ch = Input::GetNumber();
-		if (ch)
-		{
-			text.text += String::ToString(ch - '0');
-		}
+		text.text.Clear();
 
-		if (Input::Down(KEY_PERIOD) || Input::Down(KEY_COMMA))
-		{
-			text.text += L".";
-		}
+	if (Input::Down(KEY_PERIOD) || Input::Down(KEY_COMMA))
+		text.text += L".";
 
-		if (Input::Down(KEY_MINUS))
-		{
-			text.text += L"-";
-		}
-	}*/
+	if (Input::Down(KEY_MINUS))
+		text.text += L"-";
 }
 
-void FocusOn(Control& control)
+void FocusX(Control&)
 {
-	//Text& text = GUI::Get<Text>(control);
+	Text& text = *GUI::Get<Text>(idPosX);
+	ChangeText(text);
+}
 
-	//text.color = Color(0.5f, 0.5f, 1.0f);
+void FocusY(Control&)
+{
+	Text& text = *GUI::Get<Text>(idPosY);
+	ChangeText(text);
+}
+
+void FocusZ(Control&)
+{
+	Text& text = *GUI::Get<Text>(idPosZ);
+	ChangeText(text);
+}
+
+void FocusOnX(Control& control)
+{
+	Text& text = *GUI::Get<Text>(idPosX);
+	text.color = Color(0.5f, 0.5f, 1.0f);
+}
+
+void FocusOnY(Control& control)
+{
+	Text& text = *GUI::Get<Text>(idPosY);
+	text.color = Color(0.5f, 0.5f, 1.0f);
+}
+
+void FocusOnZ(Control& control)
+{
+	Text& text = *GUI::Get<Text>(idPosZ);
+	text.color = Color(0.5f, 0.5f, 1.0f);
 }
 
 void FocusOffX(Control& control)
 {
-	/*Text& text = GUI::Get<Text>(control);
+	Text& text = *GUI::Get<Text>(idPosX);
 
 	text.color = Color(1.0f, 1.0f, 1.0f);
 	text.text = String::ToString(atof(text.text));
 
-	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.x = atof(text.text);*/
+	Model* model = (Model*)Picking::GetPickObject();
+	model->position.x = atof(text.text);
 }
 
 void FocusOffY(Control& control)
 {
-	/*Text& text = GUI::Get<Text>(control);
+	Text& text = *GUI::Get<Text>(idPosY);
 
-	text.color = Color(0.05f, 0.05f, 0.05f);
+	text.color = Color(1.0f, 1.0f, 1.0f);
 	text.text = String::ToString(atof(text.text));
 
-	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.y = atof(text.text);*/
+	Model* model = (Model*)Picking::GetPickObject();
+	model->position.y = atof(text.text);
 }
 
 void FocusOffZ(Control& control)
 {
-	/*Text& text = GUI::Get<Text>(control);
+	Text& text = *GUI::Get<Text>(idPosZ);
 
-	text.color = Color(0.05f, 0.05f, 0.05f);
+	text.color = Color(1.0f, 1.0f, 1.0f);
 	text.text = String::ToString(atof(text.text));
 
-	Mesh* mesh = (Mesh*)Picking::GetPickObject();
-	mesh->position.z = atof(text.text);*/
+	Model* model = (Model*)Picking::GetPickObject();
+	model->position.z = atof(text.text);
 }
 
 void AddBox(Control&)
 {
-	Mesh m;
+	Model m;
 	m.name = L"box.obj";
 	ObjectManager::Add(m);
 }
 
 void AddPlane(Control&)
 {
-	Mesh m;
+	Model m;
 	m.name = L"plane.obj";
 	m.scale = Vector3(100, 1, 100);
 	ObjectManager::Add(m);
@@ -88,21 +109,21 @@ void AddPlane(Control&)
 
 void AddSphere(Control&)
 {
-	Mesh m;
+	Model m;
 	m.name = L"sphere.obj";
 	ObjectManager::Add(m);
 }
 
 void HoverOn(Control& control)
 {
-	//Static& s = GUI::Get<Static>(control);
-	//s.color.r = 1.0f;
+	Static& s = *GUI::Get<Static>(control);
+	s.color.r = 1.0f;
 }
 
 void HoverOff(Control& control)
 {
-	//Static& s = GUI::Get<Static>(control);
-	//s.color.r = 0.05f;
+	Static& s = *GUI::Get<Static>(control);
+	s.color.r = 0.05f;
 }
 
 void Close(Control&)

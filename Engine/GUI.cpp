@@ -272,6 +272,6 @@ void GUI::Shotdown()
 	int size = mArr.Size();
 	for (int i = 0; i < size; i++)
 	{
-		delete mArr[i];
+		SAFE_DELETE(mArr[i]);
 	}
 }

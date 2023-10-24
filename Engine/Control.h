@@ -6,6 +6,7 @@
 #include "Core.h"
 
 #include "CustomArray.h"
+#include "Color.h"
 
 #include <d3d11.h>
 
@@ -38,6 +39,7 @@ private:
 	virtual ~Control() {};
 
 	Control();
+	Control(const Control& c);
 
 public:
 	struct
@@ -62,6 +64,7 @@ public:
 	int x, y;
 	int width, height;
 	bool enable;
+	Color color;
 
 protected:
 	Array<Control*> mChild;

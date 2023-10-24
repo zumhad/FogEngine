@@ -10,7 +10,7 @@ void ObjectManager::Shotdown()
 {
 	for (int i = 0; i < mSize; i++)
 	{
-		delete mArr[i];;
+		SAFE_DELETE(mArr[i]);
 	}
 }
 

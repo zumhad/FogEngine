@@ -6,7 +6,7 @@
 #include "Direct3D.h"
 #include "ConstantBuffer.h"
 #include "Color.h"
-#include "Mesh.h"
+#include "Model.h"
 
 ID3D11RenderTargetView* ColorMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* ColorMap::mShaderResourceView = 0;
@@ -66,10 +66,10 @@ void ColorMap::Setup()
 	mColorBuffer.Create();
 }
 
-void ColorMap::UpdateBuffer(Mesh& mesh)
+void ColorMap::UpdateBuffer(Model& model)
 {
 	static ColorBuffer buffer{};
-	buffer.color = mesh.color;
+	buffer.color = model.color;
 
 	mColorBuffer.Bind(buffer);
 }

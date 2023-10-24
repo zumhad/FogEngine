@@ -207,6 +207,11 @@ String String::ToString(const Color& _Val)
 	return res.c_str();
 }
 
+void String::Clear()
+{
+	mStr.clear();
+}
+
 FOG_API bool operator== (const String& left, const WCHAR* right)
 {
 	return left.mStr == right;

@@ -23,7 +23,7 @@
 #include "PostProcess.h"
 #include "ShadowMap.h"
 #include "Matrix.h"
-#include "Mesh.h"
+#include "Model.h"
 
 RasterizerState PipelineState::mShadowRasterizerState;
 RasterizerState PipelineState::mRasterizerState;
@@ -162,13 +162,13 @@ void PipelineState::Bind()
 
 		switch (type)
 		{
-			case TypeObject::Mesh:
+			case TypeObject::Model:
 			{
-				Mesh* mesh = ObjectManager::Get<Mesh>(obj);
+				Model* model = ObjectManager::Get<Model>(obj);
 
-				ShadowMap::UpdateBuffer(*mesh);
+				ShadowMap::UpdateBuffer(*model);
 
-				mesh->Bind();
+				model->Draw();
 
 				break;
 			}
@@ -221,16 +221,16 @@ void PipelineState::Bind()
 				break;
 			}
 
-			case TypeObject::Mesh:
+			case TypeObject::Model:
 			{
-				Mesh* mesh = ObjectManager::Get<Mesh>(obj);
+				Model* model = ObjectManager::Get<Model>(obj);
 
-				UpdatePrePassBuffer(*mesh);
-				ColorMap::UpdateBuffer(*mesh);
-				SelectMap::UpdateBuffer(*mesh);
+				UpdatePrePassBuffer(*model);
+				ColorMap::UpdateBuffer(*model);
+				SelectMap::UpdateBuffer(*model);
 
-				mesh->BindTexture();
-				mesh->Bind();
+				model->BindTexture();
+				model->Draw();
 
 				break;
 			}
@@ -346,12 +346,12 @@ void PipelineState::UpdateShadowPassViewport()
 	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
-void PipelineState::UpdatePrePassBuffer(Mesh& mesh)
+void PipelineState::UpdatePrePassBuffer(Model& model)
 {
-	Matrix world = mesh.GetWorldMatrix();
+	Matrix world = model.GetWorldMatrix();
 	Matrix view = Camera::GetViewMatrix();
 	Matrix proj = Camera::GetProjMatrix();
-	Matrix inv = mesh.GetWorldInvTransposeMatrix(world);
+	Matrix inv = model.GetWorldInvTransposeMatrix(world);
 
 	static PrePassBuffer buffer{};
 	buffer.worldViewProj = world * view * proj;

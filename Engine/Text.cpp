@@ -13,15 +13,27 @@ struct Text::TextBuffer
 	Color color;
 };
 
-Text::Text()
+Text::Text() : Control()
 {
 	text = L"";
-	color = Color(0.0f, 0.0f, 0.0f);
 	size = 32;
+	color = Color(1.0f, 1.0f, 1.0f);
 
 	mVertexSize = 0;
 	mVertexBuffer = 0;
 	mText = L"";
+}
+
+Text::Text(const Text& t) : Control(t)
+{
+	text = t.text;
+	size = t.size;
+}
+
+Text::Text(Text&& t) noexcept : Text(t)
+{
+	mVertexBuffer = 0;
+	mTextBuffer.Create();
 }
 
 Text::~Text()
@@ -36,19 +48,14 @@ void Text::Draw()
 
 	Update();
 
-	Font::Bind();
-
-	if (*mTextBuffer.Get() == 0)
-	{
-		mTextBuffer.Create();
-	}
-
 	static TextBuffer buffer;
 	buffer.color = color;
 	mTextBuffer.Bind(buffer);
 
 	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, mTextBuffer.Get());
 	Direct3D::DeviceContext()->RSSetScissorRects(1, &mRect);
+
+	Font::Bind();
 
 	static UINT stride = mVertexSize;
 	static UINT offset = 0;
@@ -58,8 +65,6 @@ void Text::Draw()
 
 void Text::Update()
 {
-	if (mText == text && !Application::IsResized() && mVertexBuffer) return;
-
 	mText = text;
 	width = mText.Size() * size;
 	height = size;

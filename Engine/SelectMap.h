@@ -12,7 +12,7 @@ class FOG_API Application;
 class FOG_API ObjectManager;
 class FOG_API Picking;
 class FOG_API PipelineState;
-class FOG_API Mesh;
+class FOG_API Model;
 
 class FOG_API SelectMap
 {
@@ -27,7 +27,7 @@ private:
 	static void Shotdown();
 
 	static void Clear();
-	static void UpdateBuffer(Mesh& mesh);
+	static void UpdateBuffer(Model& mesh);
 
 	static ID3D11ShaderResourceView* const* GetSRV();
 	static ID3D11RenderTargetView* GetRTV();

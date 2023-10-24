@@ -2,11 +2,6 @@
 
 #include "Events.h"
 
-int idFPS = -1;
-int idPosX = -1;
-int idPosY = -1;
-int idPosZ = -1;
-
 void MyUpdate()
 {
 	if (Input::Down(KEY_ESCAPE))
@@ -23,7 +18,7 @@ void MyUpdate()
 		light.power = 100.0f;
 		ObjectManager::Add(light);
 
-		Mesh m;
+		Model m;
 		m.name = L"sphere.obj";
 		m.position = Vector3(0.0f, 1.0f, 0.0f);
 		m.scale = Vector3(0.1f, 0.1f, 0.1f);
@@ -119,23 +114,23 @@ void Update()
 		Picking::Pick();
 		obj = Picking::GetPickObject();
 
-		/*Text& sliderX = GUI::Get<Text>(idSliderX);
-		Text& sliderY = GUI::Get<Text>(idSliderY);
-		Text& sliderZ = GUI::Get<Text>(idSliderZ);
+		Text* posX = GUI::Get<Text>(idPosX);
+		Text* posY = GUI::Get<Text>(idPosY);
+		Text* posZ = GUI::Get<Text>(idPosZ);
 
-		sliderX.enable = false;
-		sliderY.enable = false;
-		sliderZ.enable = false;*/
+		GUI::GetParent<Static>(posX)->enable = false;
+		GUI::GetParent<Static>(posY)->enable = false;
+		GUI::GetParent<Static>(posZ)->enable = false;
 
 		if (obj)
 		{
-			/*sliderX.enable = true;
-			sliderY.enable = true;
-			sliderZ.enable = true;
+			GUI::GetParent<Static>(posX)->enable = true;
+			GUI::GetParent<Static>(posY)->enable = true;
+			GUI::GetParent<Static>(posZ)->enable = true;
 
-			sliderX.text = String::ToString(((Mesh&)(*obj)).position.x);
-			sliderY.text = String::ToString(((Mesh&)(*obj)).position.y);
-			sliderZ.text = String::ToString(((Mesh&)(*obj)).position.z);*/
+			posX->text = String::ToString(ObjectManager::Get<Model>(obj)->position.x);
+			posY->text = String::ToString(ObjectManager::Get<Model>(obj)->position.y);
+			posZ->text = String::ToString(ObjectManager::Get<Model>(obj)->position.z);
 
 			Vector3 r = Camera::GetDirection();
 
@@ -197,9 +192,9 @@ void Update()
 
 	if (Input::Press(MOUSE_LEFT))
 	{
-		//Text* sliderX = GUI::GetChild<Text>(idPosX);
-		//Text& sliderY = GUI::Get<Text>(idSliderY);
-		//Text& sliderZ = GUI::Get<Text>(idSliderZ);
+		Text* posX = GUI::Get<Text>(idPosX);
+		Text* posY = GUI::Get<Text>(idPosY);
+		Text* posZ = GUI::Get<Text>(idPosZ);
 
 		if (obj)
 		{
@@ -216,22 +211,22 @@ void Update()
 
 				if (Math::Sign(limit) == sign && pick1 != pick2)
 				{
-					Mesh& mesh = (Mesh&)(*obj);
+					Model& model = (Model&)(*obj);
 
-					if (x) mesh.position.x += pick2.x - pick1.x;
-					if (y) mesh.position.y += pick2.y - pick1.y;
-					if (z) mesh.position.z += pick2.z - pick1.z;
+					if (x) model.position.x += pick2.x - pick1.x;
+					if (y) model.position.y += pick2.y - pick1.y;
+					if (z) model.position.z += pick2.z - pick1.z;
 
 					pick1 = pick2;
 
 					String str = L"";
-					str += L"x: " + String::ToString(mesh.position.x) + L"\n";
-					str += L"y: " + String::ToString(mesh.position.y) + L"\n";
-					str += L"z: " + String::ToString(mesh.position.z);
+					str += L"x: " + String::ToString(model.position.x) + L"\n";
+					str += L"y: " + String::ToString(model.position.y) + L"\n";
+					str += L"z: " + String::ToString(model.position.z);
 
-					//sliderX.text = String::ToString(mesh.position.x);
-					//sliderY.text = String::ToString(mesh.position.y);
-					//sliderZ.text = String::ToString(mesh.position.z);
+					posX->text = String::ToString(model.position.x);
+					posY->text = String::ToString(model.position.y);
+					posZ->text = String::ToString(model.position.z);
 				}
 			}
 		}
@@ -263,8 +258,8 @@ void Start()
 	dir.power = 1.2f;
 	ObjectManager::Add(dir);
 
-	Mesh m;
-	m.name = L"house.obj";
+	Model m;
+	m.name = L"room.obj";
 	m.texture = L"png.png";
 	m.position = Vector3(0.0, 0.0, 0.0);
 	m.scale = Vector3(1.0, 1.0, 1.0);
@@ -272,7 +267,7 @@ void Start()
 	m.color = Color(1.0f, 1.0f, 1.0f);
 	ObjectManager::Add(m);
 
-	Camera::SetPosition(Vector3(0, 0, 0));
+	Camera::SetPosition(Vector3(0, 5, -5));
 	Camera::SetRotationX(0.0f);
 	Camera::SetFar(0.001f);
 	Camera::SetNear(1000.0f);
@@ -302,29 +297,33 @@ void Start()
 	pos.width = 140;
 	pos.height = 50;
 	pos.color = Color(0.25, 0.25, 0.25);
-	pos.event.focus = Focus;
-	pos.event.focusOn = FocusOn;
+	pos.event.focus = FocusX;
+	pos.event.focusOn = FocusOnX;
 	pos.event.focusOff = FocusOffX;
-	idPosX = GUI::AddChild(infoRect, pos);
+	pos.enable = false;
+	int posX = GUI::AddChild(infoRect, pos);
 
 	pos.x += pos.width + 10;
+	pos.event.focus = FocusY;
+	pos.event.focusOn = FocusOnY;
 	pos.event.focusOff = FocusOffY;
-	idPosY = GUI::AddChild(infoRect, pos);
+	int posY = GUI::AddChild(infoRect, pos);
 
+	pos.event.focus = FocusZ;
+	pos.event.focusOn = FocusOnZ;
 	pos.event.focusOff = FocusOffZ;
 	pos.x += pos.width + 10;
-	idPosZ = GUI::AddChild(infoRect, pos);
+	int posZ = GUI::AddChild(infoRect, pos);
 
 	Text textBox;
 	textBox.alignm.horizontal = ALIGNM_LEFT;
 	textBox.alignm.vertical = ALIGNM_CENTER_V;
 	textBox.x = 5;
-	textBox.enable = false;
 	textBox.color = Color(1.0f, 1.0f, 1.0f);
 	textBox.size = 16;
-	GUI::AddChild(idPosX, textBox);
-	GUI::AddChild(idPosY, textBox);
-	GUI::AddChild(idPosZ, textBox);
+	idPosX = GUI::AddChild(posX, textBox);
+	idPosY = GUI::AddChild(posY, textBox);
+	idPosZ = GUI::AddChild(posZ, textBox);
 
 	int size = 40;
 	Static but;

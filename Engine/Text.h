@@ -24,6 +24,8 @@ class FOG_API Text : public Control
 
 public:
 	Text();
+	Text(const Text& t);
+	Text(Text&& t) noexcept;
 	~Text();
 
 private:
@@ -32,7 +34,6 @@ private:
 
 public:
 	String text;
-	Color color;
 	int size;
 
 private:

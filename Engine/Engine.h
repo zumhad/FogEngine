@@ -12,7 +12,7 @@
 #include "GUI.h"
 #include "ObjectManager.h"
 #include "Light.h"
-#include "Mesh.h"
+#include "Model.h"
 #include "Cursor.h"
 #include "Quaternion.h"
 #include "Static.h"

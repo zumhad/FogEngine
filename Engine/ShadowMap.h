@@ -9,7 +9,7 @@ class FOG_API ConstantBuffer;
 
 class FOG_API Application;
 class FOG_API PipelineState;
-class FOG_API Mesh;
+class FOG_API Model;
 
 class FOG_API ShadowMap
 {
@@ -26,7 +26,7 @@ private:
 	static void UpdateTexture();
 
 	static void Clear();
-	static void UpdateBuffer(Mesh& mesh);
+	static void UpdateBuffer(Model& mesh);
 	static ID3D11Buffer* const* GetBuffer();
 
 	static ID3D11ShaderResourceView* const* GetSRV();

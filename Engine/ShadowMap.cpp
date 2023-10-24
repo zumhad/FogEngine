@@ -6,7 +6,7 @@
 #include "Camera.h"
 #include "Matrix.h"
 #include "ConstantBuffer.h"
-#include "Mesh.h"
+#include "Model.h"
 
 struct ShadowMap::ShadowBuffer
 {
@@ -66,11 +66,11 @@ void ShadowMap::Clear()
 	Direct3D::DeviceContext()->ClearDepthStencilView(mDepthStencilView, D3D11_CLEAR_DEPTH, 0.0f, 0);
 }
 
-void ShadowMap::UpdateBuffer(Mesh& mesh)
+void ShadowMap::UpdateBuffer(Model& model)
 {
 	static ShadowBuffer buffer;
 
-	buffer.worldViewProj = mesh.GetWorldMatrix() * Camera::GetTest();
+	buffer.worldViewProj = model.GetWorldMatrix() * Camera::GetTest();
 
 	mShadowBuffer.Bind(buffer);
 }

@@ -20,7 +20,7 @@ class FOG_API ScissorRect;
 class FOG_API RenderTargetView;
 class FOG_API SamplerState;
 class FOG_API DepthStencilState;
-class FOG_API Mesh;
+class FOG_API Model;
 
 class FOG_API PipelineState
 {
@@ -32,7 +32,7 @@ public:
 private:
 	static void UpdateShadowPassViewport();
 	static void UpdatePrePassViewport();
-	static void UpdatePrePassBuffer(Mesh& mesh);
+	static void UpdatePrePassBuffer(Model& model);
 
 private:
 	static RasterizerState mRasterizerState;

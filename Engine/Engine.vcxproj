@@ -82,15 +82,15 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Debug\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
-    <LibraryPath>$(SolutionDir)Libs\directxtk\lib\debug;$(SolutionDir)Libs\libpng\lib\debug;$(SolutionDir)Libs\zlib\lib\debug;$(SolutionDir)Libs\directxmesh\lib\debug;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Libs\directxtk\include;$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\directxmesh\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Libs\libpng\lib\debug;$(SolutionDir)Libs\zlib\lib\debug;$(SolutionDir)Libs\assimp\lib\debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\assimp\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\Release\</OutDir>
     <IntDir>$(SolutionDir)Temp\$(ProjectName)\</IntDir>
-    <LibraryPath>$(SolutionDir)Libs\directxtk\lib\release;$(SolutionDir)Libs\libpng\lib\release;$(SolutionDir)Libs\zlib\lib\release;$(SolutionDir)Libs\directxmesh\lib\release;$(LibraryPath)</LibraryPath>
-    <IncludePath>$(SolutionDir)Libs\directxtk\include;$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\directxmesh\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)Libs\libpng\lib\release;$(SolutionDir)Libs\zlib\lib\release;$(SolutionDir)Libs\assimp\lib\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)Libs\zlib\include;$(SolutionDir)Libs\libpng\include;$(SolutionDir)Libs\assimp\include;$(IncludePath)</IncludePath>
     <AllProjectBMIsArePublic>true</AllProjectBMIsArePublic>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -147,7 +147,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;directxtk.lib;d2d1.lib;dwrite.lib;zlib.lib;libpng.lib;directxmesh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;zlib.lib;libpng.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <Profile>true</Profile>
     </Link>
     <FxCompile>
@@ -176,7 +176,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;directxtk.lib;d2d1.lib;dwrite.lib;zlib.lib;libpng.lib;directxmesh.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;d3dcompiler.lib;dxgi.lib;dxguid.lib;xinput9_1_0.lib;dinput8.lib;zlib.lib;libpng.lib;assimp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <Profile>true</Profile>
@@ -214,6 +214,7 @@
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Model.cpp" />
     <ClCompile Include="NormalMap.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
@@ -273,6 +274,7 @@
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="NormalMap.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />

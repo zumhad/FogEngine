@@ -134,6 +134,7 @@
     <ClCompile Include="ConstantBuffer.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="Model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -268,6 +269,7 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="Model.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PrePass.hlsl">

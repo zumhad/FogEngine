@@ -24,6 +24,7 @@ public:
 	operator const char* ();
 	operator const wchar_t* ();
 
+	void Clear();
 	void Delete(int i);
 	int Size();
 	WCHAR* GetWCHAR();

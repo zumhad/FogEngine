@@ -49,7 +49,7 @@ private:
 template<typename T>
 void ObjectManager::Add(T& obj)
 {
-    T* temp = new T(obj);
+    T* temp = new T(std::move(obj));
     temp->mID = mSize;
 
     mArr.Add(temp);

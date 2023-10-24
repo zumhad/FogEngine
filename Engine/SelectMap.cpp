@@ -8,7 +8,7 @@
 #include "PathHelper.h"
 #include "PipelineState.h"
 #include "ConstantBuffer.h"
-#include "Mesh.h"
+#include "Model.h"
 
 ID3D11RenderTargetView* SelectMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* SelectMap::mShaderResourceView = 0;
@@ -74,10 +74,10 @@ void SelectMap::Clear()
 	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
 }
 
-void SelectMap::UpdateBuffer(Mesh& mesh)
+void SelectMap::UpdateBuffer(Model& model)
 {
 	static SelectBuffer buffer{};
-	buffer.id = mesh.GetID();
+	buffer.id = model.GetID();
 
 	mSelectBuffer.Bind(buffer);
 }

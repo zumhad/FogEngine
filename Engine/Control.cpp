@@ -20,3 +20,15 @@ Control::Control()
 
 	event = {};
 }
+
+Control::Control(const Control& c) : Control()
+{
+	x = c.x;
+	y = c.y;
+	width = c.width;
+	height = c.height;
+	enable = c.enable;
+	event = c.event;
+	alignm = c.alignm;
+	color = c.color;
+}

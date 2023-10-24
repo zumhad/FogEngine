@@ -9,7 +9,7 @@ class FOG_API ConstantBuffer;
 
 class FOG_API Application;
 class FOG_API PipelineState;
-class FOG_API Mesh;
+class FOG_API Model;
 
 class FOG_API ColorMap
 {
@@ -20,7 +20,7 @@ private:
 	static void Setup();
 	static void Shotdown();
 
-	static void UpdateBuffer(Mesh& mesh);
+	static void UpdateBuffer(Model& mesh);
 	static void Clear();
 
 	static ID3D11ShaderResourceView* const* GetSRV();
