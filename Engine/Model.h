@@ -9,17 +9,24 @@
 #include "Color.h"
 #include "CustomString.h"
 #include "Matrix.h"
+#include "Matrix3.h"
 #include "Texture.h"
 #include "Object.h"
 
 class FOG_API PipelineState;
 class FOG_API ShadowMap;
 class FOG_API Mesh;
+class FOG_API Skybox;
+class FOG_API ObjectManager;
+class FOG_API PointLight;
 
 class FOG_API Model : public Object
 {
 	friend class PipelineState;
 	friend class ShadowMap;
+	friend class Skybox;
+	friend class ObjectManager;
+	friend class PointLight;
 
 public:
 	TypeObject GetType() override { return TypeObject::Model; }
@@ -53,6 +60,7 @@ public:
 	String name;
 	String texture;
 	Color color;
+	bool lighting;
 
 private:
 	Array<Mesh*> mArr;

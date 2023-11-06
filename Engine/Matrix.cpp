@@ -4,8 +4,6 @@
 
 #include "Utility.h"
 
-#include <cstring>
-
 using namespace DirectX;
 
 Matrix::Matrix(const DirectX::XMFLOAT4X4& _m)
@@ -166,7 +164,7 @@ Matrix Matrix::operator/ (float f)
     return _m;
 }
 
-Matrix Matrix::Invert(Matrix& _m)
+Matrix Matrix::Inverse(Matrix& _m)
 {
     XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
 

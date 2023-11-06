@@ -21,7 +21,6 @@ private:
 	static void Shotdown();
 
 	static void UpdateBuffer(Model& mesh);
-	static void Clear();
 
 	static ID3D11ShaderResourceView* const* GetSRV();
 	static ID3D11RenderTargetView* GetRTV();

@@ -57,10 +57,10 @@ void Direct3D::Resize()
 
 void Direct3D::Initialize()
 {
-	UINT d3d11DeviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+	UINT flag = 0;
 
 #ifdef _DEBUG
-	d3d11DeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+	flag |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	D3D_FEATURE_LEVEL featureLevels[] =
@@ -72,7 +72,7 @@ void Direct3D::Initialize()
 	};
 
 	IDXGIDevice* dxgiDevice = 0;
-	FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, d3d11DeviceFlags, featureLevels, ARRAY_SIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
+	FOG_TRACE(D3D11CreateDevice(0, D3D_DRIVER_TYPE_HARDWARE, 0, flag, featureLevels, ARRAY_SIZE(featureLevels), D3D11_SDK_VERSION, &mDevice, 0, &mDeviceContext));
 	FOG_TRACE(mDeviceContext->QueryInterface(IID_PPV_ARGS(&mDeviceContext1)));
 	FOG_TRACE(mDevice->QueryInterface(IID_PPV_ARGS(&dxgiDevice)));
 

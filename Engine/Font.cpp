@@ -44,9 +44,9 @@ void Font::Setup()
 	SAFE_DELETE_ARR(data);
 }
 
-void Font::Bind()
+ID3D11ShaderResourceView* const* Font::GetSRV()
 {
-	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, &mTexture);
+	return &mTexture;
 }
 
 void Font::Shotdown()

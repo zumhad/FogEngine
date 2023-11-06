@@ -50,11 +50,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
     FxaaTex tex;
     tex.smpl = gSampler;
     tex.tex = gTextureColor;
-    FxaaFloat2 fxaaQualityRcpFrame = float2(gInvWidth, gInvHeight);
-    FxaaFloat fxaaQualitySubpix = 1.0f;
-    FxaaFloat fxaaQualityEdgeThreshold = 0.063f;
-    FxaaFloat fxaaQualityEdgeThresholdMin = 0.0312f;
-    output.color = FxaaPixelShader(input.uv, tex, fxaaQualityRcpFrame, fxaaQualitySubpix, fxaaQualityEdgeThreshold, fxaaQualityEdgeThresholdMin);
+    output.color = FxaaPixelShader(input.uv, tex, float2(gInvWidth, gInvHeight), 1.0f, 0.063f, 0.0312f);
 
     output.color.a = 1.0f;
 

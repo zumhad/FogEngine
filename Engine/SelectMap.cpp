@@ -70,7 +70,7 @@ void SelectMap::Setup()
 
 void SelectMap::Clear()
 {
-	static const float color[4]{ 0.0f, 0.0f, 0.0f, -1.0f };
+	static const float color[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
 }
 

@@ -7,7 +7,6 @@
 #include "PathHelper.h"
 #include "Input.h"
 #include "Timer.h"
-#include "Text.h"
 #include "Utility.h"
 #include "Direct3D.h"
 #include "DepthStencilState.h"
@@ -15,10 +14,17 @@
 #include "PixelShader.h"
 #include "VertexShader.h"
 #include "InputLayout.h"
+#include "Button.h"
+#include "Font.h"
 
-Array<Control*> GUI::mArr;
+struct GUI::FrameBuffer
+{
+	float invWidth;
+	float invHeight; float pad[2];
+};
+
+Array<Button*> GUI::mArr;
 int GUI::mSize = 0;
-Control* GUI::mNull = 0;
 
 DepthStencilState GUI::mDepthStencilState;
 SamplerState GUI::mSamplerState;
@@ -44,11 +50,73 @@ void GUI::Setup()
 	}
 }
 
-bool GUI::IsEnable(Control& control)
+int GUI::BinarySearch(Array<Button*>& arr, int i)
+{
+	int size = arr.Size();
+	int left = 0;
+	int right = size - 1;
+
+	while (left <= right)
+	{
+		int m = left + (right - left) / 2;
+
+		if (arr[m]->mID == i)
+			return m;
+
+		if (arr[m]->mID < i)
+			left = m + 1;
+		else
+			right = m - 1;
+	}
+
+	return -1;
+}
+
+Button* GUI::GetWithID(int i)
+{
+	int res = BinarySearch(mArr, i);
+
+	if (res == -1) return 0;
+
+	return mArr[res];
+}
+
+Button* GUI::GetWithNumber(int i)
+{
+	if (i < 0 || i > mArr.Size() - 1) return 0;
+
+	return mArr[i];
+}
+
+int GUI::Add(Button& control)
+{
+	Button* b = new Button(std::move(control));
+	b->mID = mSize;
+
+	mArr.Add(b);
+
+	return mSize++;
+}
+
+int GUI::AddChild(int parent, Button& child)
+{
+	Button* p = GetWithID(parent);
+	Button* c = new Button(std::move(child));
+
+	p->mChild.Add(c);
+	c->mParent = p;
+	c->mID = mSize;
+
+	mArr.Add(c);
+
+	return mSize++;
+}
+
+bool GUI::IsEnable(Button* button)
 {
 	bool enable = false;
 
-	Control* ptr = &control;
+	Button* ptr = button;
 	while (true)
 	{
 		if (!ptr->enable)
@@ -75,7 +143,14 @@ bool GUI::IsEnable(Control& control)
 
 void GUI::Draw()
 {
-	UpdateViewport();
+	static D3D11_VIEWPORT viewport{};
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = (FLOAT)Application::GetEditorWidth();
+	viewport.Height = (FLOAT)Application::GetEditorHeight();
+	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
 
 	Direct3D::DeviceContext()->ClearRenderTargetView(*Direct3D::GetRTV(), Application::GetEditorColor());
 
@@ -89,12 +164,14 @@ void GUI::Draw()
 	Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
 	Direct3D::DeviceContext()->PSSetShader(mPixelShader.Get(), 0, 0);
 
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Font::GetSRV());
+
 	UpdateBuffer();
 
 	int size = Size();
 	for (int i = 0; i < size; i++)
 	{
-		if (IsEnable(*mArr[i]))
+		if (IsEnable(mArr[i]))
 			mArr[i]->Draw();
 	}
 
@@ -104,127 +181,137 @@ void GUI::Draw()
 void GUI::UpdateBuffer()
 {
 	static FrameBuffer buffer{};
-	buffer.invWidth = 1.0f / Application::GetEditorWidth();
-	buffer.invHeight = 1.0f / Application::GetEditorHeight();
 
-	mFrameBuffer.Bind(buffer);
+	float invWidth = 1.0f / Application::GetEditorWidth();
+	float invHeight = 1.0f / Application::GetEditorHeight();
+
+	if (buffer.invWidth != invWidth || buffer.invHeight != invHeight)
+	{
+		buffer.invWidth = invWidth;
+		buffer.invHeight = invHeight;
+		mFrameBuffer.Bind(buffer);
+	}
+
 	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mFrameBuffer.Get());
-}
-
-void GUI::UpdateViewport()
-{
-	int width = Application::GetEditorWidth();
-	int height = Application::GetEditorHeight();
-
-	static D3D11_VIEWPORT viewport{};
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.Width = (FLOAT)width;
-	viewport.Height = (FLOAT)height;
-
-	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
 }
 
 void GUI::Update()
 {
-	int size = Size();
-	for (int i = 0; i < size; i++)
-	{
-		Control& control = *(mArr[i]);
+	bool findControl = false;
 
-		if (!IsEnable(control)) continue;
+	int size = Size();
+	for (int i = size - 1; i >= 0; i--)
+	{
+		Button* button = mArr[i];
+
+		if (!IsEnable(button)) continue;
 
 		int x = Cursor::GetPosition(CURSOR_X);
 		int y = Cursor::GetPosition(CURSOR_Y);
 
-		bool hover = (x >= control.mRect.left) && (x <= control.mRect.right) && (y >= control.mRect.top) && (y <= control.mRect.bottom);
+		bool hover = (x >= button->mRect.left) && (x <= button->mRect.right) && (y >= button->mRect.top) && (y <= button->mRect.bottom);
 
-		if (hover)
+		if (hover && !findControl)
 		{
-			if (!control.mHover)
-			{
-				if (control.event.hoverOn)
-					control.event.hoverOn(control);
+			findControl = true;
 
-				control.mHover = true;
+			if (!button->mHover)
+			{
+				if (button->event.hoverOn)
+					button->event.hoverOn(*button);
+
+				button->mHover = true;
 			}
+
+			if (button->event.hover)
+				button->event.hover(*button);
 
 			if (Input::Down(MOUSE_LEFT))
 			{
-				control.mClick = true;
+				button->mClick = true;
 			}
 
 			if (Input::Up(MOUSE_LEFT))
 			{
-				if (control.mClick)
+				if (button->mClick)
 				{
-					if (control.event.leftClick)
-						control.event.leftClick(control);
+					if (button->event.leftClick)
+						button->event.leftClick(*button);
 
-					if((control.event.focusOn))
-						control.event.focusOn(control);
+					if((button->event.focusOn))
+						button->event.focusOn(*button);
 
-					control.mClick = false;
-					control.mFocus = true;
+					if (button->event.leftUp)
+						button->event.leftUp(*button);
+
+					button->mClick = false;
+					button->mFocus = true;
 				}
+			}
+
+			if (Input::GetAxis(MOUSE_SCROLL))
+			{
+				if (button->event.scroll)
+					button->event.scroll(*button);
 			}
 		}
 	    else
 		{
-			if (control.mHover)
+			if (button->mHover)
 			{
-				if(control.event.hoverOff)
-					control.event.hoverOff(control);
+				if(button->event.hoverOff)
+					button->event.hoverOff(*button);
 
-				control.mHover = false;
+				button->mHover = false;
 			}
 
 			if (Input::Down(MOUSE_LEFT) || Input::Down(MOUSE_RIGHT))
 			{
-				if (control.mFocus)
+				if (button->mFocus)
 				{
-					if ((control.event.focusOff))
-						control.event.focusOff(control);
+					if ((button->event.focusOff))
+						button->event.focusOff(*button);
 
-					control.mFocus = false;
+					button->mFocus = false;
 				}
 			}
 
 			if (Input::Up(MOUSE_LEFT))
 			{
-				if (control.mClick)
+				if (button->mClick)
 				{
-					control.mClick = false;
+					if (button->event.leftUp)
+						button->event.leftUp(*button);
+
+					button->mClick = false;
 				}
 			}
 		}
 
 		if (Input::Down(KEY_RETURN))
 		{
-			if (control.mFocus)
+			if (button->mFocus)
 			{
-				if ((control.event.focusOff))
-					control.event.focusOff(control);
+				if ((button->event.focusOff))
+					button->event.focusOff(*button);
 
-				control.mFocus = false;
+				button->mFocus = false;
 			}
 		}
 
 		if (Input::Press(MOUSE_LEFT))
 		{
-			if (control.mClick)
+			if (button->mClick)
 			{
-				if (control.event.leftPress)
-					control.event.leftPress(control);
+				if (button->event.leftPress)
+					button->event.leftPress(*button);
 			}
 		}
 
-		if (control.mFocus)
+		if (button->mFocus)
 		{
-			if (control.event.focus)
-				control.event.focus(control);
+			if (button->event.focus)
+				button->event.focus(*button);
 		}
 	}
 }
@@ -234,21 +321,25 @@ bool GUI::IsEvent()
 	int size = Size();
 	for (int i = 0; i < size; i++)
 	{
-		Control& control = *(mArr[i]);
+		Button* button = mArr[i];
 
 		int x = Cursor::GetPosition(CURSOR_X);
 		int y = Cursor::GetPosition(CURSOR_Y);
 
-		bool hover = (x >= control.mRect.left) && (x <= control.mRect.right) && (y >= control.mRect.top) && (y <= control.mRect.bottom);
+		bool hover = (x >= button->mRect.left) && (x <= button->mRect.right) && (y >= button->mRect.top) && (y <= button->mRect.bottom);
 
 		if (hover)
 		{
-			if (control.event.hoverOn) return true;
-			if (control.event.hoverOff) return true;
-			if (control.event.leftClick) return true;
-			if (control.event.rightClick) return true;
-			if (control.event.rightPress) return true;
-			if (control.event.leftPress) return true;
+			if (button->event.hoverOn) return true;
+			if (button->event.hover) return true;
+			if (button->event.hoverOff) return true;
+			if (button->event.leftClick) return true;
+			if (button->event.rightClick) return true;
+			if (button->event.rightPress) return true;
+			if (button->event.leftPress) return true;
+			if (button->event.focus) return true;
+			if (button->event.focusOn) return true;
+			if (button->event.focusOff) return true;
 		}
 	}
 

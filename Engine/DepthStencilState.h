@@ -7,7 +7,8 @@
 enum class DepthStencilStateType
 {
 	Default,
-	GUI
+	GUI,
+	Skybox
 };
 
 class FOG_API PipelineState;

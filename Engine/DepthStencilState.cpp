@@ -17,8 +17,8 @@ void DepthStencilState::Create(DepthStencilStateType type)
 		case DepthStencilStateType::Default:
 		{
 			desc.DepthEnable = true;
-			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 			desc.DepthFunc = D3D11_COMPARISON_GREATER;
+			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 
 			break;
 		}
@@ -26,6 +26,17 @@ void DepthStencilState::Create(DepthStencilStateType type)
 		case DepthStencilStateType::GUI:
 		{
 			desc.DepthEnable = false;
+			desc.DepthFunc = D3D11_COMPARISON_NEVER;
+			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+
+			break;
+		}
+
+		case DepthStencilStateType::Skybox:
+		{
+			desc.DepthEnable = true;
+			desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;
+			desc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
 
 			break;
 		}

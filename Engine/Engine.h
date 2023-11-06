@@ -15,14 +15,13 @@
 #include "Model.h"
 #include "Cursor.h"
 #include "Quaternion.h"
-#include "Static.h"
 #include "Picking.h"
-#include "Text.h"
 #include "RayCasting.h"
 #include "Utility.h"
 #include "CustomArray.h"
 #include "ShadowMap.h"
 #include "Vector4.h"
+#include "Button.h"
 
 #define CREATE_APPLICATION(x)\
 int wmain()\

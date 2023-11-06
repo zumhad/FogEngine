@@ -54,9 +54,6 @@
     <ClCompile Include="CustomString.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Control.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Shader.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -90,13 +87,10 @@
     <ClCompile Include="Quaternion.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Static.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Picking.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Text.cpp">
+    <ClCompile Include="Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="ColorMap.cpp">
@@ -135,6 +129,8 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="Matrix3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -182,9 +178,6 @@
     <ClInclude Include="CustomFile.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Control.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="GUI.h">
       <Filter>include</Filter>
     </ClInclude>
@@ -224,16 +217,13 @@
     <ClInclude Include="ApplicationHelper.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Static.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="ConstantBuffer.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="Picking.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="Text.h">
+    <ClInclude Include="Button.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="ColorMap.h">
@@ -270,6 +260,8 @@
     <ClInclude Include="Font.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="Matrix3.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PrePass.hlsl">
@@ -291,6 +283,9 @@
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\Text.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\Skybox.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

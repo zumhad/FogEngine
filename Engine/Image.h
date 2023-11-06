@@ -5,7 +5,8 @@
 enum class ImageType
 {
 	RGBA,
-	A
+	A,
+	HDR
 };
 
 class FOG_API String;

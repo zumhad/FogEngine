@@ -19,9 +19,6 @@ public:
     operator DirectX::XMMATRIX() const;
     operator DirectX::XMFLOAT4X4() const;
 
-    bool operator == (const Matrix& _m) const;
-    bool operator != (const Matrix& _m) const;
-
     Matrix& operator+= (const Matrix& _m);
     Matrix& operator-= (const Matrix& _m);
     Matrix& operator*= (const Matrix& _m);
@@ -37,7 +34,7 @@ public:
     Matrix operator+ () const;
     Matrix operator- () const;
 
-    static Matrix Invert(Matrix& _m);
+    static Matrix Inverse(Matrix& _m);
 
 public:
     union

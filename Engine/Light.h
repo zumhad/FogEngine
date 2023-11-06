@@ -6,35 +6,49 @@
 #include "Color.h"
 #include "Vector3.h"
 
-class FOG_API DirectionalLight : public Object
+class FOG_API ObjectManager;
+class FOG_API Model;
+class FOG_API PipelineState;
+
+class FOG_API DirectionLight : public Object
 {
+	friend class ObjectManager;
+
 public:
-	DirectionalLight();
-	TypeObject GetType() override { return TypeObject::DirectionalLight; }
+	TypeObject GetType() override { return TypeObject::DirectionLight; }
+
+	DirectionLight();
+
+	Vector3 GetDirection();
 
 public:
 	Color color;
-	Vector3 direction;
 	float power;
-
-private:
-	static int mCount;
 };
 
 class FOG_API PointLight : public Object
 {
+	friend class ObjectManager;
+	friend class PipelineState;
+
 public:
-	PointLight();
 	TypeObject GetType() override { return TypeObject::PointLight; }
+
+	PointLight();
+	PointLight(const PointLight& light);
+	PointLight(PointLight&& light) noexcept;
+	~PointLight();
+
+private:
+	void Bind();
+	Model& GetModel();
 
 public:
 	Color color;
-	Vector3 position;
 	float radius;
 	float power;
-	float gloss;
 
 private:
-	static int mCount;
+	Model* mModel;
 };
 

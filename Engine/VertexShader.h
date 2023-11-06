@@ -8,11 +8,13 @@
 
 class FOG_API PipelineState;
 class FOG_API GUI;
+class FOG_API Skybox;
 
 class FOG_API VertexShader
 {
 	friend class PipelineState;
 	friend class GUI;
+	friend class Skybox;
 
 private:
 	VertexShader();

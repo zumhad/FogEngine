@@ -21,8 +21,6 @@ void RasterizerState::Create(RasterizerStateType type)
 			desc.FrontCounterClockwise = false;
 			desc.DepthClipEnable = true;
 			desc.ScissorEnable = true;
-			desc.AntialiasedLineEnable = false;
-			desc.MultisampleEnable = false;
 
 			break;
 		}
@@ -34,8 +32,17 @@ void RasterizerState::Create(RasterizerStateType type)
 			desc.FrontCounterClockwise = false;
 			desc.DepthClipEnable = false;
 			desc.ScissorEnable = true;
-			desc.AntialiasedLineEnable = false;
-			desc.MultisampleEnable = false;
+
+			break;
+		}
+
+		case RasterizerStateType::Skybox:
+		{
+			desc.FillMode = D3D11_FILL_SOLID;
+			desc.CullMode = D3D11_CULL_FRONT;
+			desc.FrontCounterClockwise = false;
+			desc.DepthClipEnable = true;
+			desc.ScissorEnable = true;
 
 			break;
 		}

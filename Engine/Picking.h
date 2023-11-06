@@ -15,6 +15,7 @@ class FOG_API Picking
 public:
 	static void Pick();
 	static Object* GetPickObject();
+	static void SetPickObject(Object* obj);
 	static Vector3& GetPickPosition();
 
 private:

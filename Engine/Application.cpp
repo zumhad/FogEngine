@@ -9,7 +9,6 @@
 #include "GUI.h"
 #include "Cursor.h"
 #include "MathHelper.h"
-#include "Text.h"
 #include "DepthMap.h"
 #include "SelectMap.h"
 #include "TextureMap.h"
@@ -22,6 +21,7 @@
 #include "PostProcess.h"
 #include "ShadowMap.h"
 #include "Font.h"
+#include "Skybox.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -136,6 +136,7 @@ void Application::CheckDebug()
 void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
+    Skybox::Setup();
     Font::Setup();
     ShadowMap::Setup();
     PostProcess::Setup();
@@ -224,6 +225,7 @@ void Application::Shotdown() //exit
     PostProcess::Shotdown();
     ShadowMap::Shotdown();
     Font::Shotdown();
+    Skybox::Shotdown();
     Direct3D::Shotdown();
 }
 

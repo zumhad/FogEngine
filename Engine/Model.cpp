@@ -18,6 +18,7 @@ Model::Model() : Object()
 	name = L"";
 	texture = L"white.png";
 	color = Color(1.0f, 1.0f, 1.0f);
+	lighting = true;
 }
 
 Model::Model(const Model& model) : Object(model)
@@ -25,6 +26,7 @@ Model::Model(const Model& model) : Object(model)
 	name = model.name;
 	texture = model.texture;
 	color = model.color;
+	lighting = model.lighting;
 }
 
 Model::Model(Model&& model) noexcept : Model(model)
@@ -49,21 +51,29 @@ Model::Model(Model&& model) noexcept : Model(model)
 
 		for (unsigned int j = 0; j < mesh->mNumVertices; j++)
 		{
-			static Vector3 pos;
-			pos.x = mesh->mVertices[j].x;
-			pos.y = mesh->mVertices[j].y;
-			pos.z = mesh->mVertices[j].z;
+			static Vector3 v;
 
-			static Vector3 normal;
-			normal.x = mesh->mNormals[j].x;
-			normal.y = mesh->mNormals[j].y;
-			normal.z = mesh->mNormals[j].z;
+			v.x = mesh->mVertices[j].x;
+			v.y = mesh->mVertices[j].y;
+			v.z = mesh->mVertices[j].z;
+			vertex[j].position = v;
 
-			static Vector2 uv;
-			uv.x = mesh->mTextureCoords[0][j].x;
-			uv.y = mesh->mTextureCoords[0][j].y;
+			if (mesh->HasNormals())
+			{
+				v.x = mesh->mNormals[j].x;
+				v.y = mesh->mNormals[j].y;
+				v.z = mesh->mNormals[j].z;
+				vertex[j].normal = v;
+			}
+			else vertex[j].normal = Vector3::Zero();
 
-			vertex[j] = Vertex(pos, normal, uv);
+			if (mesh->mTextureCoords[0])
+			{
+				v.x = mesh->mTextureCoords[0][j].x;
+				v.y = mesh->mTextureCoords[0][j].y;
+				vertex[j].uv = Vector2(v.x, v.y);
+			}
+			else vertex[j].uv = Vector2(0.0f, 0.0f);
 		}
 
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++)
@@ -97,7 +107,7 @@ void Model::Draw()
 Matrix Model::GetWorldMatrix()
 {
 	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-	return XMMatrixAffineTransformation(scale, XMVectorSet(0, 0, 0, 1), q, position);
+	return XMMatrixAffineTransformation(scale, Vector3(0.0f, 0.0f, 0.0f), q, position);
 }
 
 Matrix Model::GetWorldInvTransposeMatrix(Matrix& world)

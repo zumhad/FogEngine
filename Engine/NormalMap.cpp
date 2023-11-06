@@ -4,9 +4,17 @@
 #include "Direct3D.h"
 #include "Application.h"
 #include "PipelineState.h"
+#include "ConstantBuffer.h"
+#include "Model.h"
+
+struct FOG_API NormalMap::NormalBuffer
+{
+	bool lighting; float pad[3];
+};
 
 ID3D11RenderTargetView* NormalMap::mRenderTargetView = 0;
 ID3D11ShaderResourceView* NormalMap::mShaderResourceView = 0;
+ConstantBuffer<NormalMap::NormalBuffer> NormalMap::mNormalBuffer;
 
 void NormalMap::Setup()
 {
@@ -30,7 +38,7 @@ void NormalMap::Setup()
 		desc.Height = height;
 		desc.MipLevels = 1;
 		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+		desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -40,22 +48,35 @@ void NormalMap::Setup()
 	{
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+		desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
 		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mRenderTargetView));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R16G16B16A16_SNORM;
+		desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
 		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mShaderResourceView));
 	}
 	SAFE_RELEASE(texture);
+
+	mNormalBuffer.Create();
+}
+
+void NormalMap::UpdateBuffer(Model& model)
+{
+	static NormalBuffer buffer;
+
+	buffer.lighting = model.lighting;
+
+	mNormalBuffer.Bind(buffer);
 }
 
 void NormalMap::Shotdown()
 {
+	mNormalBuffer.Release();
+
 	SAFE_RELEASE(mRenderTargetView);
 	SAFE_RELEASE(mShaderResourceView);
 }
@@ -74,4 +95,9 @@ ID3D11ShaderResourceView* const* NormalMap::GetSRV()
 ID3D11RenderTargetView* NormalMap::GetRTV()
 {
 	return mRenderTargetView;
+}
+
+ID3D11Buffer* const* NormalMap::GetBuffer() 
+{
+	return mNormalBuffer.Get();
 }

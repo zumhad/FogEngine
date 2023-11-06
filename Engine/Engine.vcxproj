@@ -194,7 +194,6 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
-    <ClCompile Include="Control.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
@@ -212,6 +211,7 @@
     <ClCompile Include="LightMap.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
@@ -230,8 +230,8 @@
     <ClCompile Include="SelectMap.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
-    <ClCompile Include="Static.cpp" />
-    <ClCompile Include="Text.cpp" />
+    <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureMap.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -249,7 +249,6 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="ConstantBuffer.h" />
-    <ClInclude Include="Control.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Cursor.h" />
     <ClInclude Include="CustomArray.h" />
@@ -273,6 +272,7 @@
     <ClInclude Include="LightMap.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="NormalMap.h" />
@@ -290,8 +290,8 @@
     <ClInclude Include="SelectMap.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShadowMap.h" />
-    <ClInclude Include="Static.h" />
-    <ClInclude Include="Text.h" />
+    <ClInclude Include="Button.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureMap.h" />
     <ClInclude Include="Timer.h" />
@@ -334,6 +334,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Text.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Skybox.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

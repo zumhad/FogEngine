@@ -66,6 +66,16 @@ float Math::Floor(float f)
     return std::floor(f);
 }
 
+float Math::Ceil(float f)
+{
+    return std::ceil(f);
+}
+
+float Math::Round(float f)
+{
+    return std::round(f);
+}
+
 float Math::Repeat(float t, float length)
 {
     return t - Floor(t / length) * length;
@@ -130,4 +140,40 @@ float Math::SmoothDamp(float current, float target, float& currentVelocity, floa
         currentVelocity = (num8 - num5) / deltaTime;
     }
     return num8;
+}
+
+float Math::Float16ToFloat32(unsigned short float16)
+{
+    unsigned int sign = float16 >> 15;
+    unsigned int exponent = (float16 >> 10) & 0x1F;
+    unsigned int fraction = (float16 & 0x3FF);
+    unsigned int float32;
+    if (exponent == 0)
+    {
+        if (fraction == 0)
+        {
+            float32 = (sign << 31);
+        }
+        else
+        {
+            exponent = 127 - 14;
+            while ((fraction & (1 << 10)) == 0)
+            {
+                exponent--;
+                fraction <<= 1;
+            }
+            fraction &= 0x3FF;
+            float32 = (sign << 31) | (exponent << 23) | (fraction << 13);
+        }
+    }
+    else if (exponent == 0x1F)
+    {
+        float32 = (sign << 31) | (0xFF << 23) | (fraction << 13);
+    }
+    else
+    {
+        float32 = (sign << 31) | ((exponent + (127 - 15)) << 23) | (fraction << 13);
+    }
+
+    return *((float*)&float32);
 }

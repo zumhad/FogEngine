@@ -9,7 +9,7 @@ class FOG_API ConstantBuffer;
 
 class FOG_API Application;
 class FOG_API PipelineState;
-class FOG_API DirectionalLight;
+class FOG_API DirectionLight;
 class FOG_API PointLight;
 
 class FOG_API LightMap
@@ -21,7 +21,7 @@ private:
 	static void Setup();
 	static void Shotdown();
 
-	static void UpdateBuffer(DirectionalLight& dir);
+	static void UpdateBuffer(DirectionLight& dir);
 	static void UpdateBuffer(PointLight& point);
 	static void UpdateBuffer();
 	static void Clear();

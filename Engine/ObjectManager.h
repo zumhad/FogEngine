@@ -5,7 +5,6 @@
 
 #include "Core.h"
 
-#include "Object.h"
 #include "CustomArray.h"
 
 class FOG_API Application;
@@ -13,6 +12,9 @@ class FOG_API Direct3D;
 class FOG_API Object;
 class FOG_API DepthMap;
 class FOG_API BufferManager;
+class FOG_API Model;
+class FOG_API DirectionLight;
+class FOG_API PointLight;
 
 class FOG_API ObjectManager
 {
@@ -24,54 +26,67 @@ class FOG_API ObjectManager
 
 public:
     template<typename T>
-    static void Add(T& obj);
-
-    template<typename T>
     static T* Get(int id);
+    template<>
+    Object* Get(int id);
+    template<>
+    Model* Get(int id);
+    template<>
+    DirectionLight* Get(int id);
+    template<>
+    PointLight* Get(int id);
+
+    static int Add(Model& model);
+    static int Add(DirectionLight& light);
+    static int Add(PointLight& light);
 
     template<typename T>
-    static T* Get(Object& obj);
-
-    template<typename T>
-    static T* Get(Object* obj);
-
     static int Size();
+    template<>
+    int Size<Object>();
+    template<>
+    int Size<Model>();
+    template<>
+    int Size<DirectionLight>();
+    template<>
+    int Size<PointLight>();
+
     static void Clear();
 
 private:
     static void Shotdown();
 
+    template <typename T>
+    static int BinarySearch(Array<T*>& arr, int id);
+
 private:
-    static int mSize;
-    static Array<Object*> mArr;
+    static Array<Object*> mArrObject;
+    static Array<Model*> mArrModel;
+    static Array<DirectionLight*> mArrDirectionLight;
+    static Array<PointLight*> mArrPointLight;
 };
 
-template<typename T>
-void ObjectManager::Add(T& obj)
+template <typename T>
+static int ObjectManager::BinarySearch(Array<T*>& arr, int id)
 {
-    T* temp = new T(std::move(obj));
-    temp->mID = mSize;
+    int size = arr.Size();
+    int left = 0;
+    int right = size - 1;
 
-    mArr.Add(temp);
-    mSize++;
-}
+    while (left <= right)
+    {
+        int m = left + (right - left) / 2;
 
-template<typename T>
-T* ObjectManager::Get(int id)
-{
-    return (T*)mArr[id];
-}
+        if (arr[m]->mID == id)
+            return m;
 
-template<typename T>
-T* ObjectManager::Get(Object& obj)
-{
-    return (T*)(&obj);
-}
+        if (arr[m]->mID < id)
+            left = m + 1;
+        else
+            right = m - 1;
+    }
 
-template<typename T>
-T* ObjectManager::Get(Object* obj)
-{
-    return (T*)obj;
+    return -1;
 }
 
 #pragma warning(pop)

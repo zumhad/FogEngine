@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include "Events.h"
+#include "Update.h"
 
 void MyUpdate()
 {
@@ -12,19 +13,123 @@ void MyUpdate()
 	if (Input::Down(KEY_L))
 	{
 		PointLight light;
-		light.position.y = 10;
+		light.position.y = 5.0;
 		light.position.z = 0;
-		light.radius = 1.0f;
+		light.radius = 100.0f;
 		light.power = 100.0f;
-		ObjectManager::Add(light);
+		light.scale = Vector3(0.2f, 0.2f, 0.2f);
+		int id = ObjectManager::Add(light);
 
-		Model m;
-		m.name = L"sphere.obj";
-		m.position = Vector3(0.0f, 1.0f, 0.0f);
-		m.scale = Vector3(0.1f, 0.1f, 0.1f);
-		m.color = Color(1.0f, 1.0f, 1.0f);
-		m.texture = L"png.png";
-		//ObjectManager::Add(m);
+		static Button* tree = GUI::GetWithID(idSceneTree);
+		int size = tree->GetChildCount();
+
+		int offsetY = 0;
+		if (size > 1)
+		{
+			Button* child = tree->GetChildWithNumber(size - 1);
+			offsetY = child->rect.y + 30;
+		}
+
+		Button b;
+		b.text.text = "Point Light";
+		b.rect.x = 5;
+		b.rect.y = offsetY;
+		b.rect.width = tree->rect.width / 2;
+		b.rect.height = 30;
+		b.text.alignm.vertical = ALIGNM_CENTER_V;
+		b.text.x = 20;
+		b.rect.color = Color(0.1f, 0.1f, 0.1f);
+		b.event.leftClick = AddOnTree;
+		b.event.hoverOn = HoverOnSceneTree;
+		b.event.hoverOff = HoverOffSceneTree;
+		b.event.scroll = ScrollTree;
+		b.data = id;
+		int idButton = GUI::AddChild(idSceneTree, b);
+
+		Object* obj = ObjectManager::Get<Object>(id);
+		obj->data = idButton;
+
+		b.rect.x = b.rect.width;
+		b.rect.width -= 25;
+		b.text.text = "Point Light";
+		GUI::AddChild(idSceneTree, b);
+
+		Button* scrollBar = tree->GetChildWithNumber(0);
+		Button* scroll = scrollBar->GetChildWithNumber(0);
+
+		int maxCount = tree->rect.height / 30;
+		int treeCount = (tree->GetChildCount() - 1) / 2;
+
+		if (treeCount > 1)
+		{
+			float offset = (1.0f / (treeCount - 1)) * (scrollBar->rect.height - 6);
+			int offsetCount = Math::Round((scroll->rect.y - 3) / offset);
+
+			float newOffset = (1.0f / treeCount) * (scrollBar->rect.height - 6);
+			scroll->rect.y = Math::Round(newOffset * offsetCount) + 3;
+		}
+
+		scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+	}
+
+	if (Input::Down(KEY_K))
+	{
+		DirectionLight light;
+		light.color = Color(1, 1, 1);
+		light.rotation = Vector3(45.0f, 45.0f, 0.0f);
+		light.power = 1.2f;
+		int id = ObjectManager::Add(light);
+
+		static Button* tree = GUI::GetWithID(idSceneTree);
+		int size = tree->GetChildCount();
+
+		int offsetY = 0;
+		if (size > 1)
+		{
+			Button* child = tree->GetChildWithNumber(size - 1);
+			offsetY = child->rect.y + 30;
+		}
+
+		Button b;
+		b.text.text = "Direction Light";
+		b.rect.x = 5;
+		b.rect.y = offsetY;
+		b.rect.width = tree->rect.width / 2;
+		b.rect.height = 30;
+		b.text.alignm.vertical = ALIGNM_CENTER_V;
+		b.text.x = 20;
+		b.rect.color = Color(0.1f, 0.1f, 0.1f);
+		b.event.leftClick = AddOnTree;
+		b.event.hoverOn = HoverOnSceneTree;
+		b.event.hoverOff = HoverOffSceneTree;
+		b.event.scroll = ScrollTree;
+		b.data = id;
+		int idButton = GUI::AddChild(idSceneTree, b);
+
+		Object* obj = ObjectManager::Get<Object>(id);
+		obj->data = idButton;
+
+		b.rect.x = b.rect.width;
+		b.rect.width -= 25;
+		b.text.text = "Direction Light";
+		GUI::AddChild(idSceneTree, b);
+
+		Button* scrollBar = tree->GetChildWithNumber(0);
+		Button* scroll = scrollBar->GetChildWithNumber(0);
+
+		int maxCount = tree->rect.height / 30;
+		int treeCount = (tree->GetChildCount() - 1) / 2;
+
+		if (treeCount > 1)
+		{
+			float offset = (1.0f / (treeCount - 1)) * (scrollBar->rect.height - 6);
+			int offsetCount = Math::Round((scroll->rect.y - 3) / offset);
+
+			float newOffset = (1.0f / treeCount) * (scrollBar->rect.height - 6);
+			scroll->rect.y = Math::Round(newOffset * offsetCount) + 3;
+		}
+
+		scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
 	}
 
 	if (Input::Down(KEY_UP))
@@ -38,21 +143,23 @@ void MyUpdate()
 	}
 }
 
-
 void fpstest()
 {
 	static int count = 0;
 	static bool test = true;
+	static int fpsCount = 0;
 
-	if (count == 50)
+	if (count == fpsCount)
 	{
 		if (test)
 		{
-			Application::SetFpsMax(300);
+			Application::SetFpsMax(3000);
+			fpsCount = 6000;
 		}
 		else
 		{
-			Application::SetFpsMax(50);
+			Application::SetFpsMax(30);
+			fpsCount = 60;
 		}
 
 		test = !test;
@@ -61,44 +168,13 @@ void fpstest()
 	count++;
 }
 
-void Update()
+void MoveObject()
 {
-	float moveSpeed = 10.0f;
-	float rotationSpeed = 50.0f;
-
-	static Vector3 pos = Camera::GetPosition();
-	Vector3 rot = Camera::GetRotation();
-
-	static bool isRotate = false;
-	if (Input::Down(MOUSE_RIGHT) && Application::CursorInScene()) isRotate = true;
-	if (Input::Up(MOUSE_RIGHT)) isRotate = false;
-	if (isRotate)
-	{
-		rot.y += Input::GetAxis(MOUSE_X) * rotationSpeed;
-		rot.x += Input::GetAxis(MOUSE_Y) * rotationSpeed;
-
-		if (rot.x > 90.0f) rot.x = 90.0f;
-		if (rot.x < -90.0f) rot.x = -90.0f;
-
-		Camera::SetRotation(rot);
-	}
-
-	float moveZ = (Input::Press(KEY_W) - Input::Press(KEY_S)) * moveSpeed * Time::DeltaTime();
-	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed * Time::DeltaTime();
-
-	Vector3 move = Vector3(moveX, 0.0f, moveZ);
-	move = move.Rotate(move, Quaternion::Euler(rot.x, rot.y, 0.0f));
-	pos += move;
-
-	Vector3 vel;
-	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 15.0f);
-	Camera::SetPosition(res);
-
 	static Object* obj = 0;
 	static Vector4 plane;
 	static Vector3 pick1;
 	static Vector3 pick2;
-	
+
 	static bool x = true;
 	static bool y = false;
 	static bool z = true;
@@ -114,24 +190,8 @@ void Update()
 		Picking::Pick();
 		obj = Picking::GetPickObject();
 
-		Text* posX = GUI::Get<Text>(idPosX);
-		Text* posY = GUI::Get<Text>(idPosY);
-		Text* posZ = GUI::Get<Text>(idPosZ);
-
-		GUI::GetParent<Static>(posX)->enable = false;
-		GUI::GetParent<Static>(posY)->enable = false;
-		GUI::GetParent<Static>(posZ)->enable = false;
-
 		if (obj)
 		{
-			GUI::GetParent<Static>(posX)->enable = true;
-			GUI::GetParent<Static>(posY)->enable = true;
-			GUI::GetParent<Static>(posZ)->enable = true;
-
-			posX->text = String::ToString(ObjectManager::Get<Model>(obj)->position.x);
-			posY->text = String::ToString(ObjectManager::Get<Model>(obj)->position.y);
-			posZ->text = String::ToString(ObjectManager::Get<Model>(obj)->position.z);
-
 			Vector3 r = Camera::GetDirection();
 
 			float angX = Math::Abs(Vector3::Angle(r, Vector3(1, 0, 0)) - 90.0f);
@@ -192,42 +252,26 @@ void Update()
 
 	if (Input::Press(MOUSE_LEFT))
 	{
-		Text* posX = GUI::Get<Text>(idPosX);
-		Text* posY = GUI::Get<Text>(idPosY);
-		Text* posZ = GUI::Get<Text>(idPosZ);
-
 		if (obj)
 		{
-			if (Application::CursorInScene())
+			Vector3 dir = Cursor::GetDirection();
+			float limit = 0.0f;
+
+			if (xPlane) limit = dir.x;
+			if (yPlane) limit = dir.y;
+			if (zPlane) limit = dir.z;
+
+			pick2 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
+
+			if (Math::Sign(limit) == sign && pick1 != pick2)
 			{
-				Vector3 dir = Cursor::GetDirection();
-				float limit = 0.0f;
+				Model& model = (Model&)(*obj);
 
-				if (xPlane) limit = dir.x;
-				if (yPlane) limit = dir.y;
-				if (zPlane) limit = dir.z;
+				if (x) model.position.x += pick2.x - pick1.x;
+				if (y) model.position.y += pick2.y - pick1.y;
+				if (z) model.position.z += pick2.z - pick1.z;
 
-				pick2 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
-
-				if (Math::Sign(limit) == sign && pick1 != pick2)
-				{
-					Model& model = (Model&)(*obj);
-
-					if (x) model.position.x += pick2.x - pick1.x;
-					if (y) model.position.y += pick2.y - pick1.y;
-					if (z) model.position.z += pick2.z - pick1.z;
-
-					pick1 = pick2;
-
-					String str = L"";
-					str += L"x: " + String::ToString(model.position.x) + L"\n";
-					str += L"y: " + String::ToString(model.position.y) + L"\n";
-					str += L"z: " + String::ToString(model.position.z);
-
-					posX->text = String::ToString(model.position.x);
-					posY->text = String::ToString(model.position.y);
-					posZ->text = String::ToString(model.position.z);
-				}
+				pick1 = pick2;
 			}
 		}
 	}
@@ -236,162 +280,324 @@ void Update()
 	{
 		obj = 0;
 	}
+}
 
-	if (!Application::IsGame())
+void Update()
+{
+	//fpstest();
+
+	float moveSpeed = 10.0f;
+	float rotationSpeed = 50.0f;
+
+	static Vector3 pos = Camera::GetPosition();
+	Vector3 rot = Camera::GetRotation();
+
+	static bool isRotate = false;
+	if (Input::Down(MOUSE_RIGHT) && Application::CursorInScene()) isRotate = true;
+	if (Input::Up(MOUSE_RIGHT)) isRotate = false;
+	if (isRotate)
 	{
-		Text* text = GUI::Get<Text>(idFPS);
+		rot.y += Input::GetAxis(MOUSE_X) * rotationSpeed;
+		rot.x += Input::GetAxis(MOUSE_Y) * rotationSpeed;
 
-		if (text)
-		{
-			text->text = String::ToString(Time::GetFPS());
-		}
+		if (rot.x > 90.0f) rot.x = 90.0f;
+		if (rot.x < -90.0f) rot.x = -90.0f;
+
+		Camera::SetRotation(rot);
 	}
+
+	float moveZ = (Input::Press(KEY_W) - Input::Press(KEY_S)) * moveSpeed * Time::DeltaTime();
+	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed * Time::DeltaTime();
+
+	Vector3 move = Vector3(moveX, 0.0f, moveZ);
+	move = move.Rotate(move, Quaternion::Euler(rot.x, rot.y, 0.0f));
+	pos += move;
+
+	Vector3 vel;
+	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 0.2f);
+	Camera::SetPosition(res);
+
+	MoveObject();
+
+	Object* obj = Picking::GetPickObject();
+
+	static Button* transform = GUI::GetWithID(idTransform);
+
+	if (obj)
+	{
+		transform->enable = true;
+
+		UpdateTransform(*transform, obj);
+	}
+	else
+	{
+		transform->enable = false;
+
+		UpdateTransform(*transform, obj);
+	}
+
+	static Button* fps = GUI::GetWithID(idFPS);
+	fps->text.text = String::ToString(Time::GetFPS());
 
 	MyUpdate();
 }
 
 void Start()
 {
-	DirectionalLight dir;
-	dir.color = Color(1, 1, 1);
-	dir.direction = Vector3(0.0f, -1.0f, -1.0f);
-	dir.power = 1.2f;
-	ObjectManager::Add(dir);
-
-	Model m;
-	m.name = L"room.obj";
-	m.texture = L"png.png";
-	m.position = Vector3(0.0, 0.0, 0.0);
-	m.scale = Vector3(1.0, 1.0, 1.0);
-	m.rotation = Vector3(0, 0, 0);
-	m.color = Color(1.0f, 1.0f, 1.0f);
-	ObjectManager::Add(m);
-
 	Camera::SetPosition(Vector3(0, 5, -5));
-	Camera::SetRotationX(0.0f);
 	Camera::SetFar(0.001f);
 	Camera::SetNear(1000.0f);
 
 	if (Application::IsGame()) return;
 
-	Static s;
-	s.x = 0;
-	s.y = 0;
-	s.width = Application::GetEditorWidth();
-	s.height = Application::GetCaptionHeight();
-	s.color = Color(0.05f, 0.05f, 0.05f);
-	int idCaption = GUI::Add(s);
+	Button caption;
+	caption.rect.width = Application::GetEditorWidth();
+	caption.rect.height = Application::GetCaptionHeight();
+	caption.rect.color = Color(0.05f, 0.05f, 0.05f);
+	int idCaption = GUI::Add(caption);
 
-	s.x = -10;
-	s.y = Application::GetCaptionHeight() + 10;
-	s.width = 460;
-	s.height = Application::GetEditorHeight() - Application::GetCaptionHeight() - 20;
-	s.alignm.horizontal = ALIGNM_RIGHT;
-	s.alignm.vertical = ALIGNM_TOP;
-	s.color = Color(0.18f, 0.18f, 0.18f);
-	int infoRect = GUI::Add(s);
+	Button fps;
+	fps.text.x = 10;
+	fps.text.y = 10;
+	fps.rect.width = 100;
+	fps.rect.height = 100;
+	fps.text.text = L"0";
+	fps.rect.color = Color(0.05f, 0.05f, 0.05f);
+	idFPS = GUI::Add(fps);
 
-	Static pos;
-	pos.x = 10;
-	pos.y = 10;
-	pos.width = 140;
-	pos.height = 50;
-	pos.color = Color(0.25, 0.25, 0.25);
-	pos.event.focus = FocusX;
-	pos.event.focusOn = FocusOnX;
-	pos.event.focusOff = FocusOffX;
-	pos.enable = false;
-	int posX = GUI::AddChild(infoRect, pos);
+	Button close;
+	close.rect.width = 40;
+	close.rect.height = 40;
+	close.rect.alignm = { ALIGNM_RIGHT, ALIGNM_TOP };
+	close.rect.color = Color(0.05f, 0.05f, 0.05f);
+	close.event.hoverOn = HoverOn;
+	close.event.hoverOff = HoverOff;
+	close.event.leftClick = Close;
+	GUI::AddChild(idCaption, close);
 
-	pos.x += pos.width + 10;
-	pos.event.focus = FocusY;
-	pos.event.focusOn = FocusOnY;
-	pos.event.focusOff = FocusOffY;
-	int posY = GUI::AddChild(infoRect, pos);
+	close.event.leftClick = Restore;
+	close.rect.x -= close.rect.width;
+	GUI::AddChild(idCaption, close);
 
-	pos.event.focus = FocusZ;
-	pos.event.focusOn = FocusOnZ;
-	pos.event.focusOff = FocusOffZ;
-	pos.x += pos.width + 10;
-	int posZ = GUI::AddChild(infoRect, pos);
+	close.event.leftClick = Minimize;
+	close.rect.x -= close.rect.width;
+	GUI::AddChild(idCaption, close);
 
-	Text textBox;
-	textBox.alignm.horizontal = ALIGNM_LEFT;
-	textBox.alignm.vertical = ALIGNM_CENTER_V;
-	textBox.x = 5;
-	textBox.color = Color(1.0f, 1.0f, 1.0f);
-	textBox.size = 16;
-	idPosX = GUI::AddChild(posX, textBox);
-	idPosY = GUI::AddChild(posY, textBox);
-	idPosZ = GUI::AddChild(posZ, textBox);
+	Button add;
+	add.rect.color = Color(0.2f, 0.2f, 0.2f);
+	add.rect.alignm = { ALIGNM_LEFT, ALIGNM_BOTTOM };
+	add.rect.x = 10;
+	add.rect.y = -10;
+	add.rect.width = 200;
+	add.rect.height = 50;
+	add.text.text = L"Add Box";
+	add.text.alignm = { ALIGNM_CENTER_H, ALIGNM_CENTER_V };
+	add.event.leftClick = AddBox;
+	add.event.hoverOn = HoverOn;
+	add.event.hoverOff = HoverOff;
+	GUI::Add(add);
 
-	int size = 40;
-	Static but;
+	add.event.leftClick = AddSphere;
+	add.text.text = L"Add Sphere";
+	add.rect.x += add.rect.width + 10;
+	GUI::Add(add);
 
-	but.x = 0;
-	but.y = 0;
-	but.width = size;
-	but.height = size;
-	but.color = Color(0.05f, 0.05f, 0.05f);
-	but.event.hoverOn = HoverOn;
-	but.event.hoverOff = HoverOff;
-	but.event.leftClick = Close;
-	but.alignm.horizontal = ALIGNM_RIGHT;
-	GUI::Add(but);
+	add.event.leftClick = AddPlane;
+	add.text.text = L"Add Plane";
+	add.rect.x += add.rect.width + 10;
+	GUI::Add(add);
 
-	but.x -= size;
-	but.event.leftClick = Restore;
-	GUI::Add(but);
+	Button tree;
+	tree.rect.alignm = { ALIGNM_RIGHT, ALIGNM_TOP };
+	tree.rect.x = -10;
+	tree.rect.y = Application::GetCaptionHeight() + 10;
+	tree.rect.width = Application::GetEditorWidth() - Application::GetSceneWidth() - 30;
+	tree.rect.height = 405;
+	tree.rect.color = Color(0.15f, 0.15f, 0.15f);
+	int idTree = GUI::Add(tree);
 
-	but.x -= size;
-	but.event.leftClick = Minimize;
-	GUI::Add(but);
+	Button sceneTreeText;
+	sceneTreeText.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	sceneTreeText.rect.color = Color(0.15f, 0.15f, 0.15f);
+	sceneTreeText.rect.x = 5;
+	sceneTreeText.rect.y = 5;
+	sceneTreeText.rect.width = 180;
+	sceneTreeText.rect.height = 30;
+	sceneTreeText.text.text = L"Scene Tree";
+	sceneTreeText.text.x = 10;
+	sceneTreeText.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	GUI::AddChild(idTree, sceneTreeText);
 
-	but.x = 10;
-	but.y = -10;
-	but.width = 200;
-	but.height = 50;
-	but.color = Color(0.05f, 0.05f, 0.05f);
-	but.event.leftClick = AddBox;
-	but.alignm.horizontal = ALIGNM_LEFT;
-	but.alignm.vertical = ALIGNM_BOTTOM;
-	int idAddBox = GUI::Add(but);
+	sceneTreeText.rect.color = Color(0.2f, 0.2f, 0.2f);
+	sceneTreeText.rect.y += sceneTreeText.rect.height + 5;
+	sceneTreeText.text.text = L"Name";
+	sceneTreeText.text.x += 10;
+	sceneTreeText.rect.width = tree.rect.width / 2;
+	GUI::AddChild(idTree, sceneTreeText);
 
-	but.x += 210;
-	but.event.leftClick = AddSphere;
-	int idAddSphere = GUI::Add(but);
+	sceneTreeText.rect.width -= 5;
+	sceneTreeText.rect.color = Color(0.2f, 0.2f, 0.2f);
+	sceneTreeText.rect.x += sceneTreeText.rect.width;
+	sceneTreeText.text.text = L"Type";
+	GUI::AddChild(idTree, sceneTreeText);
 
-	but.x += 210;
-	but.event.leftClick = AddPlane;
-	int idAddPlane = GUI::Add(but);
+	Button sceneTree;
+	sceneTree.rect.y = sceneTreeText.rect.y + sceneTreeText.rect.height;
+	sceneTree.rect.width = tree.rect.width;
+	sceneTree.rect.height = tree.rect.height - sceneTreeText.rect.height - sceneTreeText.rect.y - 5;
+	sceneTree.rect.color = Color(0.15f, 0.15f, 0.15f);
+	idSceneTree = GUI::AddChild(idTree, sceneTree);
 
-	Text t;
-	t.text = L"";
-	t.x = 10;
-	t.color = Color(1.0f, 1.0f, 1.0f);
-	t.alignm.horizontal = ALIGNM_LEFT;
-	t.alignm.vertical = ALIGNM_TOP;
-	idFPS = GUI::AddChild(idCaption, t);
+	Button scroll;
+	scroll.rect.x = -5;
+	scroll.rect.alignm = { ALIGNM_RIGHT, ALIGNM_TOP };
+	scroll.rect.width = 20;
+	scroll.rect.height = sceneTree.rect.height;
+	scroll.rect.color = Color(0.25f, 0.25f, 0.25f);
+	scroll.event.scroll = ScrollTree;
+	int idScroll = GUI::AddChild(idSceneTree, scroll);
 
-	t.size = 16;
-	t.x = 0;
-	t.alignm.horizontal = ALIGNM_CENTER_H;
-	t.alignm.vertical = ALIGNM_CENTER_V;
-	t.text = L"AddBox";
-	GUI::AddChild(idAddBox, t);
+	scroll.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	scroll.rect.x = 3;
+	scroll.rect.y = 3;
+	scroll.rect.width = scroll.rect.width - 6;
+	scroll.rect.height = scroll.rect.height - 6;
+	scroll.rect.color = Color(0.35f, 0.35f, 0.35f);
+	scroll.event.scroll = ScrollOnScroll;
+	scroll.event.leftPress = PressScroll;
+	scroll.event.leftUp = UpScroll;
+	scroll.event.hoverOn = HoverOnScroll;
+	scroll.event.hover = HoverScroll;
+	scroll.event.hoverOff = HoverOffScroll;
+	GUI::AddChild(idScroll, scroll);
 
-	t.text = L"AddSphere";
-	GUI::AddChild(idAddSphere, t);
+	Button properties;
+	properties.rect.alignm = { ALIGNM_RIGHT, ALIGNM_TOP };
+	properties.rect.x = -10;
+	properties.rect.y = tree.rect.y + tree.rect.height + 10;
+	properties.rect.width = Application::GetEditorWidth() - Application::GetSceneWidth() - 30;
+	properties.rect.height = Application::GetEditorHeight() - properties.rect.y - 10;
+	properties.rect.color = Color(0.15f, 0.15f, 0.15f);
+	idProperties = GUI::Add(properties);
 
-	t.text = L"AddPlane";
-	GUI::AddChild(idAddPlane, t);
+	Button propertiesText;
+	propertiesText.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	propertiesText.rect.color = Color(0.15f, 0.15f, 0.15f);
+	propertiesText.rect.x = 5;
+	propertiesText.rect.y = 5;
+	propertiesText.rect.width = 180;
+	propertiesText.rect.height = 30;
+	propertiesText.text.text = L"Properties";
+	propertiesText.text.x = 10;
+	propertiesText.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	GUI::AddChild(idProperties, propertiesText);
+
+	Button transform;
+	transform.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	transform.rect.color = Color(0.2f, 0.2f, 0.2f);
+	transform.rect.x = 5;
+	transform.rect.y = propertiesText.rect.y + propertiesText.rect.height + 5;
+	transform.rect.width = properties.rect.width - 10;
+	transform.rect.height = 140;
+	idTransform = GUI::AddChild(idProperties, transform);
+
+	Button transformText;
+	transformText.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	transformText.rect.color = Color(0.2f, 0.2f, 0.2f);
+	transformText.rect.x = 0;
+	transformText.rect.y = 0;
+	transformText.rect.width = transform.rect.width;
+	transformText.rect.height = 30;
+	transformText.text.text = L"Transform";
+	transformText.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	transformText.text.x = 20;
+	transformText.event.hoverOn = HoverOn;
+	transformText.event.hoverOff = HoverOff;
+	transformText.event.leftClick = TransformClick;
+	GUI::AddChild(idTransform, transformText);
+
+	Button position;
+	position.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	position.rect.color = Color(0.1f, 0.1f, 0.1f);
+	position.rect.x = 5;
+	position.rect.y = transformText.rect.y + transformText.rect.height + 5;
+	position.rect.width = 167;
+	position.rect.height = 30;
+	position.text.text = L"Position";
+	position.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	position.text.x = 20;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	position.rect.width = 136;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+	position.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	position.rect.color = Color(0.1f, 0.1f, 0.1f);
+	position.rect.x = 5;
+	position.rect.y = position.rect.y + position.rect.height + 5;
+	position.rect.width = 167;
+	position.rect.height = 30;
+	position.text.text = L"Rotation";
+	position.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	position.text.x = 20;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	position.rect.width = 136;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+
+	position.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	position.rect.color = Color(0.1f, 0.1f, 0.1f);
+	position.rect.x = 5;
+	position.rect.y = position.rect.y + position.rect.height + 5;
+	position.rect.width = 167;
+	position.rect.height = 30;
+	position.text.text = L"Scale";
+	position.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	position.text.x = 20;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	position.rect.width = 136;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+	position.text.text = L"0.0";
+	position.rect.x += position.rect.width + 5;
+	GUI::AddChild(idTransform, position);
+
+	AddRoom();
 }
 
 APPCLASS Setting()
 {
 	APPCLASS app;
 
-	app.captionHeight = 100;
+	app.captionHeight = 50;
 	app.isGame = false;
 	app.cursorShow = true;
 	app.foo.start = Start;
@@ -406,10 +612,10 @@ APPCLASS Setting()
 
 	app.editor.color = Color(0.1f, 0.1f, 0.1f);
 
-	app.scene.x = 0;
+	app.scene.x = 10;
 	app.scene.y = app.captionHeight + 10;
-	app.scene.width = 1440;
-	app.scene.height = 800;
+	app.scene.width = 1280;
+	app.scene.height = 720;
 	app.scene.color = Color(0.3f, 0.4f, 0.9f);
 
 	return app;

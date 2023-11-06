@@ -7,7 +7,8 @@
 enum class RasterizerStateType
 {
 	Default,
-	Shadow
+	Shadow,
+	Skybox
 };
 
 class FOG_API PipelineState;

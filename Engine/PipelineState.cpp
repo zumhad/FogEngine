@@ -24,6 +24,9 @@
 #include "ShadowMap.h"
 #include "Matrix.h"
 #include "Model.h"
+#include "Skybox.h"
+#include "Light.h"
+#include "Matrix3.h"
 
 RasterizerState PipelineState::mShadowRasterizerState;
 RasterizerState PipelineState::mRasterizerState;
@@ -31,11 +34,14 @@ SamplerState PipelineState::mShadowSamplerState;
 SamplerState PipelineState::mSamplerState;
 SamplerState PipelineState::mPostProcessSamplerState;
 DepthStencilState PipelineState::mDepthStencilState;
+DepthStencilState PipelineState::mSkyboxDepthStencilState;
+RasterizerState PipelineState::mSkyboxRasterizerState;
 
 Array<ID3D11RenderTargetView*> PipelineState::mRenderTargetView;
 Array<ID3D11ShaderResourceView*> PipelineState::mShaderResourceView;
 
 ConstantBuffer<PipelineState::PrePassBuffer> PipelineState::mPrePassBuffer;
+ConstantBuffer<PipelineState::PrePassBuffer1> PipelineState::mPrePassBuffer1;
 
 VertexShader PipelineState::mPrePassVS;
 PixelShader PipelineState::mPrePassPS;
@@ -55,7 +61,11 @@ InputLayout PipelineState::mShadowPassIL;
 
 struct PipelineState::PrePassBuffer
 {
-	Matrix worldViewProj;
+	Matrix viewProj;
+};
+
+struct PipelineState::PrePassBuffer1
+{
 	Matrix world;
 	Matrix worldInvTranspose;
 };
@@ -67,11 +77,14 @@ void PipelineState::Setup()
 	mRenderTargetView.Add(NormalMap::GetRTV());
 
 	mPrePassBuffer.Create();
+	mPrePassBuffer1.Create();
 
 	mSamplerState.Create();
 	mShadowSamplerState.Create(SamplerStateType::Shadow);
 	mPostProcessSamplerState.Create(SamplerStateType::PostProcess);
 	mDepthStencilState.Create();
+	mSkyboxDepthStencilState.Create(DepthStencilStateType::Skybox);
+	mSkyboxRasterizerState.Create(RasterizerStateType::Skybox);
 	mRasterizerState.Create();
 	mShadowRasterizerState.Create(RasterizerStateType::Shadow);
 
@@ -116,6 +129,8 @@ void PipelineState::Setup()
 
 void PipelineState::Shotdown()
 {
+	mSkyboxDepthStencilState.Release();
+	mSkyboxRasterizerState.Release();
 	mPostProcessSamplerState.Release();
 	mShadowSamplerState.Release();
 	mShadowRasterizerState.Release();
@@ -123,6 +138,7 @@ void PipelineState::Shotdown()
 	mDepthStencilState.Release();
 	mSamplerState.Release();
 	mPrePassBuffer.Release();
+	mPrePassBuffer1.Release();
 	mPrePassVS.Release();
 	mPrePassPS.Release();
 	mPrePassIL.Release();
@@ -139,6 +155,13 @@ void PipelineState::Shotdown()
 
 void PipelineState::Bind()
 {
+	int size = ObjectManager::Size<DirectionLight>();
+	for (int i = 0; i < size; i++)
+	{
+		DirectionLight* light = ObjectManager::Get<DirectionLight>(i);
+		Camera::UpdateCascade(light->GetDirection());
+	}
+
 	UpdateShadowPassViewport();
 
 	ShadowMap::Clear();
@@ -154,25 +177,14 @@ void PipelineState::Bind()
 
 	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, ShadowMap::GetBuffer());
 
-	int size = ObjectManager::Size();
+	size = ObjectManager::Size<Model>();
 	for (int i = 0; i < size; i++)
 	{
-		Object* obj = ObjectManager::Get<Object>(i);
-		TypeObject type = obj->GetType();
+		Model* model = ObjectManager::Get<Model>(i);
 
-		switch (type)
-		{
-			case TypeObject::Model:
-			{
-				Model* model = ObjectManager::Get<Model>(obj);
+		ShadowMap::UpdateBuffer(*model);
 
-				ShadowMap::UpdateBuffer(*model);
-
-				model->Draw();
-
-				break;
-			}
-		}
+		model->Draw();
 	}
 
 	//////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +192,6 @@ void PipelineState::Bind()
 	UpdatePrePassViewport();
 
 	DepthMap::Clear();
-	ColorMap::Clear();
 	SelectMap::Clear();
 	NormalMap::Clear();
 
@@ -195,47 +206,57 @@ void PipelineState::Bind()
 	Direct3D::DeviceContext()->PSSetShader(mPrePassPS.Get(), 0, 0);
 
 	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mPrePassBuffer.Get());
-	Direct3D::DeviceContext()->PSSetConstantBuffers(1, 1, ColorMap::GetBuffer());
-	Direct3D::DeviceContext()->PSSetConstantBuffers(2, 1, SelectMap::GetBuffer());
+	Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mPrePassBuffer1.Get());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(2, 1, ColorMap::GetBuffer());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(3, 1, SelectMap::GetBuffer());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(4, 1, NormalMap::GetBuffer());
 
+	UpdatePrePassBuffer();
+
+	size = ObjectManager::Size<DirectionLight>();
 	for (int i = 0; i < size; i++)
 	{
-		Object* obj = ObjectManager::Get<Object>(i);
-		TypeObject type = obj->GetType();
-
-		switch (type)
-		{
-			case TypeObject::DirectionalLight:
-			{
-				DirectionalLight* light = ObjectManager::Get<DirectionalLight>(obj);
-				LightMap::UpdateBuffer(*light);
-
-				break;
-			}
-
-			case TypeObject::PointLight:
-			{
-				PointLight* light = ObjectManager::Get<PointLight>(obj);
-				LightMap::UpdateBuffer(*light);
-
-				break;
-			}
-
-			case TypeObject::Model:
-			{
-				Model* model = ObjectManager::Get<Model>(obj);
-
-				UpdatePrePassBuffer(*model);
-				ColorMap::UpdateBuffer(*model);
-				SelectMap::UpdateBuffer(*model);
-
-				model->BindTexture();
-				model->Draw();
-
-				break;
-			}
-		}
+		DirectionLight* light = ObjectManager::Get<DirectionLight>(i);
+		LightMap::UpdateBuffer(*light);
 	}
+
+	size = ObjectManager::Size<PointLight>();
+	for (int i = 0; i < size; i++)
+	{
+		PointLight* light = ObjectManager::Get<PointLight>(i);
+		LightMap::UpdateBuffer(*light);
+
+		UpdatePrePassBuffer1(light->GetModel());
+		ColorMap::UpdateBuffer(light->GetModel());
+		SelectMap::UpdateBuffer(light->GetModel());
+		NormalMap::UpdateBuffer(light->GetModel());
+
+		light->Bind();
+	}
+
+	size = ObjectManager::Size<Model>();
+	for (int i = 0; i < size; i++)
+	{
+		Model* model = ObjectManager::Get<Model>(i);
+
+		UpdatePrePassBuffer1(*model);
+		ColorMap::UpdateBuffer(*model);
+		SelectMap::UpdateBuffer(*model);
+		NormalMap::UpdateBuffer(*model);
+
+		model->BindTexture();
+		model->Draw();
+	}
+
+	//////////////////////////////////////////////////////////////////////////////////////////////
+
+	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Direct3D::DeviceContext()->RSSetState(mSkyboxRasterizerState.Get());
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, &mRenderTargetView[0], DepthMap::GetDSV());
+	Direct3D::DeviceContext()->OMSetDepthStencilState(mSkyboxDepthStencilState.Get(), 0);
+
+	Skybox::Bind();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -346,17 +367,25 @@ void PipelineState::UpdateShadowPassViewport()
 	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
-void PipelineState::UpdatePrePassBuffer(Model& model)
+void PipelineState::UpdatePrePassBuffer()
 {
-	Matrix world = model.GetWorldMatrix();
 	Matrix view = Camera::GetViewMatrix();
 	Matrix proj = Camera::GetProjMatrix();
-	Matrix inv = model.GetWorldInvTransposeMatrix(world);
 
 	static PrePassBuffer buffer{};
-	buffer.worldViewProj = world * view * proj;
+	buffer.viewProj = view * proj;
+
+	mPrePassBuffer.Bind(buffer);
+}
+
+void PipelineState::UpdatePrePassBuffer1(Model& model)
+{
+	Matrix world = model.GetWorldMatrix();
+	Matrix inv = model.GetWorldInvTransposeMatrix(world);
+
+	static PrePassBuffer1 buffer{};
 	buffer.world = world;
 	buffer.worldInvTranspose = inv;
 
-	mPrePassBuffer.Bind(buffer);
+	mPrePassBuffer1.Bind(buffer);
 }

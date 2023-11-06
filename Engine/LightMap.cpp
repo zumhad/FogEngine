@@ -18,7 +18,7 @@ struct FOG_API LightMap::LightBuffer
 		Color color;
 		Vector3 dir;
 		float power;
-	} dirLight[16]{};
+	} dirLight{};
 	struct
 	{
 		Color color;
@@ -26,13 +26,12 @@ struct FOG_API LightMap::LightBuffer
 		float radius;
 		float power; float pad[3];
 	} pointLight[16]{};
+	Matrix shadowTransform;
 	Vector3 cameraPos;
-	int dirCount = 0;
 	int pointCount = 0;
 	int width = 0;
 	int height = 0;
-	float texelSize = 0.0f;
-	Matrix shadowTransform;
+	float texelSize = 0.0f; float pad;
 };
 
 ID3D11RenderTargetView* LightMap::mRenderTargetView = 0;
@@ -89,12 +88,12 @@ void LightMap::Setup()
 	mLightBuffer.Create();
 }
 
-void LightMap::UpdateBuffer(DirectionalLight& dir)
+void LightMap::UpdateBuffer(DirectionLight& dir)
 {
-	mBuffer.dirLight[mBuffer.dirCount].color = dir.color;
-	mBuffer.dirLight[mBuffer.dirCount].dir = dir.direction;
-	mBuffer.dirLight[mBuffer.dirCount].power = dir.power;
-	mBuffer.dirCount++;
+	mBuffer.dirLight.color = dir.color;
+	mBuffer.dirLight.dir = dir.GetDirection();
+	mBuffer.dirLight.power = dir.power;
+	mBuffer.shadowTransform = Camera::GetCascade();
 }
 
 void LightMap::UpdateBuffer(PointLight& point)
@@ -124,7 +123,6 @@ void LightMap::UpdateBuffer()
 	mBuffer.width = width;
 	mBuffer.height = height;
 	mBuffer.texelSize = 1.0f / (float)ShadowMap::GetResolution();
-	mBuffer.shadowTransform = Camera::GetTest();
 	mBuffer.cameraPos = Camera::GetPosition();
 
 	mLightBuffer.Bind(mBuffer);

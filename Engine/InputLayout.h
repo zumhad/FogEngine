@@ -11,11 +11,13 @@ class Array;
 
 class FOG_API PipelineState;
 class FOG_API GUI;
+class FOG_API Skybox;
 
 class FOG_API InputLayout
 {
 	friend class PipelineState;
 	friend class GUI;
+	friend class Skybox;
 
 private:
 	InputLayout();

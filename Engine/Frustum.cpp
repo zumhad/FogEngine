@@ -34,6 +34,8 @@ void Frustum::Update(Matrix& view, Matrix& proj)
 
 Matrix Frustum::Cascade(Vector3 dir)
 {
+    static Vector3 staticDir = Vector3(0.0f, 0.0f, 0.0f);
+
     Vector3 corner[8];
     GetCorners(corner);
 
@@ -44,13 +46,18 @@ Matrix Frustum::Cascade(Vector3 dir)
     }
     center /= 8.0f;
 
-    Vector3 rot;
-    rot.x = -Math::ASin(dir.y);
-    rot.y = Math::ATan2(dir.x, dir.z);
-    Quaternion q = XMQuaternionRotationRollPitchYawFromVector(rot);
-    Vector3 up = XMVector3Rotate(XMVectorSet(0, 1, 0, 1), q);
+    static Matrix lightView;
+    if (dir != staticDir)
+    {
+        Vector3 rot;
+        rot.x = -Math::ASin(dir.y);
+        rot.y = Math::ATan2(dir.x, dir.z);
+        Quaternion q = XMQuaternionRotationRollPitchYawFromVector(rot);
+        Vector3 up = XMVector3Rotate(XMVectorSet(0, 1, 0, 1), q);
 
-    static Matrix lightView = XMMatrixLookAtLH(center + dir, center, up);
+        lightView = XMMatrixLookAtLH(center + dir, center, up);
+        staticDir = dir;
+    }
 
     Vector3 min = Vector3(FLT_MAX, FLT_MAX, FLT_MAX);
     Vector3 max = Vector3(-FLT_MAX, -FLT_MAX, -FLT_MAX);

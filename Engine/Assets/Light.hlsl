@@ -1,4 +1,5 @@
-#define PI 3.14159265359
+#define PI 3.14159265358979323846
+#define FLT_MIN  1.175494351e-38
 
 struct DirectionalLight
 {
@@ -85,8 +86,8 @@ float3 ApplyDirectionLight(DirectionalLight dirLight, float3 normal, float3 colo
 
 float3 ApplyPointLight(PointLight pointLight, float3 normal, float3 color, float3 position, float3 camera)
 {
-    float metallic = 0.5f;
-    float roughness = 0.5f;
+    float metallic = 0.2f;
+    float roughness = 0.2f;
 
     float3 V = normalize(camera - position);
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
@@ -94,10 +95,11 @@ float3 ApplyPointLight(PointLight pointLight, float3 normal, float3 color, float
 
     float3 L = normalize(pointLight.position - position);
     float3 H = normalize(V + L);
-    float distance = length(pointLight.position - position);
-    distance = max(0.0f, distance - pointLight.radius / 2.0f);
-    float denom = distance / pointLight.radius + 1.0f;
-    float attenuation = 1.0 / (denom * denom);
+
+    float3 distance = pointLight.position - position;
+    float distanceSqr = dot(distance, distance);
+    float radiusSqr = pointLight.radius * pointLight.radius;
+    float attenuation = max(0.0f, 1.0f - distanceSqr / radiusSqr) / distanceSqr;
     float3 radiance = pointLight.color.rgb * attenuation * pointLight.power;
 
     float D = DistributionGGX(normal, H, roughness);

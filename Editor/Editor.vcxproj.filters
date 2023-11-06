@@ -20,5 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Events.h" />
+    <ClInclude Include="Update.h" />
   </ItemGroup>
 </Project>

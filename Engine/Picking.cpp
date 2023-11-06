@@ -6,6 +6,7 @@
 #include "SelectMap.h"
 #include "ObjectManager.h"
 #include "Vector3.h"
+#include "MathHelper.h"
 
 #include <DirectXCollision.h>
 
@@ -54,7 +55,7 @@ void Picking::Pick()
 		y = Application::GetSceneY();
 	}
 
-	D3D11_BOX box{};
+	static D3D11_BOX box{};
 	box.left = Cursor::GetPosition(CURSOR_X) - x;
 	box.right = box.left + 1;
 	box.top = Cursor::GetPosition(CURSOR_Y) - y;
@@ -72,7 +73,7 @@ void Picking::Pick()
 
 	if (SUCCEEDED(hr))
 	{
-		float* copy = (float*)(mappedBuffer.pData);
+		float* copy = (float*)mappedBuffer.pData;
 
 		Vector3 pos;
 		int id;
@@ -80,9 +81,9 @@ void Picking::Pick()
 		pos.x = *copy++;
 		pos.y = *copy++;
 		pos.z = *copy++;
-		id = int(*copy++);
+		id = (int)(*copy++);
 
-		if (id >= 0)
+		if (id > 0)
 		{
 			mPickObject = ObjectManager::Get<Object>(id);
 			mPickPosition = pos;
@@ -97,6 +98,11 @@ void Picking::Pick()
 	}
 
 	SAFE_RELEASE(texture);
+}
+
+void Picking::SetPickObject(Object* obj)
+{
+	mPickObject = obj;
 }
 
 Object* Picking::GetPickObject()

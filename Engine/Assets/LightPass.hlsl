@@ -2,15 +2,14 @@
 
 cbuffer cbLightPassBuffer : register(b0)
 {
-    DirectionalLight gDirLight[16];
+    DirectionalLight gDirLight;
     PointLight gPointLight[16];
+    float4x4 gShadowTransform;
     float3 gCameraPos;
-    int gDirCount;
     int gPointCount;
     int gWidth;
     int gHeight;
-    float gTexelSize;
-    float4x4 gShadowTransform;
+    float gTexelSizeInv; float pad;
 };
 
 struct VS_INPUT
@@ -51,18 +50,32 @@ struct PS_OUTPUT
     float4 color : SV_TARGET0;
 };
 
-float3 Uncharted2ToneMapping(float3 color)
+float3 ToneMapping(float3 color)
 {
-    color *= 16.0f;
-    color = color / (1 + color);
-    color = pow(abs(color), 1.0f / 2.2f);
-    return color;
+    return color / (color + 1.0f);
 }
 
 float3 GammaCorrection(float3 color)
 {
     return pow(abs(color), 1.0f / 2.2f);
 }
+
+float3 GetShadowPosOffset(float nDotL, float3 normal)
+{
+    float nmlOffsetScale = saturate(1.0f - nDotL);
+    return gTexelSizeInv * 100.0f * nmlOffsetScale * normal;
+}
+
+
+
+float SampleShadowMap(float2 base_uv, float u, float v, float depth) 
+{
+    float2 uv = base_uv + float2(u, v) * gTexelSizeInv;
+
+    return gTextureShadow.SampleCmpLevelZero(gShadowSampler, uv, depth);
+}
+
+
 
 float Shadow(float4 fragPosLightSpace, float3 normal, float3 dir)
 {
@@ -82,23 +95,42 @@ float Shadow(float4 fragPosLightSpace, float3 normal, float3 dir)
     if (projCoords.y > 1.0f || projCoords.y < 0.0f)
         return 0.0f;
 
-    float closestDepth = gTextureShadow.Sample(gSampler, projCoords.xy);
-    float bias = max(0.003f * saturate(1.0f - dot(normal, -dir)), 0.003f);
+    float bias = 0.001f;
+
+    currentDepth += bias;
+
+    float texelSize = 1.0f / gTexelSizeInv;
+    float2 uv = projCoords.xy * texelSize;
+
+    float2 base_uv;
+    base_uv.x = floor(uv.x + 0.5f);
+    base_uv.y = floor(uv.y + 0.5f);
+
+    float s = uv.x + 0.5f - base_uv.x;
+    float t = uv.y + 0.5f - base_uv.y;
+
+    base_uv -= float2(0.5f, 0.5f);
+    base_uv *= gTexelSizeInv;
+
+    float uw0 = (3.0f - 2.0f * s);
+    float uw1 = (1.0f + 2.0f * s);
+
+    float u0 = (2.0f - s) / uw0 - 1;
+    float u1 = s / uw1 + 1.0f;
+
+    float vw0 = (3.0f - 2.0f * t);
+    float vw1 = (1.0f + 2.0f * t);
+
+    float v0 = (2.0f - t) / vw0 - 1;
+    float v1 = t / vw1 + 1.0f;
+
     float shadow = 0.0f;
+    shadow += uw0 * vw0 * SampleShadowMap(base_uv, u0, v0, currentDepth);
+    shadow += uw1 * vw0 * SampleShadowMap(base_uv, u1, v0, currentDepth);
+    shadow += uw0 * vw1 * SampleShadowMap(base_uv, u0, v1, currentDepth);
+    shadow += uw1 * vw1 * SampleShadowMap(base_uv, u1, v1, currentDepth);
 
-    [unroll]
-    for (int x = -1; x <= 1; ++x)
-    {
-        [unroll]
-        for (int y = -1; y <= 1; ++y)
-        {
-            float depth = gTextureShadow.SampleCmpLevelZero(gShadowSampler, projCoords.xy + float2(x, y) * gTexelSize, currentDepth + bias);
-            shadow += depth;
-        }
-    }
-    shadow /= 9.0f;
-
-    return shadow;
+    return shadow / 16.0f;
 }
 
 PS_OUTPUT PS(VS_OUTPUT input)
@@ -109,20 +141,25 @@ PS_OUTPUT PS(VS_OUTPUT input)
     float4 normal = gTextureNormal.Sample(gSampler, input.uv);
     float4 select = gTextureSelect.Sample(gSampler, input.uv);
     float depth = gTextureDepth.Sample(gSampler, input.uv);
-    normal = normalize(normal);
+    bool lighting = normal.a;
+
+    normal.rgb = (normal.rgb - 0.5f) * 2.0f;
+    normal.rgb = normalize(normal.rgb);
 
     output.color = float4(diffuse.rgb, 1.0f);
 
-    float shadow = Shadow(mul(gShadowTransform, float4(select.xyz, 1.0f)), normal.xyz, float3(0, -1, -1));
-
-    if (depth > 0.0f)
+    if (depth > 0.0f && lighting)
     {
         output.color.rgb = diffuse.rgb * 0.001f;
 
-        [unroll]
-        for (int i = 0; i < gDirCount; i++)
+        if (gDirLight.power)
         {
-            output.color.rgb += ApplyDirectionLight(gDirLight[i], normal.xyz, diffuse.rgb, select.xyz, gCameraPos) * (1.0f - shadow);
+            float nDotL = dot(normal.xyz, -gDirLight.direction);
+            select.xyz += GetShadowPosOffset(nDotL, normal.xyz);
+            float4 shadowPos = mul(gShadowTransform, float4(select.xyz, 1.0f));
+
+            float shadow = Shadow(shadowPos, normal.xyz, gDirLight.direction);
+            output.color.rgb += ApplyDirectionLight(gDirLight, normal.xyz, diffuse.rgb, select.xyz, gCameraPos) * (1.0f - shadow);
         }
         
         [unroll]
@@ -132,6 +169,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
         }
     }
 
+    //output.color.rgb = ToneMapping(output.color.rgb);
     output.color.rgb = GammaCorrection(output.color.rgb);
     output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
 

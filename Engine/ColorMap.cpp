@@ -40,7 +40,7 @@ void ColorMap::Setup()
 		desc.Height = height;
 		desc.MipLevels = 1;
 		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_UNORM;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -50,12 +50,12 @@ void ColorMap::Setup()
 	{
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_UNORM;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mRenderTargetView));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R16G16B16A16_UNORM;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
@@ -72,22 +72,6 @@ void ColorMap::UpdateBuffer(Model& model)
 	buffer.color = model.color;
 
 	mColorBuffer.Bind(buffer);
-}
-
-void ColorMap::Clear()
-{
-	const float* color = 0;
-	
-	if (Application::IsGame())
-	{
-		color = Application::GetGameColor();
-	}
-	else
-	{
-		color = Application::GetSceneColor();
-	}
-
-	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
 }
 
 void ColorMap::Shotdown()

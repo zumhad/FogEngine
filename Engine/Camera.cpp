@@ -16,7 +16,7 @@ Vector3 Camera::mRotation;
 
 Matrix Camera::mView;
 Matrix Camera::mProj;
-Matrix Camera::mTest;
+Matrix Camera::mCascade;
 
 float Camera::mFOV;
 float Camera::mAspectRatio;
@@ -38,26 +38,21 @@ float Camera::GetRotateZ()
 	return mRotation.z;
 }
 
-Vector3 Camera::GetPosition()
+Vector3& Camera::GetPosition()
 { 
 	return mPosition;
 }
 
-Vector3 Camera::GetRotation()
+Vector3& Camera::GetRotation()
 {
 	return mRotation; 
 }
 
-Matrix Camera::GetTest()
-{ 
-	return mTest; 
-}
-
-Matrix Camera::GetViewMatrix()
+Matrix& Camera::GetViewMatrix()
 {
 	return mView;
 }
-Matrix Camera::GetProjMatrix()
+Matrix& Camera::GetProjMatrix()
 { 
 	return mProj; 
 }
@@ -204,5 +199,14 @@ void Camera::Update()
 
 	mProjLight = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, 10.0f, mFarZ);
 	mFrustum.Update(mView, mProjLight);
-	mTest = mFrustum.Cascade(Vector3(0.0f, -1.0f, -1.0f));
+}
+
+void Camera::UpdateCascade(Vector3 dir)
+{
+	mCascade = mFrustum.Cascade(dir);
+}
+
+Matrix& Camera::GetCascade()
+{
+	return mCascade;
 }

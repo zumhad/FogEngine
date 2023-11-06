@@ -70,7 +70,7 @@ void ShadowMap::UpdateBuffer(Model& model)
 {
 	static ShadowBuffer buffer;
 
-	buffer.worldViewProj = model.GetWorldMatrix() * Camera::GetTest();
+	buffer.worldViewProj = model.GetWorldMatrix() * Camera::GetCascade();
 
 	mShadowBuffer.Bind(buffer);
 }
