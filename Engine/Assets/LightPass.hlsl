@@ -4,12 +4,14 @@ cbuffer cbLightPassBuffer : register(b0)
 {
     DirectionalLight gDirLight;
     PointLight gPointLight[16];
-    float4x4 gShadowTransform;
+    float4x4 gMatrix;
+    float4 gShadowSplit;
+    float4 gShadowOffset[4];
+    float4 gShadowScale[4];
     float3 gCameraPos;
     int gPointCount;
     int gWidth;
-    int gHeight;
-    float gTexelSizeInv; float pad;
+    int gHeight; float2 pad;
 };
 
 struct VS_INPUT
@@ -38,9 +40,10 @@ VS_OUTPUT VS(VS_INPUT input)
 
 Texture2D<float4> gTextureColor : register(t0);
 Texture2D<float> gTextureDepth : register(t1);
-Texture2D<float4> gTextureSelect : register(t2);
-Texture2D<float4> gTextureNormal : register(t3);
-Texture2D<float> gTextureShadow : register(t4);
+Texture2D<float4> gTexturePositionID : register(t2);
+Texture2D<float4> gTextureNormalLighting : register(t3);
+Texture2D<unsigned int> gTextureRangeMaterial : register(t4);
+Texture2DArray<float> gTextureShadow : register(t5);
 
 SamplerState gSampler : register(s0);
 SamplerComparisonState gShadowSampler : register(s1);
@@ -60,77 +63,69 @@ float3 GammaCorrection(float3 color)
     return pow(abs(color), 1.0f / 2.2f);
 }
 
-float3 GetShadowPosOffset(float nDotL, float3 normal)
+float SampleShadowMap(float2 base_uv, float u, float v, float depth, int index, float2 shadowMapSizeInv)
 {
-    float nmlOffsetScale = saturate(1.0f - nDotL);
-    return gTexelSizeInv * 100.0f * nmlOffsetScale * normal;
+    float2 uv = base_uv + float2(u, v) * shadowMapSizeInv;
+
+    return gTextureShadow.SampleCmpLevelZero(gShadowSampler, float3(uv, (float)index), depth);
 }
 
-
-
-float SampleShadowMap(float2 base_uv, float u, float v, float depth) 
+float SampleShadowMapOptimizedPCF(float3 shadowPos, in float3 shadowPosDX, float3 shadowPosDY, int index) 
 {
-    float2 uv = base_uv + float2(u, v) * gTexelSizeInv;
+    float2 shadowMapSize;
+    float numSlices;
+    gTextureShadow.GetDimensions(shadowMapSize.x, shadowMapSize.y, numSlices);
 
-    return gTextureShadow.SampleCmpLevelZero(gShadowSampler, uv, depth);
-}
+    float lightDepth = shadowPos.z;
 
+    const float bias = 0.005f;
+    lightDepth += bias;
 
+    float2 uv = shadowPos.xy * shadowMapSize;
 
-float Shadow(float4 fragPosLightSpace, float3 normal, float3 dir)
-{
-    float3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-
-    float currentDepth = projCoords.z;
-
-    if (currentDepth <= 0.0f || currentDepth >= 1.0f)
-        return 0.0f;
-
-    projCoords = projCoords * 0.5f + 0.5f;
-    projCoords.y = 1.0f - projCoords.y;
-
-    if (projCoords.x > 1.0f || projCoords.x < 0.0f)
-        return 0.0f;
-
-    if (projCoords.y > 1.0f || projCoords.y < 0.0f)
-        return 0.0f;
-
-    float bias = 0.001f;
-
-    currentDepth += bias;
-
-    float texelSize = 1.0f / gTexelSizeInv;
-    float2 uv = projCoords.xy * texelSize;
+    float2 shadowMapSizeInv = 1.0 / shadowMapSize;
 
     float2 base_uv;
-    base_uv.x = floor(uv.x + 0.5f);
-    base_uv.y = floor(uv.y + 0.5f);
+    base_uv.x = floor(uv.x + 0.5);
+    base_uv.y = floor(uv.y + 0.5);
 
-    float s = uv.x + 0.5f - base_uv.x;
-    float t = uv.y + 0.5f - base_uv.y;
+    float s = (uv.x + 0.5 - base_uv.x);
+    float t = (uv.y + 0.5 - base_uv.y);
 
-    base_uv -= float2(0.5f, 0.5f);
-    base_uv *= gTexelSizeInv;
+    base_uv -= float2(0.5, 0.5);
+    base_uv *= shadowMapSizeInv;
 
-    float uw0 = (3.0f - 2.0f * s);
-    float uw1 = (1.0f + 2.0f * s);
+    float sum = 0;
 
-    float u0 = (2.0f - s) / uw0 - 1;
-    float u1 = s / uw1 + 1.0f;
+    float uw0 = (3 - 2 * s);
+    float uw1 = (1 + 2 * s);
 
-    float vw0 = (3.0f - 2.0f * t);
-    float vw1 = (1.0f + 2.0f * t);
+    float u0 = (2 - s) / uw0 - 1;
+    float u1 = s / uw1 + 1;
 
-    float v0 = (2.0f - t) / vw0 - 1;
-    float v1 = t / vw1 + 1.0f;
+    float vw0 = (3 - 2 * t);
+    float vw1 = (1 + 2 * t);
 
-    float shadow = 0.0f;
-    shadow += uw0 * vw0 * SampleShadowMap(base_uv, u0, v0, currentDepth);
-    shadow += uw1 * vw0 * SampleShadowMap(base_uv, u1, v0, currentDepth);
-    shadow += uw0 * vw1 * SampleShadowMap(base_uv, u0, v1, currentDepth);
-    shadow += uw1 * vw1 * SampleShadowMap(base_uv, u1, v1, currentDepth);
+    float v0 = (2 - t) / vw0 - 1;
+    float v1 = t / vw1 + 1;
 
-    return shadow / 16.0f;
+    sum += uw0 * vw0 * SampleShadowMap(base_uv, u0, v0, lightDepth, index, shadowMapSizeInv);
+    sum += uw1 * vw0 * SampleShadowMap(base_uv, u1, v0, lightDepth, index, shadowMapSizeInv);
+    sum += uw0 * vw1 * SampleShadowMap(base_uv, u0, v1, lightDepth, index, shadowMapSizeInv);
+    sum += uw1 * vw1 * SampleShadowMap(base_uv, u1, v1, lightDepth, index, shadowMapSizeInv);
+
+    return sum * 1.0f / 16;
+}
+
+float SampleShadowCascade(float3 position, float3 shadowPosDX, float3 shadowPosDY, int index)
+{
+    position += gShadowOffset[index].xyz;
+    position *= gShadowScale[index].xyz;
+
+    shadowPosDX *= gShadowScale[index].xyz;
+    shadowPosDY *= gShadowScale[index].xyz;
+
+    return SampleShadowMapOptimizedPCF(position, shadowPosDX, shadowPosDY, index);
 }
 
 PS_OUTPUT PS(VS_OUTPUT input)
@@ -138,34 +133,71 @@ PS_OUTPUT PS(VS_OUTPUT input)
     PS_OUTPUT output;
 
     float4 diffuse = gTextureColor.Sample(gSampler, input.uv);
-    float4 normal = gTextureNormal.Sample(gSampler, input.uv);
-    float4 select = gTextureSelect.Sample(gSampler, input.uv);
+    float4 normalLighting = gTextureNormalLighting.Sample(gSampler, input.uv);
+    float4 positionID = gTexturePositionID.Sample(gSampler, input.uv);
+    unsigned int rangeMaterial = gTextureRangeMaterial.Load(int3(input.uv * int2(gWidth, gHeight), 0));
     float depth = gTextureDepth.Sample(gSampler, input.uv);
-    bool lighting = normal.a;
 
-    normal.rgb = (normal.rgb - 0.5f) * 2.0f;
-    normal.rgb = normalize(normal.rgb);
+    float3 position = positionID.rgb;
+    bool lighting = normalLighting.a;
+    float roughness = (rangeMaterial & 0x000000ff) / 255.0f;
+    float metallic = ((rangeMaterial & 0x0000ff00) >> 8) / 255.0f;
+    float range = f16tof32(rangeMaterial >> 16);
+    float3 normal = (normalLighting.rgb - 0.5f) * 2.0f;
+    normal = normalize(normal);
 
-    output.color = float4(diffuse.rgb, 1.0f);
+    output.color = diffuse;
 
-    if (depth > 0.0f && lighting)
+    if (depth && lighting)
     {
         output.color.rgb = diffuse.rgb * 0.001f;
 
         if (gDirLight.power)
         {
-            float nDotL = dot(normal.xyz, -gDirLight.direction);
-            select.xyz += GetShadowPosOffset(nDotL, normal.xyz);
-            float4 shadowPos = mul(gShadowTransform, float4(select.xyz, 1.0f));
+            int index = -1;
 
-            float shadow = Shadow(shadowPos, normal.xyz, gDirLight.direction);
-            output.color.rgb += ApplyDirectionLight(gDirLight, normal.xyz, diffuse.rgb, select.xyz, gCameraPos) * (1.0f - shadow);
+            [unroll]
+            for (int i = 3; i >= 0; i--)
+            {
+                if (range < gShadowSplit[i]) index = i;
+            }
+
+            float shadow = 0.0f;
+
+            if (index != -1)
+            {
+                float3 shadowPos = mul(gMatrix, float4(position, 1.0f)).xyz;
+                float3 shadowPosDX = ddx_fine(shadowPos);
+                float3 shadowPosDY = ddy_fine(shadowPos);
+                shadow = SampleShadowCascade(shadowPos, shadowPosDX, shadowPosDY, index);
+
+                const float BlendThreshold = 0.1f;
+
+                float nextSplit = gShadowSplit[index];
+                float splitSize = index == 0 ? nextSplit : nextSplit - gShadowSplit[index - 1];
+                float fadeFactor = (nextSplit - range) / splitSize;
+
+                [branch]
+                if (fadeFactor <= BlendThreshold && index != 3) // size
+                {
+                    float3 nextPosition = mul(gMatrix, float4(position, 1.0f)).xyz;
+
+                    float3 nextSplitVisibility = SampleShadowCascade(nextPosition, shadowPosDX, shadowPosDY, index + 1);
+                    float lerpAmt = smoothstep(0.0f, BlendThreshold, fadeFactor);
+                    shadow = lerp(nextSplitVisibility, shadow, lerpAmt).x;
+                }
+            }
+
+            output.color.rgb += ApplyDirectionLight(gDirLight, normal, diffuse.rgb, position, gCameraPos, metallic, roughness) * (1.0f - shadow);
         }
         
         [unroll]
         for (int j = 0; j < gPointCount; j++)
         {
-            output.color.rgb += ApplyPointLight(gPointLight[j], normal.xyz, diffuse.rgb, select.xyz, gCameraPos);
+            if (gPointLight[j].power)
+            {
+                output.color.rgb += ApplyPointLight(gPointLight[j], normal, diffuse.rgb, position, gCameraPos, metallic, roughness);
+            }
         }
     }
 

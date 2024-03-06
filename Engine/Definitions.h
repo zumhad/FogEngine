@@ -23,7 +23,8 @@
 
 #define EXT L"fog"
 
-#define MAX_DIRECTIONAL_LIGHT 16
+#define MAX_DIRECTIONAL_LIGHT 1
 #define MAX_POINT_LIGHT 16
+#define MAX_CASCADES 4
 
 #define ARRAY_SIZE(x) ARRAYSIZE(x)

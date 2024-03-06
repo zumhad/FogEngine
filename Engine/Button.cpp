@@ -30,6 +30,7 @@ Button::Button()
 	enable = true;
 	data = 0;
 
+	mNeedUpdateText = false;
 	mVertexSize = 0;
 	mVertexBuffer = 0;
 	mFocus = false;
@@ -127,12 +128,20 @@ int Button::GetChildNumber()
 
 void Button::Draw()
 {
+	NeedUpdateText();
+
 	DrawRect();
 
-	if (text.text == L"") return;
+	if (text.text == L"")
+	{
+		mNeedUpdateText = false;
+		return;
+	}
 
 	UpdateText();
 	DrawText();
+
+	mNeedUpdateText = false;
 }
 
 void Button::DrawRect()
@@ -223,8 +232,16 @@ void Button::DrawRect()
 		if (mRect.bottom > Application::GetEditorHeight()) mRect.bottom = Application::GetEditorHeight();
 	}
 
-	if (mRect.right <= mRect.left) return;
-	if (mRect.bottom <= mRect.top) return;
+	if (mRect.right <= mRect.left)
+	{
+		mRect.right = mRect.left;
+		return;
+	}
+	if (mRect.bottom <= mRect.top)
+	{
+		mRect.bottom = mRect.top;
+		return;
+	}
 
 	Direct3D::DeviceContext()->ClearView(*Direct3D::GetRTV(), rect.color, &mRect, 1);
 }
@@ -250,77 +267,82 @@ void Button::DrawText()
 	Direct3D::DeviceContext()->Draw(4 * text.text.Size(), 0);
 }
 
-bool Button::NeedUpdateText()
+void Button::NeedUpdateText()
 {
-	bool need = false;
-
 	if (mStaticText.alignm.horizontal != text.alignm.horizontal)
 	{
 		mStaticText.alignm.horizontal = text.alignm.horizontal;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticText.alignm.vertical != text.alignm.vertical)
 	{
 		mStaticText.alignm.vertical = text.alignm.vertical;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticText.x != text.x)
 	{
 		mStaticText.x = text.x;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticText.y != text.y)
 	{
 		mStaticText.y = text.y;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticText.text != text.text)
 	{
 		mStaticText.text = text.text;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticText.size != text.size)
 	{
 		mStaticText.size = text.size;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.x != rect.x)
 	{
 		mStaticRect.x = rect.x;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.y != rect.y)
 	{
 		mStaticRect.y = rect.y;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.width != rect.width)
 	{
 		mStaticRect.width = rect.width;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.height != rect.height)
 	{
 		mStaticRect.height = rect.height;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.alignm.horizontal != rect.alignm.horizontal)
 	{
 		mStaticRect.alignm.horizontal = rect.alignm.horizontal;
-		need = true;
+		mNeedUpdateText = true;
 	}
 	if (mStaticRect.alignm.vertical != rect.alignm.vertical)
 	{
 		mStaticRect.alignm.vertical = rect.alignm.vertical;
-		need = true;
+		mNeedUpdateText = true;
 	}
 
-	return need;
+	if (mNeedUpdateText)
+	{
+		int size = GetChildCount();
+		for (int i = 0; i < size; i++)
+		{
+			mChild[i]->mNeedUpdateText = mNeedUpdateText;
+		}
+	}
 }
 
 void Button::UpdateText()
 {
-	if (!NeedUpdateText()) return;
+	if (!mNeedUpdateText) return;
 
 	struct Vertex
 	{

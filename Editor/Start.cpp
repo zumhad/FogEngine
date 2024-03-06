@@ -5,9 +5,58 @@
 
 void MyUpdate()
 {
-	if (Input::Down(KEY_ESCAPE))
+	if (Input::Down(KEY_DELETE))
 	{
-		Application::Close();
+		Object* obj = Picking::GetPickObject();
+
+		if (obj)
+		{
+			int number = GUI::GetWithID(obj->data)->GetChildNumber();
+
+			Button* tree = GUI::GetWithID(idSceneTree);
+
+			int size = tree->GetChildCount();
+			for (int i = number + 2; i < size; i++)
+			{
+				Button* b = tree->GetChildWithNumber(i);
+				b->rect.y -= b->rect.height;
+			}
+
+			GUI::DeleteWithID(obj->data);
+			GUI::DeleteWithID(obj->data + 1);
+
+			Button* scrollBar = tree->GetChildWithNumber(0);
+			Button* scroll = scrollBar->GetChildWithNumber(0);
+
+			int maxCount = tree->rect.height / 30;
+			int treeCount = (tree->GetChildCount() - 1) / 2;
+
+			if (treeCount > 1)
+			{
+				float offset = (1.0f / (treeCount)) * (scrollBar->rect.height - 6);
+				int offsetCount = Math::Round((scroll->rect.y - 3) / offset);
+
+				if ((scroll->rect.y + scroll->rect.height + 3) == tree->rect.height && (scroll->rect.y - 3) != 0)
+				{
+					for (int i = 1; i < size - 2; i++)
+					{
+						Button* b = tree->GetChildWithNumber(i);
+						b->rect.y += b->rect.height;
+					}
+
+					offsetCount--;
+				}
+
+				scroll->rect.y = Math::Round(offset * offsetCount) + 3;
+			}
+
+			scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+			ObjectManager::DeleteWithID(obj->GetID());
+			Picking::SetPickObject(0);
+
+			GUI::GetWithID(idTransform)->enable = false;
+		}
 	}
 
 	if (Input::Down(KEY_L))
@@ -39,14 +88,14 @@ void MyUpdate()
 		b.text.alignm.vertical = ALIGNM_CENTER_V;
 		b.text.x = 20;
 		b.rect.color = Color(0.1f, 0.1f, 0.1f);
-		b.event.leftClick = AddOnTree;
+		b.event.leftDown = AddOnTree;
 		b.event.hoverOn = HoverOnSceneTree;
 		b.event.hoverOff = HoverOffSceneTree;
 		b.event.scroll = ScrollTree;
 		b.data = id;
 		int idButton = GUI::AddChild(idSceneTree, b);
 
-		Object* obj = ObjectManager::Get<Object>(id);
+		Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
 		obj->data = idButton;
 
 		b.rect.x = b.rect.width;
@@ -70,6 +119,8 @@ void MyUpdate()
 		}
 
 		scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+		Picking::SetPickObject(obj);
 	}
 
 	if (Input::Down(KEY_K))
@@ -77,6 +128,7 @@ void MyUpdate()
 		DirectionLight light;
 		light.color = Color(1, 1, 1);
 		light.rotation = Vector3(45.0f, 45.0f, 0.0f);
+		light.scale = Vector3(0.2f, 0.2f, 0.2f);
 		light.power = 1.2f;
 		int id = ObjectManager::Add(light);
 
@@ -99,14 +151,14 @@ void MyUpdate()
 		b.text.alignm.vertical = ALIGNM_CENTER_V;
 		b.text.x = 20;
 		b.rect.color = Color(0.1f, 0.1f, 0.1f);
-		b.event.leftClick = AddOnTree;
+		b.event.leftDown = AddOnTree;
 		b.event.hoverOn = HoverOnSceneTree;
 		b.event.hoverOff = HoverOffSceneTree;
 		b.event.scroll = ScrollTree;
 		b.data = id;
 		int idButton = GUI::AddChild(idSceneTree, b);
 
-		Object* obj = ObjectManager::Get<Object>(id);
+		Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
 		obj->data = idButton;
 
 		b.rect.x = b.rect.width;
@@ -130,16 +182,18 @@ void MyUpdate()
 		}
 
 		scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+		Picking::SetPickObject(obj);
 	}
 
 	if (Input::Down(KEY_UP))
 	{
-		ShadowMap::SetResolution(ShadowMap::GetResolution() * 2);
+		Application::SetCascadeResolution(Application::GetCascadeResolution() * 2);
 	}
 
 	if (Input::Down(KEY_DOWN))
 	{
-		ShadowMap::SetResolution(ShadowMap::GetResolution() / 2);
+		Application::SetCascadeResolution(Application::GetCascadeResolution() / 2);
 	}
 }
 
@@ -245,8 +299,6 @@ void MoveObject()
 			}
 
 			pick1 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
-
-			Vector3 test = RayCasting::RayCast(Vector3(0, -1, 1), Vector3(0, 5, -5), Vector4(0, 1, 0, 0));
 		}
 	}
 
@@ -287,7 +339,7 @@ void Update()
 	//fpstest();
 
 	float moveSpeed = 10.0f;
-	float rotationSpeed = 50.0f;
+	float rotationSpeed = 0.2f;
 
 	static Vector3 pos = Camera::GetPosition();
 	Vector3 rot = Camera::GetRotation();
@@ -320,20 +372,33 @@ void Update()
 	MoveObject();
 
 	Object* obj = Picking::GetPickObject();
-
 	static Button* transform = GUI::GetWithID(idTransform);
+	static Button* material = GUI::GetWithID(idMaterial);
+
+	//if (Input::Down(MOUSE_LEFT))
+	//{
+		UpdateSelectObject(obj);
+	//}
 
 	if (obj)
 	{
 		transform->enable = true;
+		UpdateTransform(transform, obj);
 
-		UpdateTransform(*transform, obj);
+		if (obj->GetType() == TypeObject::Model)
+		{
+			material->enable = true;
+			UpdateMaterial(material, ObjectManager::Get<Model>(obj));
+		}
+		else
+		{
+			material->enable = false;
+		}
 	}
 	else
 	{
 		transform->enable = false;
-
-		UpdateTransform(*transform, obj);
+		material->enable = false;
 	}
 
 	static Button* fps = GUI::GetWithID(idFPS);
@@ -344,9 +409,18 @@ void Update()
 
 void Start()
 {
-	Camera::SetPosition(Vector3(0, 5, -5));
-	Camera::SetFar(0.001f);
-	Camera::SetNear(1000.0f);
+	Camera::SetPosition(Vector3(0.0f, 10.0f, -10.0f));
+	Camera::SetRotation(Vector3(45.0f, 0.0f, 0.0f));
+	Camera::SetNear(0.1f);
+	Camera::SetFar(1000.0f);
+
+	Application::SetCascadeSplit(0, 0.01f);
+	Application::SetCascadeSplit(1, 0.03f);
+	Application::SetCascadeSplit(2, 0.05f);
+	Application::SetCascadeSplit(3, 0.1f);
+
+	Application::SetOutlineWidth(5);
+	Application::SetOutlineColor(Color(1.0f, 1.0f, 0.0f));
 
 	if (Application::IsGame()) return;
 
@@ -360,7 +434,7 @@ void Start()
 	fps.text.x = 10;
 	fps.text.y = 10;
 	fps.rect.width = 100;
-	fps.rect.height = 100;
+	fps.rect.height = Application::GetCaptionHeight() - 10;
 	fps.text.text = L"0";
 	fps.rect.color = Color(0.05f, 0.05f, 0.05f);
 	idFPS = GUI::Add(fps);
@@ -499,6 +573,7 @@ void Start()
 	transform.rect.y = propertiesText.rect.y + propertiesText.rect.height + 5;
 	transform.rect.width = properties.rect.width - 10;
 	transform.rect.height = 140;
+	transform.enable = false;
 	idTransform = GUI::AddChild(idProperties, transform);
 
 	Button transformText;
@@ -514,6 +589,7 @@ void Start()
 	transformText.event.hoverOn = HoverOn;
 	transformText.event.hoverOff = HoverOff;
 	transformText.event.leftClick = TransformClick;
+
 	GUI::AddChild(idTransform, transformText);
 
 	Button position;
@@ -531,14 +607,17 @@ void Start()
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
 	position.rect.width = 136;
+	position.event.leftPress = SliderPosX;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderPosY;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderPosZ;
 	GUI::AddChild(idTransform, position);
 
 	position.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
@@ -555,14 +634,17 @@ void Start()
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
 	position.rect.width = 136;
+	position.event.leftPress = SliderRotX;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderRotY;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderRotZ;
 	GUI::AddChild(idTransform, position);
 
 
@@ -580,15 +662,108 @@ void Start()
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
 	position.rect.width = 136;
+	position.event.leftPress = SliderScaleX;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderScaleY;
 	GUI::AddChild(idTransform, position);
 
 	position.text.text = L"0.0";
 	position.rect.x += position.rect.width + 5;
+	position.event.leftPress = SliderScaleZ;
 	GUI::AddChild(idTransform, position);
+
+	Button material;
+	material.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	material.rect.color = Color(0.2f, 0.2f, 0.2f);
+	material.rect.x = 5;
+	material.rect.y = transform.rect.y + transform.rect.height + 5;
+	material.rect.width = properties.rect.width - 10;
+	material.rect.height = 140;
+	material.enable = false;
+	idMaterial = GUI::AddChild(idProperties, material);
+
+	Button materialText;
+	materialText.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	materialText.rect.color = Color(0.2f, 0.2f, 0.2f);
+	materialText.rect.x = 0;
+	materialText.rect.y = 0;
+	materialText.rect.width = transform.rect.width;
+	materialText.rect.height = 30;
+	materialText.text.text = L"Material";
+	materialText.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	materialText.text.x = 20;
+	materialText.event.hoverOn = HoverOn;
+	materialText.event.hoverOff = HoverOff;
+	materialText.event.leftClick = MaterialClick;
+	GUI::AddChild(idMaterial, materialText);
+
+	Button color;
+	color.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	color.rect.x = 5;
+	color.rect.y = materialText.rect.height + 5;
+	color.rect.width = 167;
+	color.rect.height = 30;
+	color.text.text = L"Color";
+	color.rect.color = Color(0.1f, 0.1f, 0.1f);
+	color.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	color.text.x = 20;
+	GUI::AddChild(idMaterial, color);
+
+	color.rect.x += color.rect.width + 5;
+	color.text.text = L"0.0";
+	color.rect.width = 136;
+	color.event.leftPress = SliderColorR;
+	GUI::AddChild(idMaterial, color);
+
+	color.rect.x += color.rect.width + 5;
+	color.text.text = L"0.0";
+	color.event.leftPress = SliderColorG;
+	GUI::AddChild(idMaterial, color);
+
+	color.rect.x += color.rect.width + 5;
+	color.text.text = L"0.0";
+	color.event.leftPress = SliderColorB;
+	GUI::AddChild(idMaterial, color);
+
+
+	Button metallic;
+	metallic.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	metallic.rect.x = 5;
+	metallic.rect.y = color.rect.y + color.rect.height + 5;
+	metallic.rect.width = 167;
+	metallic.rect.height = 30;
+	metallic.text.text = L"Metallic";
+	metallic.rect.color = Color(0.1f, 0.1f, 0.1f);
+	metallic.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	metallic.text.x = 20;
+	GUI::AddChild(idMaterial, metallic);
+
+	metallic.rect.x += metallic.rect.width + 5;
+	metallic.text.text = L"0.0";
+	metallic.rect.width = 136;
+	metallic.event.leftPress = SliderMetallic;
+	GUI::AddChild(idMaterial, metallic);
+
+	Button roughness;
+	roughness.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	roughness.rect.x = 5;
+	roughness.rect.y = metallic.rect.y + metallic.rect.height + 5;
+	roughness.rect.width = 167;
+	roughness.rect.height = 30;
+	roughness.text.text = L"Roughness";
+	roughness.rect.color = Color(0.1f, 0.1f, 0.1f);
+	roughness.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	roughness.text.x = 20;
+	GUI::AddChild(idMaterial, roughness);
+
+	roughness.rect.x += roughness.rect.width + 5;
+	roughness.text.text = L"0.0";
+	roughness.rect.width = 136;
+	roughness.event.leftPress = SliderRoughness;
+	GUI::AddChild(idMaterial, roughness);
 
 	AddRoom();
 }

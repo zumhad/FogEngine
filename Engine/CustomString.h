@@ -26,6 +26,7 @@ public:
 
 	void Clear();
 	void Delete(int i);
+	void Delete(int start, int end);
 	int Size();
 	WCHAR* GetWCHAR();
 	CHAR* GetCHAR();

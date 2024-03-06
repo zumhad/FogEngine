@@ -26,12 +26,14 @@ struct FOG_API LightMap::LightBuffer
 		float radius;
 		float power; float pad[3];
 	} pointLight[16]{};
-	Matrix shadowTransform;
+	Matrix matrix;
+	float shadowSplit[4];
+	Vector4 shadowOffset[4];
+	Vector4 shadowScale[4];
 	Vector3 cameraPos;
 	int pointCount = 0;
 	int width = 0;
-	int height = 0;
-	float texelSize = 0.0f; float pad;
+	int height = 0; float pad[2];
 };
 
 ID3D11RenderTargetView* LightMap::mRenderTargetView = 0;
@@ -93,7 +95,14 @@ void LightMap::UpdateBuffer(DirectionLight& dir)
 	mBuffer.dirLight.color = dir.color;
 	mBuffer.dirLight.dir = dir.GetDirection();
 	mBuffer.dirLight.power = dir.power;
-	mBuffer.shadowTransform = Camera::GetCascade();
+
+	for (int i = 0; i < 4; i++)
+	{
+		mBuffer.shadowSplit[i] = ShadowMap::GetSplit(i);
+		mBuffer.shadowOffset[i] = ShadowMap::GetOffset(i);
+		mBuffer.shadowScale[i] = ShadowMap::GetScale(i);
+		mBuffer.matrix = ShadowMap::GetMatrix();
+	}
 }
 
 void LightMap::UpdateBuffer(PointLight& point)
@@ -122,7 +131,6 @@ void LightMap::UpdateBuffer()
 
 	mBuffer.width = width;
 	mBuffer.height = height;
-	mBuffer.texelSize = 1.0f / (float)ShadowMap::GetResolution();
 	mBuffer.cameraPos = Camera::GetPosition();
 
 	mLightBuffer.Bind(mBuffer);

@@ -30,6 +30,21 @@ void SamplerState::Create(SamplerStateType type)
 			break;
 		}
 
+		case SamplerStateType::Outline:
+		{
+			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+			desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
+			desc.AddressV = D3D11_TEXTURE_ADDRESS_BORDER;
+			desc.AddressW = D3D11_TEXTURE_ADDRESS_BORDER;
+			desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+			desc.BorderColor[0] = 0.0f;
+			desc.BorderColor[1] = 0.0f;
+			desc.BorderColor[2] = 0.0f;
+			desc.BorderColor[3] = 0.0f;
+
+			break;
+		}
+
 		case SamplerStateType::GUI:
 		{
 			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
@@ -56,6 +71,10 @@ void SamplerState::Create(SamplerStateType type)
 			desc.BorderColor[1] = 0.0f;
 			desc.BorderColor[2] = 0.0f;
 			desc.BorderColor[3] = 0.0f;
+			desc.MaxAnisotropy = 1;
+			desc.MipLODBias = 0.0f;
+			desc.MinLOD = 0;
+			desc.MaxLOD = D3D11_FLOAT32_MAX;
 
 			break;
 		}

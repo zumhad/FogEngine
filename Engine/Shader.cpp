@@ -3,9 +3,6 @@
 #include "PathHelper.h"
 #include "CustomFile.h"
 #include "CustomString.h"
-#include "SelectMap.h"
-#include "DepthMap.h"
-#include "ColorMap.h"
 #include "Utility.h"
 
 #include <d3dcompiler.h>

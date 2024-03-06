@@ -11,11 +11,15 @@ class FOG_API Application;
 class FOG_API PipelineState;
 class FOG_API DirectionLight;
 class FOG_API PointLight;
+class FOG_API OutlineMap;
+class FOG_API PrePass;
 
 class FOG_API LightMap
 {
 	friend class Application;
 	friend class PipelineState;
+	friend class OutlineMap;
+	friend class PrePass;
 
 private:
 	static void Setup();

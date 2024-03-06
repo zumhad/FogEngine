@@ -54,6 +54,13 @@ public:
     static void Restore();
     static void Close();
 
+    static void SetOutlineWidth(int width);
+    static void SetOutlineColor(Color color);
+
+    static int GetCascadeResolution();
+    static void SetCascadeResolution(int resolution);
+    static void SetCascadeSplit(int index, float split);
+
     static void SaveProject();
     static void OpenFileDialog();
 

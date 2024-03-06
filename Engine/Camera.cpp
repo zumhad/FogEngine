@@ -8,15 +8,11 @@
 
 using namespace DirectX;
 
-Frustum Camera::mFrustum;
-Matrix Camera::mProjLight;
-
 Vector3 Camera::mPosition;
 Vector3 Camera::mRotation;
 
 Matrix Camera::mView;
 Matrix Camera::mProj;
-Matrix Camera::mCascade;
 
 float Camera::mFOV;
 float Camera::mAspectRatio;
@@ -104,6 +100,14 @@ void Camera::SetFOV(float fov) { mFOV = fov; }
 void Camera::SetNear(float nearZ) { mNearZ = nearZ; }
 
 void Camera::SetFar(float farZ) { mFarZ = farZ; }
+
+float Camera::GetFOV() { return mFOV; }
+
+float Camera::GetNear() { return mNearZ; }
+
+float Camera::GetFar() { return mFarZ; }
+
+float Camera::GetAspectRatio() { return mAspectRatio; }
 
 void Camera::SetRotation(Vector3 rotation)
 {
@@ -194,19 +198,6 @@ void Camera::Update()
 
 	XMVECTOR target = forward + position;
 	
-	mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mNearZ, mFarZ);
+	mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mFarZ, mNearZ);
 	mView = XMMatrixLookAtLH(position, target, up);
-
-	mProjLight = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, 10.0f, mFarZ);
-	mFrustum.Update(mView, mProjLight);
-}
-
-void Camera::UpdateCascade(Vector3 dir)
-{
-	mCascade = mFrustum.Cascade(dir);
-}
-
-Matrix& Camera::GetCascade()
-{
-	return mCascade;
 }

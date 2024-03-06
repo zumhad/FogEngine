@@ -93,15 +93,6 @@
     <ClCompile Include="Button.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="ColorMap.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthMap.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="SelectMap.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="RayCasting.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -117,7 +108,6 @@
     <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="SamplerState.cpp" />
-    <ClCompile Include="NormalMap.cpp" />
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="LightMap.cpp" />
     <ClCompile Include="PostProcess.cpp" />
@@ -131,6 +121,9 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="Matrix3.cpp" />
+    <ClCompile Include="OutlineMap.cpp" />
+    <ClCompile Include="ComputeShader.cpp" />
+    <ClCompile Include="PrePass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -226,16 +219,7 @@
     <ClInclude Include="Button.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="ColorMap.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthMap.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="RayCasting.h">
-      <Filter>include</Filter>
-    </ClInclude>
-    <ClInclude Include="SelectMap.h">
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="TextureMap.h">
@@ -251,7 +235,6 @@
     <ClInclude Include="InputLayout.h" />
     <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="SamplerState.h" />
-    <ClInclude Include="NormalMap.h" />
     <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="LightMap.h" />
     <ClInclude Include="PostProcess.h" />
@@ -262,6 +245,9 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="Matrix3.h" />
+    <ClInclude Include="OutlineMap.h" />
+    <ClInclude Include="ComputeShader.h" />
+    <ClInclude Include="PrePass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PrePass.hlsl">
@@ -286,6 +272,15 @@
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\Skybox.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\OutlinePass.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\OutlineInit.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\OutlinePrePass.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

@@ -29,7 +29,7 @@ public:
 	static int AddChild(int parent, Button& child);
 	static Button* GetWithID(int i);
 	static Button* GetWithNumber(int i);
-
+	static void DeleteWithID(int i);
 	static int Size();
 
 private:

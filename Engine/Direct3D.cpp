@@ -154,3 +154,15 @@ ID3D11RenderTargetView* const* Direct3D::GetRTV()
 {
 	return &mRenderTargetView;
 }
+
+ID3D11RenderTargetView* const* Direct3D::NullRTV()
+{
+	static ID3D11RenderTargetView* nullRTV = 0;
+	return &nullRTV;
+}
+
+ID3D11UnorderedAccessView* const* Direct3D::NullUAV()
+{
+	static ID3D11UnorderedAccessView* nullUAV = 0;
+	return &nullUAV;
+}

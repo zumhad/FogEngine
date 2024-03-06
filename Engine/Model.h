@@ -19,6 +19,9 @@ class FOG_API Mesh;
 class FOG_API Skybox;
 class FOG_API ObjectManager;
 class FOG_API PointLight;
+class FOG_API DirectionLight;
+class FOG_API OutlineMap;
+class FOG_API PrePass;
 
 class FOG_API Model : public Object
 {
@@ -27,6 +30,9 @@ class FOG_API Model : public Object
 	friend class Skybox;
 	friend class ObjectManager;
 	friend class PointLight;
+	friend class DirectionLight;
+	friend class OutlineMap;
+	friend class PrePass;
 
 public:
 	TypeObject GetType() override { return TypeObject::Model; }
@@ -54,13 +60,14 @@ private:
 	void Draw();
 
 	Matrix GetWorldMatrix();
-	Matrix GetWorldInvTransposeMatrix(Matrix& world);
 
 public:
 	String name;
 	String texture;
 	Color color;
 	bool lighting;
+	float metallic;
+	float roughness;
 
 private:
 	Array<Mesh*> mArr;

@@ -19,6 +19,8 @@ Model::Model() : Object()
 	texture = L"white.png";
 	color = Color(1.0f, 1.0f, 1.0f);
 	lighting = true;
+	metallic = 0.0f;
+	roughness = 1.0f;
 }
 
 Model::Model(const Model& model) : Object(model)
@@ -27,6 +29,8 @@ Model::Model(const Model& model) : Object(model)
 	texture = model.texture;
 	color = model.color;
 	lighting = model.lighting;
+	metallic = model.metallic;
+	roughness = model.roughness;
 }
 
 Model::Model(Model&& model) noexcept : Model(model)
@@ -108,11 +112,6 @@ Matrix Model::GetWorldMatrix()
 {
 	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
 	return XMMatrixAffineTransformation(scale, Vector3(0.0f, 0.0f, 0.0f), q, position);
-}
-
-Matrix Model::GetWorldInvTransposeMatrix(Matrix& world)
-{
-	return XMMatrixTranspose(XMMatrixInverse(0, world));
 }
 
 void Model::SetPosition(Vector3 v)

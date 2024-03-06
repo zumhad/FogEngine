@@ -26,19 +26,43 @@ class FOG_API ObjectManager
 
 public:
     template<typename T>
-    static T* Get(int id);
+    static T* Get(Object* obj);
     template<>
-    Object* Get(int id);
+    Object* Get(Object* obj);
     template<>
-    Model* Get(int id);
+    Model* Get(Object* obj);
     template<>
-    DirectionLight* Get(int id);
+    DirectionLight* Get(Object* obj);
     template<>
-    PointLight* Get(int id);
+    PointLight* Get(Object* obj);
+
+    template<typename T>
+    static T* GetWithID(int i);
+    template<>
+    Object* GetWithID(int i);
+    template<>
+    Model* GetWithID(int i);
+    template<>
+    DirectionLight* GetWithID(int i);
+    template<>
+    PointLight* GetWithID(int i);
+
+    template<typename T>
+    static T* GetWithNumber(int i);
+    template<>
+    Object* GetWithNumber(int i);
+    template<>
+    Model* GetWithNumber(int i);
+    template<>
+    DirectionLight* GetWithNumber(int i);
+    template<>
+    PointLight* GetWithNumber(int i);
 
     static int Add(Model& model);
     static int Add(DirectionLight& light);
     static int Add(PointLight& light);
+
+    static void DeleteWithID(int i);
 
     template<typename T>
     static int Size();
@@ -64,6 +88,7 @@ private:
     static Array<Model*> mArrModel;
     static Array<DirectionLight*> mArrDirectionLight;
     static Array<PointLight*> mArrPointLight;
+    static int mSize;
 };
 
 template <typename T>

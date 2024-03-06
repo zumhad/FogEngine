@@ -3,6 +3,7 @@
 #include "Core.h"
 
 #include "Vector3.h"
+#include "Color.h"
 
 enum class TypeObject
 {
@@ -30,6 +31,8 @@ public:
 	Vector3 position;
 	Vector3 rotation;
 	Vector3 scale;
+
+	bool outline;
 
 	int data;
 

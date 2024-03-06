@@ -19,7 +19,9 @@ public:
 
 	static void Resize();
 	
+	static ID3D11UnorderedAccessView* const* NullUAV();
 	static ID3D11ShaderResourceView* const* NullSRV();
+	static ID3D11RenderTargetView* const* NullRTV();
 	static ID3D11RenderTargetView* const* GetRTV();
 
 	static IDXGISwapChain* SwapChain() { return mSwapChain1; }

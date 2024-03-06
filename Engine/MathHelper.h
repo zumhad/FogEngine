@@ -5,6 +5,7 @@
 #include "Core.h"
 
 #include "CustomArray.h"
+#include "CustomString.h"
 
 class FOG_API Math
 {
@@ -19,7 +20,7 @@ public:
     static float Max(float a, float b);
     static float Clamp(float value, float min, float max);
     static float Floor(float f);
-    static float Ceil(float f);
+    static int Ceil(float f);
     static float Round(float f);
     static float Repeat(float t, float length);
     static float DeltaAngle(float current, float target);
@@ -30,6 +31,8 @@ public:
     static float ConvertToDegrees(float a);
     static float ConvertToRadians(float a);
     static float Float16ToFloat32(unsigned short float16);
+    static float StringToFloat(String s);
+    static float Log2(float x);
 
     template <typename T>
     static int BinarySearch(Array<T>& arr, T t);

@@ -76,11 +76,12 @@ void Input::Update()
 
 	for (int i = 0; i < 8; ++i)
 	{
-		if (mMouseState.rgbButtons[i] > 0) mButtons[0][MOUSE_LEFT + i] = true;
+		if (mMouseState.rgbButtons[i] > 0)
+			mButtons[0][MOUSE_LEFT + i] = true;
 	}
 
-	mAnalogs[MOUSE_X] = (float)mMouseState.lX * 0.0018f;
-	mAnalogs[MOUSE_Y] = (float)mMouseState.lY * 0.0018f;
+	mAnalogs[MOUSE_X] = (float)mMouseState.lX;
+	mAnalogs[MOUSE_Y] = (float)mMouseState.lY;
 
 	if (mMouseState.lZ > 0)
 		mAnalogs[MOUSE_SCROLL] = 1.0f;

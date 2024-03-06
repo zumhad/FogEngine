@@ -48,7 +48,7 @@ public:
 	int GetChildNumber();
 
 private:
-	bool NeedUpdateText();
+	void NeedUpdateText();
 	void Draw();
 	void DrawRect();
 	void DrawText();
@@ -67,6 +67,8 @@ public:
 		void(*rightPress)(Button&);
 		void(*leftUp)(Button&);
 		void(*rightUp)(Button&);
+		void(*leftDown)(Button&);
+		void(*rightDown)(Button&);
 		void(*focusOn)(Button&);
 		void(*focus)(Button&);
 		void(*focusOff)(Button&);
@@ -145,6 +147,7 @@ private:
 	bool mHover;
 	bool mClick;
 	bool mFocus;
+	bool mNeedUpdateText;
 };
 
 #pragma warning(pop)

@@ -88,6 +88,23 @@ Button* GUI::GetWithNumber(int i)
 	return mArr[i];
 }
 
+void GUI::DeleteWithID(int i)
+{
+	int res = BinarySearch(mArr, i);
+
+	if (res == -1) return;
+
+	Button* parent = mArr[res]->mParent;
+	if (parent)
+	{
+		int n = mArr[res]->GetChildNumber();
+		parent->mChild.Delete(n);
+	}
+
+	SAFE_DELETE(mArr[res]);
+	mArr.Delete(res);
+}
+
 int GUI::Add(Button& control)
 {
 	Button* b = new Button(std::move(control));
@@ -229,6 +246,9 @@ void GUI::Update()
 			if (Input::Down(MOUSE_LEFT))
 			{
 				button->mClick = true;
+
+				if (button->event.leftDown)
+					button->event.leftDown(*button);
 			}
 
 			if (Input::Up(MOUSE_LEFT))
@@ -337,6 +357,10 @@ bool GUI::IsEvent()
 			if (button->event.rightClick) return true;
 			if (button->event.rightPress) return true;
 			if (button->event.leftPress) return true;
+			if (button->event.leftUp) return true;
+			if (button->event.rightUp) return true;
+			if (button->event.leftDown) return true;
+			if (button->event.rightDown) return true;
 			if (button->event.focus) return true;
 			if (button->event.focusOn) return true;
 			if (button->event.focusOff) return true;

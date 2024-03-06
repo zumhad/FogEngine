@@ -190,14 +190,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
-    <ClCompile Include="ColorMap.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
-    <ClCompile Include="DepthMap.cpp" />
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="Font.cpp" />
@@ -215,19 +214,19 @@
     <ClCompile Include="MessageHandler.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="NormalMap.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
+    <ClCompile Include="OutlineMap.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Picking.cpp" />
     <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="PostProcess.cpp" />
+    <ClCompile Include="PrePass.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="RasterizerState.cpp" />
     <ClCompile Include="RayCasting.cpp" />
     <ClCompile Include="SamplerState.cpp" />
-    <ClCompile Include="SelectMap.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Button.cpp" />
@@ -245,9 +244,9 @@
   <ItemGroup>
     <ClInclude Include="ApplicationHelper.h" />
     <ClInclude Include="Application.h" />
-    <ClInclude Include="ColorMap.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="ConstantBuffer.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="Cursor.h" />
@@ -255,7 +254,6 @@
     <ClInclude Include="CustomFile.h" />
     <ClInclude Include="CustomString.h" />
     <ClInclude Include="Definitions.h" />
-    <ClInclude Include="DepthMap.h" />
     <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
@@ -275,19 +273,19 @@
     <ClInclude Include="Matrix3.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="NormalMap.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
+    <ClInclude Include="OutlineMap.h" />
     <ClInclude Include="PathHelper.h" />
     <ClInclude Include="Picking.h" />
     <ClInclude Include="PipelineState.h" />
     <ClInclude Include="PixelShader.h" />
     <ClInclude Include="PostProcess.h" />
+    <ClInclude Include="PrePass.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="RasterizerState.h" />
     <ClInclude Include="RayCasting.h" />
     <ClInclude Include="SamplerState.h" />
-    <ClInclude Include="SelectMap.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Button.h" />
@@ -339,6 +337,21 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Skybox.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\OutlinePass.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\OutlineInit.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\OutlinePrePass.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

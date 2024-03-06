@@ -3,11 +3,56 @@
 #include "Quaternion.h"
 #include "Model.h"
 
-DirectionLight::DirectionLight()
+DirectionLight::DirectionLight() : Object()
 {
 	color = Color(1.0f, 1.0f, 1.0f);
 	rotation = Vector3(0.0f, -90.0f, 0.0f);
 	power = 1.0f;
+
+	mModel = 0;
+}
+
+DirectionLight::DirectionLight(const DirectionLight& light) : Object(light)
+{
+	color = light.color;
+	power = light.power;
+
+	mModel = 0;
+}
+
+DirectionLight::DirectionLight(DirectionLight&& light) noexcept : DirectionLight(light)
+{
+	Model model;
+	model.name = L"sun.obj";
+	model.lighting = false;
+
+	mModel = new Model(std::move(model));
+}
+
+void DirectionLight::Bind()
+{
+	mModel->position = position;
+	mModel->rotation = rotation;
+	mModel->scale = scale;
+	mModel->color = color;
+	mModel->mID = mID;
+
+	mModel->Draw();
+}
+
+void DirectionLight::BindTexture()
+{
+	mModel->BindTexture();
+}
+
+Model* DirectionLight::GetModel()
+{
+	return mModel;
+}
+
+DirectionLight::~DirectionLight()
+{
+	SAFE_DELETE(mModel);
 }
 
 Vector3 DirectionLight::GetDirection()
@@ -17,7 +62,7 @@ Vector3 DirectionLight::GetDirection()
 	return Vector3::Rotate(Vector3(0, 0, 1), q);
 }
 
-PointLight::PointLight()
+PointLight::PointLight() : Object()
 {
 	color = Color(1.0f, 1.0f, 1.0f);
 	radius = 1.0f;
@@ -57,11 +102,15 @@ void PointLight::Bind()
 	mModel->color = color;
 	mModel->mID = mID;
 
-	mModel->BindTexture();
 	mModel->Draw();
 }
 
-Model& PointLight::GetModel()
+void PointLight::BindTexture()
 {
-	return *mModel;
+	mModel->BindTexture();
+}
+
+Model* PointLight::GetModel()
+{
+	return mModel;
 }

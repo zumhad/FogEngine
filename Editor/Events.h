@@ -6,14 +6,13 @@ int idFPS = -1;
 int idSceneTree = -1;
 int idProperties = -1;
 int idTransform = -1;
+int idMaterial = -1;
 
 int gScrollPos = 0;
 
 void TransformClick(Button& button)
 {
 	Button* parent = button.GetParent();
-
-	parent->rect.height = 30;
 
 	int size = parent->GetChildCount();
 	for (int i = 1; i < size; i++)
@@ -23,26 +22,55 @@ void TransformClick(Button& button)
 
 		if (i == 1)
 		{
-			if(b->enable) parent->rect.height = 145;
+			if(b->enable) parent->rect.height = 140;
 			else parent->rect.height = 30;
 		}
 	}
+
+	static Button* properties = GUI::GetWithID(idProperties);
+	int n = parent->GetChildNumber();
+
+	size = properties->GetChildCount();
+	for (int i = n + 1; i < size; i++)
+	{
+		Button* b1 = properties->GetChildWithNumber(i - 1);
+		Button* b2 = properties->GetChildWithNumber(i);
+		b2->rect.y = b1->rect.y + b1->rect.height + 5;
+	}
 }
 
-void SliderPower(Button& button)
+void MaterialClick(Button& button)
 {
-	float value = Input::GetAxis(MOUSE_X) + atof(button.text.text);
-	button.text.text = String::ToString(value);
+	Button* parent = button.GetParent();
 
-	Object* obj = Picking::GetPickObject();
-	PointLight* light = (PointLight*)obj;
+	int size = parent->GetChildCount();
+	for (int i = 1; i < size; i++)
+	{
+		Button* b = parent->GetChildWithNumber(i);
+		b->enable = !b->enable;
 
-	light->power = value;
+		if (i == 1)
+		{
+			if (b->enable) parent->rect.height = 140;
+			else parent->rect.height = 30;
+		}
+	}
+
+	static Button* properties = GUI::GetWithID(idProperties);
+	int n = parent->GetChildNumber();
+
+	size = properties->GetChildCount();
+	for (int i = n + 1; i < size; i++)
+	{
+		Button* b1 = properties->GetChildWithNumber(i - 1);
+		Button* b2 = properties->GetChildWithNumber(i);
+		b2->rect.y = b1->rect.y + b1->rect.height + 5;
+	}
 }
 
 void SliderPosX(Button& button)
 {
-	float value = Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->position.x = value;
@@ -50,7 +78,7 @@ void SliderPosX(Button& button)
 
 void SliderPosY(Button& button)
 {
-	float value = Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->position.y = value;
@@ -58,7 +86,7 @@ void SliderPosY(Button& button)
 
 void SliderPosZ(Button& button)
 {
-	float value = Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X)+ Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->position.z = value;
@@ -66,7 +94,7 @@ void SliderPosZ(Button& button)
 
 void SliderRotX(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->rotation.x = value;
@@ -74,7 +102,7 @@ void SliderRotX(Button& button)
 
 void SliderRotY(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->rotation.y = value;
@@ -82,7 +110,7 @@ void SliderRotY(Button& button)
 
 void SliderRotZ(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->rotation.z = value;
@@ -90,7 +118,9 @@ void SliderRotZ(Button& button)
 
 void SliderScaleX(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Max(value, 0.0f);
+
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->scale.x = value;
@@ -98,7 +128,9 @@ void SliderScaleX(Button& button)
 
 void SliderScaleY(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Max(value, 0.0f);
+
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->scale.y = value;
@@ -106,28 +138,73 @@ void SliderScaleY(Button& button)
 
 void SliderScaleZ(Button& button)
 {
-	float value = 10.0f * Input::GetAxis(MOUSE_X) + atof(button.text.text);
+	float value = 0.1f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Max(value, 0.0f);
+
 	button.text.text = String::ToString(value);
 
 	Picking::GetPickObject()->scale.z = value;
 }
 
-/*
-void ChangeText(Button& button)
+void SliderColorR(Button& button)
 {
-	char ch = Input::GetNumber();
-	if (ch)
-		button.text += String::ToString(ch - '0');
+	float value = 0.001f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Clamp(value, 0.0f, 1.0f);
 
-	if (Input::Down(KEY_BACK))
-		button.text.Clear();
+	button.text.text = String::ToString(value);
 
-	if (Input::Down(KEY_PERIOD) || Input::Down(KEY_COMMA))
-		button.text += L".";
+	Object* obj = Picking::GetPickObject();
+	Model* model = ObjectManager::Get<Model>(obj);
+	model->color.r = value;
+}
 
-	if (Input::Down(KEY_MINUS))
-		button.text += L"-";
-}*/
+void SliderColorG(Button& button)
+{
+	float value = 0.001f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Clamp(value, 0.0f, 1.0f);
+
+	button.text.text = String::ToString(value);
+
+	Object* obj = Picking::GetPickObject();
+	Model* model = ObjectManager::Get<Model>(obj);
+	model->color.g = value;
+}
+
+void SliderColorB(Button& button)
+{
+	float value = 0.001f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Clamp(value, 0.0f, 1.0f);
+
+	button.text.text = String::ToString(value);
+
+	Object* obj = Picking::GetPickObject();
+	Model* model = ObjectManager::Get<Model>(obj);
+	model->color.b = value;
+}
+
+void SliderMetallic(Button& button)
+{
+	float value = 0.001f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Clamp(value, 0.0f, 1.0f);
+
+	button.text.text = String::ToString(value);
+
+	Object* obj = Picking::GetPickObject();
+	Model* model = ObjectManager::Get<Model>(obj);
+	model->metallic = value;
+}
+
+void SliderRoughness(Button& button)
+{
+	float value = 0.001f * Input::GetAxis(MOUSE_X) + Math::StringToFloat(button.text.text);
+	value = Math::Clamp(value, 0.0f, 1.0f);
+
+	button.text.text = String::ToString(value);
+
+	Object* obj = Picking::GetPickObject();
+	Model* model = ObjectManager::Get<Model>(obj);
+	model->roughness = value;
+}
 
 void ScrollTree(Button& button)
 {
@@ -202,7 +279,7 @@ void PressScroll(Button& button)
 {
 	button.rect.color = Color(0.45f, 0.45f, 0.45f);
 
-	gScrollPos += Math::Sign(Input::GetAxis(MOUSE_Y));
+	gScrollPos += Input::GetAxis(MOUSE_Y);
 
 	Button* parent = button.GetParent()->GetParent();
 	int size = parent->GetChildCount();
@@ -318,16 +395,16 @@ void HoverOnSceneTree(Button& button)
 
 	if (obj)
 	{
-		if (child0->data != Picking::GetPickObject()->GetID())
+		if (obj->GetID() != child0->data)
 		{
-			child0->rect.color.r += 0.5;
-			child1->rect.color.r += 0.5;
+			child0->rect.color.r = 0.6;
+			child1->rect.color.r = 0.6;
 		}
 	}
 	else
 	{
-		child0->rect.color.r += 0.5;
-		child1->rect.color.r += 0.5;
+		child0->rect.color.r = 0.6;
+		child1->rect.color.r = 0.6;
 	}
 }
 
@@ -345,22 +422,23 @@ void HoverOffSceneTree(Button& button)
 
 	if (obj)
 	{
-		if (child0->data != Picking::GetPickObject()->GetID())
+		if (obj->GetID() != child0->data)
 		{
-			child0->rect.color.r -= 0.5;
-			child1->rect.color.r -= 0.5;
+			child0->rect.color.r = 0.1;
+			child1->rect.color.r = 0.1;
 		}
 	}
 	else
 	{
-		child0->rect.color.r -= 0.5;
-		child1->rect.color.r -= 0.5;
+		child0->rect.color.r = 0.1;
+		child1->rect.color.r = 0.1;
 	}
 }
 
 void AddOnTree(Button& button)
 {
-	Picking::SetPickObject(ObjectManager::Get<Object>(button.data));
+	Object* obj = ObjectManager::GetWithID<Object>(button.data);
+	Picking::SetPickObject(obj);
 }
 
 void AddBox(Button&)
@@ -388,14 +466,14 @@ void AddBox(Button&)
 	b.text.alignm.vertical = ALIGNM_CENTER_V;
 	b.text.x = 20;
 	b.rect.color = Color(0.1f, 0.1f, 0.1f);
-	b.event.leftClick = AddOnTree;
+	b.event.leftDown = AddOnTree;
 	b.event.hoverOn = HoverOnSceneTree;
 	b.event.hoverOff = HoverOffSceneTree;
 	b.event.scroll = ScrollTree;
 	b.data = id;
 	int idButton = GUI::AddChild(idSceneTree, b);
 
-	Object* obj = ObjectManager::Get<Object>(id);
+	Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
  	obj->data = idButton;
 
 	b.rect.x = b.rect.width;
@@ -419,6 +497,8 @@ void AddBox(Button&)
 	}
 
 	scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+	Picking::SetPickObject(obj);
 }
 
 void AddPlane(Button&)
@@ -447,14 +527,14 @@ void AddPlane(Button&)
 	b.text.alignm.vertical = ALIGNM_CENTER_V;
 	b.text.x = 20;
 	b.rect.color = Color(0.1f, 0.1f, 0.1f);
-	b.event.leftClick = AddOnTree;
+	b.event.leftDown = AddOnTree;
 	b.event.hoverOn = HoverOnSceneTree;
 	b.event.hoverOff = HoverOffSceneTree;
 	b.event.scroll = ScrollTree;
 	b.data = id;
 	int idButton = GUI::AddChild(idSceneTree, b);
 
-	Object* obj = ObjectManager::Get<Object>(id);
+	Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
 	obj->data = idButton;
 
 	b.rect.x = b.rect.width;
@@ -478,6 +558,8 @@ void AddPlane(Button&)
 	}
 
 	scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+	Picking::SetPickObject(obj);
 }
 
 void AddSphere(Button&)
@@ -505,14 +587,14 @@ void AddSphere(Button&)
 	b.text.alignm.vertical = ALIGNM_CENTER_V;
 	b.text.x = 20;
 	b.rect.color = Color(0.1f, 0.1f, 0.1f);
-	b.event.leftClick = AddOnTree;
+	b.event.leftDown = AddOnTree;
 	b.event.hoverOn = HoverOnSceneTree;
 	b.event.hoverOff = HoverOffSceneTree;
 	b.event.scroll = ScrollTree;
 	b.data = id;
 	int idButton = GUI::AddChild(idSceneTree, b);
 
-	Object* obj = ObjectManager::Get<Object>(id);
+	Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
 	obj->data = idButton;
 
 	b.rect.x = b.rect.width;
@@ -536,15 +618,17 @@ void AddSphere(Button&)
 	}
 
 	scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+	Picking::SetPickObject(obj);
 }
 
 void AddRoom()
 {
 	Model m;
-	m.name = L"room.obj";
-	m.texture = L"png.png";
+	m.name = L"abandonhouse.obj";
+	m.texture = L"AbHouse_Base_Color.png";
 	m.position = Vector3(0.0, 0.0, 0.0);
-	m.scale = Vector3(1.0, 1.0, 1.0);
+	m.scale = Vector3(0.01, 0.01, 0.01);
 	m.rotation = Vector3(0, 0, 0);
 	m.color = Color(1.0f, 1.0f, 1.0f);
 	int id = ObjectManager::Add(m);
@@ -568,14 +652,14 @@ void AddRoom()
 	b.text.alignm.vertical = ALIGNM_CENTER_V;
 	b.text.x = 20;
 	b.rect.color = Color(0.1f, 0.1f, 0.1f);
-	b.event.leftClick = AddOnTree;
+	b.event.leftDown = AddOnTree;
 	b.event.hoverOn = HoverOnSceneTree;
 	b.event.hoverOff = HoverOffSceneTree;
 	b.event.scroll = ScrollTree;
 	b.data = id;
 	int idButton = GUI::AddChild(idSceneTree, b);
 
-	Object* obj = ObjectManager::Get<Object>(id);
+	Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
 	obj->data = idButton;
 
 	b.rect.x = b.rect.width;
@@ -599,6 +683,8 @@ void AddRoom()
 	}
 
 	scroll->rect.height = Math::Round(Math::Min(float(maxCount) / float(treeCount), 1.0f) * (scrollBar->rect.height - 6));
+
+	Picking::SetPickObject(obj);
 }
 
 void Close(Button&)

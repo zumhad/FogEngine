@@ -6,15 +6,18 @@
 #include "Vector3.h"
 #include "Vector4.h"
 
+class FOG_API ShadowMap;
+
 class FOG_API Frustum
 {
+    friend class ShadowMap;
+
 public:
     Frustum();
 
-	void Update(Matrix& view, Matrix& proj);
-    Matrix Cascade(Vector3 dir);
-
 private:
+    void Update(Matrix& view, Matrix& proj);
+    Matrix Cascade(Vector3 dir, int resolution);
     void Create(Matrix& proj);
     void Transform(Matrix& inv);
     void GetCorners(Vector3* corners);

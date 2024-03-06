@@ -31,25 +31,16 @@ public:
 
 private:
 	static void UpdateShadowPassViewport();
-	static void UpdatePrePassViewport();
-	static void UpdatePrePassBuffer();
-	static void UpdatePrePassBuffer1(Model& model);
 
 private:
 	static RasterizerState mRasterizerState;
 	static RasterizerState mShadowRasterizerState;
 	static RasterizerState mSkyboxRasterizerState;
-	static Array<ID3D11RenderTargetView*> mRenderTargetView;
-	static Array<ID3D11ShaderResourceView*> mShaderResourceView;
 	static SamplerState mShadowSamplerState;
 	static SamplerState mSamplerState;
 	static SamplerState mPostProcessSamplerState;
 	static DepthStencilState mDepthStencilState;
 	static DepthStencilState mSkyboxDepthStencilState;
-
-	static VertexShader mPrePassVS;
-	static PixelShader mPrePassPS;
-	static InputLayout mPrePassIL;
 
 	static VertexShader mPassVS;
 	static PixelShader mPassPS;
@@ -62,11 +53,5 @@ private:
 	static VertexShader mShadowPassVS;
 	static PixelShader mShadowPassPS;
 	static InputLayout mShadowPassIL;
-
-	struct PrePassBuffer;
-	static ConstantBuffer<PrePassBuffer> mPrePassBuffer;
-
-	struct PrePassBuffer1;
-	static ConstantBuffer<PrePassBuffer1> mPrePassBuffer1;
 };
 

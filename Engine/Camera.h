@@ -17,6 +17,8 @@ class FOG_API Frustum;
 class FOG_API Vector3;
 class FOG_API Matrix;
 class FOG_API Skybox;
+class FOG_API OutlineMap;
+class FOG_API PrePass;
 
 struct FOG_API APPCLASS;
 
@@ -32,6 +34,8 @@ class FOG_API Camera
 	friend class ShadowMap;
 	friend class LightMap;
 	friend class Skybox;
+	friend class OutlineMap;
+	friend class PrePass;
 
 public:
 	static void SetPosition(Vector3 position);
@@ -61,24 +65,23 @@ public:
 	static void SetNear(float nearZ);
 	static void SetFar(float farZ);
 
+	static float GetFOV();
+	static float GetNear();
+	static float GetFar();
+	static float GetAspectRatio();
+
 private:
-	static void UpdateCascade(Vector3 dir);
-	static Matrix& GetCascade();
 	static Matrix& GetViewMatrix();
 	static Matrix& GetProjMatrix();
 	static void Setup(APPCLASS& app);
 	static void Update();
 
 private:
-	static Frustum mFrustum;
-	static Matrix mProjLight;
-
 	static Vector3 mPosition;
 	static Vector3 mRotation;
 
 	static Matrix mView;
 	static Matrix mProj;
-	static Matrix mCascade;
 
 	static float mFOV;
 	static float mAspectRatio;

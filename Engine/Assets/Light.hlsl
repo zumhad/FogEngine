@@ -56,11 +56,8 @@ float3 FresnelSchlick(float cosTheta, float3 F0, float roughness)
     return F0 + (max(float3(r, r, r), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0f);
 }
 
-float3 ApplyDirectionLight(DirectionalLight dirLight, float3 normal, float3 color, float3 position, float3 camera)
+float3 ApplyDirectionLight(DirectionalLight dirLight, float3 normal, float3 color, float3 position, float3 camera, float metallic, float roughness)
 {
-    float metallic = 0.5f;
-    float roughness = 0.5f;
-
     float3 V = normalize(camera - position);
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, color, metallic);
@@ -84,23 +81,22 @@ float3 ApplyDirectionLight(DirectionalLight dirLight, float3 normal, float3 colo
     return (kD * color / PI + specular) * radiance * NdotL;
 }
 
-float3 ApplyPointLight(PointLight pointLight, float3 normal, float3 color, float3 position, float3 camera)
+float3 ApplyPointLight(PointLight pointLight, float3 normal, float3 color, float3 position, float3 camera, float metallic, float roughness)
 {
-    float metallic = 0.2f;
-    float roughness = 0.2f;
+    float3 distance = pointLight.position - position;
+    float distanceSqr = dot(distance, distance);
+    float radiusSqr = pointLight.radius * pointLight.radius;
+    float attenuation = max(0.0f, 1.0f - distanceSqr / radiusSqr) / distanceSqr;
+    float radiance = attenuation * pointLight.power;
+
+    if (radiance == 0.0f) return float3(0.0f, 0.0f, 0.0f);
 
     float3 V = normalize(camera - position);
     float3 F0 = float3(0.04f, 0.04f, 0.04f);
     F0 = lerp(F0, color.rgb, metallic);
 
-    float3 L = normalize(pointLight.position - position);
+    float3 L = normalize(distance);
     float3 H = normalize(V + L);
-
-    float3 distance = pointLight.position - position;
-    float distanceSqr = dot(distance, distance);
-    float radiusSqr = pointLight.radius * pointLight.radius;
-    float attenuation = max(0.0f, 1.0f - distanceSqr / radiusSqr) / distanceSqr;
-    float3 radiance = pointLight.color.rgb * attenuation * pointLight.power;
 
     float D = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, V, L, roughness);
@@ -113,5 +109,5 @@ float3 ApplyPointLight(PointLight pointLight, float3 normal, float3 color, float
     float3 specular = numerator / denominator;
 
     float NdotL = max(dot(normal, L), 0.0f);
-    return (kD * color.rgb / PI + specular) * radiance * NdotL;
+    return (kD * color.rgb / PI + specular) * radiance * NdotL * pointLight.color.rgb;
 }

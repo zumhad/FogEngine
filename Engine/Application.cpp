@@ -9,19 +9,17 @@
 #include "GUI.h"
 #include "Cursor.h"
 #include "MathHelper.h"
-#include "DepthMap.h"
-#include "SelectMap.h"
 #include "TextureMap.h"
 #include "Picking.h"
-#include "ColorMap.h"
 #include "Utility.h"
 #include "PipelineState.h"
-#include "NormalMap.h"
 #include "LightMap.h"
 #include "PostProcess.h"
 #include "ShadowMap.h"
 #include "Font.h"
 #include "Skybox.h"
+#include "OutlineMap.h"
+#include "PrePass.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -136,17 +134,15 @@ void Application::CheckDebug()
 void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
+    PrePass::Setup();
+    OutlineMap::Setup();
     Skybox::Setup();
     Font::Setup();
     ShadowMap::Setup();
     PostProcess::Setup();
     LightMap::Setup();
-    NormalMap::Setup();
-    ColorMap::Setup();
     Picking::Setup();
     TextureMap::Setup();
-    SelectMap::Setup();
-    DepthMap::Setup();
     Input::Setup();
     GUI::Setup();
     Time::Setup();
@@ -215,17 +211,15 @@ void Application::Shotdown() //exit
     PipelineState::Shotdown();
     ObjectManager::Shotdown();
     GUI::Shotdown();
-    DepthMap::Shotdown();
-    SelectMap::Shotdown();
     TextureMap::Shotdown();
-    Picking::Shotdown();
-    ColorMap::Shotdown();
-    NormalMap::Shotdown();    
+    Picking::Shotdown();   
     LightMap::Shotdown();
     PostProcess::Shotdown();
     ShadowMap::Shotdown();
     Font::Shotdown();
     Skybox::Shotdown();
+    OutlineMap::Shotdown();
+    PrePass::Shotdown();
     Direct3D::Shotdown();
 }
 
@@ -381,6 +375,12 @@ int Application::GetCaptionHeight() { return mCaptionHeight; }
 
 void Application::SetCaptionHeight(int height) { mCaptionHeight = height; }
 
+int Application::GetCascadeResolution() { return ShadowMap::GetResolution(); }
+
+void Application::SetCascadeResolution(int resolution) { ShadowMap::SetResolution(resolution); }
+
+void Application::SetCascadeSplit(int index, float split) { ShadowMap::SetSplit(index, split); }
+
 void Application::Restore()
 { 
     if (mMaximized)
@@ -412,6 +412,16 @@ void Application::OpenFileDialog()
     {
         MessageBox(NULL, ofn.lpstrFile, L"File Name", MB_OK);
     }
+}
+
+void Application::SetOutlineWidth(int width)
+{
+    OutlineMap::mOutline.width = width;
+}
+
+void Application::SetOutlineColor(Color color)
+{
+    OutlineMap::mOutline.color = color;
 }
 
 void Application::Close() { PostQuitMessage(0); }

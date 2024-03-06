@@ -66,9 +66,9 @@ float Math::Floor(float f)
     return std::floor(f);
 }
 
-float Math::Ceil(float f)
+int Math::Ceil(float f)
 {
-    return std::ceil(f);
+    return (int)std::ceil(f);
 }
 
 float Math::Round(float f)
@@ -176,4 +176,14 @@ float Math::Float16ToFloat32(unsigned short float16)
     }
 
     return *((float*)&float32);
+}
+
+float Math::StringToFloat(String s)
+{
+    return (float)std::atof(s);
+}
+
+float Math::Log2(float x)
+{
+    return std::log2(x);
 }

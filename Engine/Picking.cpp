@@ -3,10 +3,10 @@
 #include "Direct3D.h"
 #include "Application.h"
 #include "Cursor.h"
-#include "SelectMap.h"
 #include "ObjectManager.h"
 #include "Vector3.h"
 #include "MathHelper.h"
+#include "PrePass.h"
 
 #include <DirectXCollision.h>
 
@@ -24,7 +24,7 @@ void Picking::Setup()
 	desc.Height = 1;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
 	desc.SampleDesc.Count = 1;
 	desc.SampleDesc.Quality = 0;
 	desc.Usage = D3D11_USAGE_STAGING;
@@ -39,6 +39,43 @@ void Picking::Shotdown()
 {
 	SAFE_RELEASE(mStaging);
 }
+
+float decode(unsigned short float16_value)
+{
+	unsigned int sign = float16_value >> 15;
+	unsigned int exponent = (float16_value >> 10) & 0x1F;
+	unsigned int fraction = (float16_value & 0x3FF);
+	unsigned int float32_value;
+	if (exponent == 0)
+	{
+		if (fraction == 0)
+		{
+			float32_value = (sign << 31);
+		}
+		else
+		{
+			exponent = 127 - 14;
+			while ((fraction & (1 << 10)) == 0)
+			{
+				exponent--;
+				fraction <<= 1;
+			}
+			fraction &= 0x3FF;
+			float32_value = (sign << 31) | (exponent << 23) | (fraction << 13);
+		}
+	}
+	else if (exponent == 0x1F)
+	{
+		float32_value = (sign << 31) | (0xFF << 23) | (fraction << 13);
+	}
+	else
+	{
+		float32_value = (sign << 31) | ((exponent + (127 - 15)) << 23) | (fraction << 13);
+	}
+
+	return *((float*)&float32_value);
+}
+
 
 void Picking::Pick()
 {
@@ -64,7 +101,7 @@ void Picking::Pick()
 	box.back = 1;
 
 	ID3D11Resource* texture = 0;
-	(*SelectMap::GetSRV())->GetResource(&texture);
+	(*PrePass::GetPositionIDSRV())->GetResource(&texture);
 
 	Direct3D::DeviceContext()->CopySubresourceRegion(mStaging, 0, 0, 0, 0, texture, 0, &box);
 
@@ -73,19 +110,19 @@ void Picking::Pick()
 
 	if (SUCCEEDED(hr))
 	{
-		float* copy = (float*)mappedBuffer.pData;
+		unsigned short* copy = (unsigned short*)mappedBuffer.pData;
 
 		Vector3 pos;
 		int id;
 
-		pos.x = *copy++;
-		pos.y = *copy++;
-		pos.z = *copy++;
-		id = (int)(*copy++);
+		pos.x = decode(*(copy + 0));
+		pos.y = decode(*(copy + 1));
+		pos.z = decode(*(copy + 2));
+		id = (int)decode(*(copy + 3));
 
 		if (id > 0)
 		{
-			mPickObject = ObjectManager::Get<Object>(id);
+			mPickObject = ObjectManager::GetWithID<Object>(id);
 			mPickPosition = pos;
 		}
 		else

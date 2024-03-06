@@ -106,6 +106,11 @@ void String::Delete(int i)
 	mStr.erase(i);
 }
 
+void String::Delete(int start, int end)
+{
+	mStr.erase(start, end - start + 1);
+}
+
 CHAR* String::GetCHAR()
 {
 	int size = (int)mStr.size();

@@ -9,16 +9,19 @@ enum class SamplerStateType
 	Default,
 	Shadow,
 	GUI,
-	PostProcess
+	PostProcess,
+	Outline
 };
 
 class FOG_API PipelineState;
 class FOG_API GUI;
+class FOG_API OutlineMap;
 
 class FOG_API SamplerState
 {
 	friend class PipelineState;
 	friend class GUI;
+	friend class OutlineMap;
 
 private:
 	SamplerState();

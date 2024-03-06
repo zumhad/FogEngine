@@ -40,7 +40,8 @@ PS_OUTPUT PS(VS_OUTPUT input)
 	PS_OUTPUT output;
 
 	output.color = gTexture.Sample(gSampler, input.uv);
-	output.color.xyz = pow(abs(output.color.xyz), 2.2f);
+	output.color.rgb = pow(abs(output.color.xyz), 2.2f);
+	output.color.a = 0.0f;
 
 	return output;
 }

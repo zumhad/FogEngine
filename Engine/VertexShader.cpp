@@ -36,5 +36,5 @@ ID3D10Blob* VertexShader::GetBlob()
 void VertexShader::Release()
 {
 	SAFE_RELEASE(mVertexShader);
-	SAFE_RELEASE(mBlob);;
+	SAFE_RELEASE(mBlob);
 }
