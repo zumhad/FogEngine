@@ -3,15 +3,11 @@
 cbuffer cbLightPassBuffer : register(b0)
 {
     DirectionalLight gDirLight;
-    PointLight gPointLight[16];
-    float4x4 gMatrix;
-    float4 gShadowSplit;
-    float4 gShadowOffset[4];
-    float4 gShadowScale[4];
-    float3 gCameraPos;
-    int gPointCount;
+    PointLight gPointLight[MAX_POINT_LIGHT];
+    float3 gCameraPosition;
     int gWidth;
-    int gHeight; float2 pad;
+    int gHeight;
+    int gPointCount; float2 pad;
 };
 
 struct VS_INPUT
@@ -78,8 +74,7 @@ float SampleShadowMapOptimizedPCF(float3 shadowPos, in float3 shadowPosDX, float
 
     float lightDepth = shadowPos.z;
 
-    const float bias = 0.005f;
-    lightDepth += bias;
+    lightDepth += gDirLight.bias;
 
     float2 uv = shadowPos.xy * shadowMapSize;
 
@@ -119,11 +114,11 @@ float SampleShadowMapOptimizedPCF(float3 shadowPos, in float3 shadowPosDX, float
 
 float SampleShadowCascade(float3 position, float3 shadowPosDX, float3 shadowPosDY, int index)
 {
-    position += gShadowOffset[index].xyz;
-    position *= gShadowScale[index].xyz;
+    position += gDirLight.offset[index].xyz;
+    position *= gDirLight.scale[index].xyz;
 
-    shadowPosDX *= gShadowScale[index].xyz;
-    shadowPosDY *= gShadowScale[index].xyz;
+    shadowPosDX *= gDirLight.scale[index].xyz;
+    shadowPosDY *= gDirLight.scale[index].xyz;
 
     return SampleShadowMapOptimizedPCF(position, shadowPosDX, shadowPosDY, index);
 }
@@ -157,30 +152,30 @@ PS_OUTPUT PS(VS_OUTPUT input)
             int index = -1;
 
             [unroll]
-            for (int i = 3; i >= 0; i--)
+            for (int i = MAX_CASCADES - 1; i >= 0; i--)
             {
-                if (range < gShadowSplit[i]) index = i;
+                if (range < gDirLight.split[i].split) index = i;
             }
 
             float shadow = 0.0f;
 
             if (index != -1)
             {
-                float3 shadowPos = mul(gMatrix, float4(position, 1.0f)).xyz;
+                float3 shadowPos = mul(gDirLight.viewProj, float4(position, 1.0f)).xyz;
                 float3 shadowPosDX = ddx_fine(shadowPos);
                 float3 shadowPosDY = ddy_fine(shadowPos);
                 shadow = SampleShadowCascade(shadowPos, shadowPosDX, shadowPosDY, index);
 
                 const float BlendThreshold = 0.1f;
 
-                float nextSplit = gShadowSplit[index];
-                float splitSize = index == 0 ? nextSplit : nextSplit - gShadowSplit[index - 1];
+                float nextSplit = gDirLight.split[index].split;
+                float splitSize = index == 0 ? nextSplit : nextSplit - gDirLight.split[index-1].split;
                 float fadeFactor = (nextSplit - range) / splitSize;
 
                 [branch]
-                if (fadeFactor <= BlendThreshold && index != 3) // size
+                if (fadeFactor <= BlendThreshold && index != MAX_CASCADES - 1)
                 {
-                    float3 nextPosition = mul(gMatrix, float4(position, 1.0f)).xyz;
+                    float3 nextPosition = mul(gDirLight.viewProj, float4(position, 1.0f)).xyz;
 
                     float3 nextSplitVisibility = SampleShadowCascade(nextPosition, shadowPosDX, shadowPosDY, index + 1);
                     float lerpAmt = smoothstep(0.0f, BlendThreshold, fadeFactor);
@@ -188,7 +183,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
                 }
             }
 
-            output.color.rgb += ApplyDirectionLight(gDirLight, normal, diffuse.rgb, position, gCameraPos, metallic, roughness) * (1.0f - shadow);
+            output.color.rgb += ApplyDirectionLight(gDirLight, normal, diffuse.rgb, position, gCameraPosition, metallic, roughness) * (1.0f - shadow);
         }
         
         [unroll]
@@ -196,7 +191,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
         {
             if (gPointLight[j].power)
             {
-                output.color.rgb += ApplyPointLight(gPointLight[j], normal, diffuse.rgb, position, gCameraPos, metallic, roughness);
+                output.color.rgb += ApplyPointLight(gPointLight[j], normal, diffuse.rgb, position, gCameraPosition, metallic, roughness);
             }
         }
     }

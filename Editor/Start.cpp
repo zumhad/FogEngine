@@ -64,7 +64,7 @@ void MyUpdate()
 		PointLight light;
 		light.position.y = 5.0;
 		light.position.z = 0;
-		light.radius = 100.0f;
+		light.radius = 20.0f;
 		light.power = 100.0f;
 		light.scale = Vector3(0.2f, 0.2f, 0.2f);
 		int id = ObjectManager::Add(light);
@@ -412,12 +412,15 @@ void Start()
 	Camera::SetPosition(Vector3(0.0f, 10.0f, -10.0f));
 	Camera::SetRotation(Vector3(45.0f, 0.0f, 0.0f));
 	Camera::SetNear(0.1f);
-	Camera::SetFar(1000.0f);
+	Camera::SetFar(500.0f);
 
-	Application::SetCascadeSplit(0, 0.01f);
-	Application::SetCascadeSplit(1, 0.03f);
-	Application::SetCascadeSplit(2, 0.05f);
-	Application::SetCascadeSplit(3, 0.1f);
+	Application::SetCascadeSplit(0, 0.05f);
+	Application::SetCascadeSplit(1, 0.1f);
+	Application::SetCascadeSplit(2, 0.2f);
+	Application::SetCascadeSplit(3, 0.3f);
+
+	Application::SetCascadeResolution(1024);
+	Application::SetCascadeBias(0.005f);
 
 	Application::SetOutlineWidth(5);
 	Application::SetOutlineColor(Color(1.0f, 1.0f, 0.0f));

@@ -381,6 +381,8 @@ void Application::SetCascadeResolution(int resolution) { ShadowMap::SetResolutio
 
 void Application::SetCascadeSplit(int index, float split) { ShadowMap::SetSplit(index, split); }
 
+void Application::SetCascadeBias(float bias) { ShadowMap::SetBias(bias); }
+
 void Application::Restore()
 { 
     if (mMaximized)

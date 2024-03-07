@@ -26,17 +26,18 @@ Frustum ShadowMap::mFrustum;
 void ShadowMap::Setup()
 {
 	mCascade.resolution = 1024;
-	mCascade.splits.Resize(4);
-	mCascade.offsets.Resize(4);
-	mCascade.scales.Resize(4);
-	mCascade.matrices.Resize(4);
+	mCascade.splits.Resize(MAX_CASCADES);
+	mCascade.offsets.Resize(MAX_CASCADES);
+	mCascade.scales.Resize(MAX_CASCADES);
+	mCascade.matrices.Resize(MAX_CASCADES);
+	mCascade.bias = 0.005f;
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		mCascade.splits[i] = (1.0f / 4.0f) * (i + 1);
+		mCascade.splits[i] = (1.0f / (float)MAX_CASCADES) * (float)(i + 1);
 	}
 
-	mDepthStencilView.Resize(4);
+	mDepthStencilView.Resize(MAX_CASCADES);
 
 	UpdateTexture();
 
@@ -47,7 +48,7 @@ void ShadowMap::UpdateTexture()
 {
 	SAFE_RELEASE(mShaderResourceView);
 
-	for (int i = 0; i < 4; i++) // size
+	for (int i = 0; i < MAX_CASCADES; i++)
 	{
 		SAFE_RELEASE(mDepthStencilView[i]);
 	}
@@ -58,7 +59,7 @@ void ShadowMap::UpdateTexture()
 		desc.Width = mCascade.resolution;
 		desc.Height = mCascade.resolution;
 		desc.MipLevels = 1;
-		desc.ArraySize = 4; // size
+		desc.ArraySize = MAX_CASCADES;
 		desc.Format = DXGI_FORMAT_R16_TYPELESS;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
@@ -72,7 +73,7 @@ void ShadowMap::UpdateTexture()
 		desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2DArray.ArraySize = 1;
 
-		for (int i = 0; i < 4; i++) // size
+		for (int i = 0; i < MAX_CASCADES; i++)
 		{
 			desc.Texture2DArray.FirstArraySlice = i;
 			FOG_TRACE(Direct3D::Device()->CreateDepthStencilView(texture, &desc, &mDepthStencilView[i]));
@@ -84,7 +85,7 @@ void ShadowMap::UpdateTexture()
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
-		desc.Texture2DArray.ArraySize = 4; // size
+		desc.Texture2DArray.ArraySize = MAX_CASCADES;
 		desc.Texture2DArray.FirstArraySlice = 0;
 		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mShaderResourceView));
 	}
@@ -212,7 +213,7 @@ void ShadowMap::UpdateCascade(Vector3 dir)
 
 	CreateMatrix(dir);
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX_CASCADES; i++)
 	{
 		float n = Camera::GetNear() + (i ? mCascade.splits[i - 1] * len : 0);
 		float f = Camera::GetNear() + mCascade.splits[i] * len;
@@ -237,14 +238,27 @@ void ShadowMap::UpdateBuffer(Model& model, int index)
 
 void ShadowMap::SetSplit(int index, float split)
 {
+	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 	FOG_ASSERT(split > 0.0f && split <= 1.0f);
 
 	mCascade.splits[index] = split;
 }
 
+void ShadowMap::SetBias(float bias)
+{
+	FOG_ASSERT(bias >= 0.0f);
+
+	mCascade.bias = bias;
+}
+
+float ShadowMap::GetBias()
+{
+	return mCascade.bias;
+}
+
 float ShadowMap::GetSplit(int index)
 {
-	FOG_ASSERT(index >= 0 && index < 4);
+	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	float len = Camera::GetFar() - Camera::GetNear();
 	return Camera::GetNear() + mCascade.splits[index] * len;
@@ -257,21 +271,21 @@ Matrix ShadowMap::GetMatrix()
 
 Matrix ShadowMap::GetMatrix(int index)
 {
-	FOG_ASSERT(index >= 0 && index < 4);
+	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.matrices[index];
 }
 
 Vector4 ShadowMap::GetOffset(int index)
 {
-	FOG_ASSERT(index >= 0 && index < 4);
+	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.offsets[index];
 }
 
 Vector4 ShadowMap::GetScale(int index)
 {
-	FOG_ASSERT(index >= 0 && index < 4);
+	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.scales[index];
 }
@@ -308,7 +322,7 @@ void ShadowMap::Shotdown()
 {
 	SAFE_RELEASE(mShaderResourceView);
 
-	for (int i = 0; i < 4; i++) // size
+	for (int i = 0; i < MAX_CASCADES; i++)
 	{
 		SAFE_RELEASE(mDepthStencilView[i]);
 	}

@@ -33,6 +33,7 @@ public:
 	Vector3 scale;
 
 	bool outline;
+	bool enable;
 
 	int data;
 

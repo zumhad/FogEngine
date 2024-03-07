@@ -37,6 +37,11 @@ int ObjectManager::Add(PointLight& light)
 	PointLight* l = new PointLight(std::move(light));
 	l->mID = ++mSize;
 
+	if (mArrPointLight.Size() == MAX_POINT_LIGHT)
+	{
+		l->enable = false;
+	}
+
 	mArrObject.Add(l);
 	mArrPointLight.Add(l);
 

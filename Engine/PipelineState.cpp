@@ -112,11 +112,14 @@ void PipelineState::Bind()
 	Vector3 lightDir = Vector3(0.0f, 0.0f, 0.0f);
 
 	int size = ObjectManager::Size<DirectionLight>();
-	for (int i = 0; i < size; i++) // TO DO
+	for (int i = 0; i < size; i++)
 	{
-		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i); 
+		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
+		if (!light->enable) continue;
 
 		lightDir = light->GetDirection();
+
+		break;
 	}
 
 	if (lightDir != Vector3(0.0f, 0.0f, 0.0f))
@@ -135,11 +138,11 @@ void PipelineState::Bind()
 
 		Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, ShadowMap::GetBuffer());
 
-		for (int i = 0; i < 4; i++)
+		for (int i = 0; i < MAX_CASCADES; i++)
 		{
-			ShadowMap::Clear(i); // size
+			ShadowMap::Clear(i);
 
-			Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, ShadowMap::GetDSV(i)); // size
+			Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, ShadowMap::GetDSV(i));
 
 			size = ObjectManager::Size<Model>();
 			for (int j = 0; j < size; j++)
@@ -206,12 +209,12 @@ void PipelineState::Bind()
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	/*OutlineMap::Clear();
+	OutlineMap::Clear();
 
 	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
 
-	OutlineMap::Bind();*/
+	OutlineMap::Bind();
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 

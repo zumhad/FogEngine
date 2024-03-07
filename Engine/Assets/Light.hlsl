@@ -1,11 +1,21 @@
 #define PI 3.14159265358979323846
 #define FLT_MIN  1.175494351e-38
 
+struct Split
+{
+    float split; float3 pad;
+};
+
 struct DirectionalLight
 {
+    Split split[MAX_CASCADES];
+    float4x4 viewProj;
+    float4 offset[MAX_CASCADES];
+    float4 scale[MAX_CASCADES];
     float4 color;
     float3 direction;
     float power;
+    float bias; float3 pad;
 };
 
 struct PointLight

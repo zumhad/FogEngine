@@ -15,25 +15,29 @@ struct FOG_API LightMap::LightBuffer
 {
 	struct
 	{
+		struct
+		{
+			float split; float pad[3];
+		} split[MAX_CASCADES];
+		Matrix viewProj;
+		Vector4 offset[MAX_CASCADES];
+		Vector4 scale[MAX_CASCADES];
 		Color color;
-		Vector3 dir;
+		Vector3 direction;
 		float power;
-	} dirLight{};
+		float bias; float pad[3];
+	} dirLight;
 	struct
 	{
 		Color color;
 		Vector3 position;
 		float radius;
 		float power; float pad[3];
-	} pointLight[16]{};
-	Matrix matrix;
-	float shadowSplit[4];
-	Vector4 shadowOffset[4];
-	Vector4 shadowScale[4];
-	Vector3 cameraPos;
-	int pointCount = 0;
-	int width = 0;
-	int height = 0; float pad[2];
+	} pointLight[MAX_POINT_LIGHT];
+	Vector3 cameraPosition;
+	int width;
+	int height;
+	int pointCount; float pad[2];
 };
 
 ID3D11RenderTargetView* LightMap::mRenderTargetView = 0;
@@ -93,25 +97,28 @@ void LightMap::Setup()
 void LightMap::UpdateBuffer(DirectionLight& dir)
 {
 	mBuffer.dirLight.color = dir.color;
-	mBuffer.dirLight.dir = dir.GetDirection();
+	mBuffer.dirLight.direction = dir.GetDirection();
 	mBuffer.dirLight.power = dir.power;
+	mBuffer.dirLight.bias = ShadowMap::GetBias();
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		mBuffer.shadowSplit[i] = ShadowMap::GetSplit(i);
-		mBuffer.shadowOffset[i] = ShadowMap::GetOffset(i);
-		mBuffer.shadowScale[i] = ShadowMap::GetScale(i);
-		mBuffer.matrix = ShadowMap::GetMatrix();
+		mBuffer.dirLight.split[i].split = ShadowMap::GetSplit(i);
+		mBuffer.dirLight.offset[i] = ShadowMap::GetOffset(i);
+		mBuffer.dirLight.scale[i] = ShadowMap::GetScale(i);
+		mBuffer.dirLight.viewProj = ShadowMap::GetMatrix();
 	}
 }
 
-void LightMap::UpdateBuffer(PointLight& point)
+int LightMap::UpdateBuffer(PointLight& point)
 {
 	mBuffer.pointLight[mBuffer.pointCount].color = point.color;
 	mBuffer.pointLight[mBuffer.pointCount].position = point.position;
 	mBuffer.pointLight[mBuffer.pointCount].power = point.power;
 	mBuffer.pointLight[mBuffer.pointCount].radius = point.radius;
 	mBuffer.pointCount++;
+
+	return mBuffer.pointCount;
 }
 
 void LightMap::UpdateBuffer()
@@ -131,7 +138,7 @@ void LightMap::UpdateBuffer()
 
 	mBuffer.width = width;
 	mBuffer.height = height;
-	mBuffer.cameraPos = Camera::GetPosition();
+	mBuffer.cameraPosition = Camera::GetPosition();
 
 	mLightBuffer.Bind(mBuffer);
 

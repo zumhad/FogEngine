@@ -288,6 +288,8 @@ void PrePass::Bind()
 	for (int i = 0; i < size; i++)
 	{
 		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
+		if (!light->enable) continue;
+
 		LightMap::UpdateBuffer(*light);
 
 		UpdateBuffer1(light->GetModel());
@@ -295,19 +297,25 @@ void PrePass::Bind()
 
 		light->BindTexture();
 		light->Bind();
+
+		break;
 	}
 
 	size = ObjectManager::Size<PointLight>();
 	for (int i = 0; i < size; i++)
 	{
 		PointLight* light = ObjectManager::GetWithNumber<PointLight>(i);
-		LightMap::UpdateBuffer(*light);
+		if (!light->enable) continue;
+
+		int count = LightMap::UpdateBuffer(*light);
 
 		UpdateBuffer1(light->GetModel());
 		UpdateBuffer2(light->GetModel());
 
 		light->BindTexture();
 		light->Bind();
+
+		if (count == MAX_POINT_LIGHT) break;
 	}
 
 	size = ObjectManager::Size<Model>();

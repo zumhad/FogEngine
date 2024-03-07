@@ -3,6 +3,7 @@
 #include "Core.h"
 
 #include "CustomString.h"
+#include "CustomArray.h"
 
 #include <d3d11.h>
 

@@ -32,6 +32,8 @@ private:
 	static int GetResolution();
 	static void SetResolution(int resolution);
 	static void SetSplit(int index, float split);
+	static void SetBias(float bias);
+	static float GetBias();
 
 	static void Clear(int index);
 	static void UpdateBuffer(Model& mesh, int index);
@@ -66,6 +68,7 @@ private:
 		Array<Vector4> scales;
 		Array<Matrix> matrices;
 		Matrix matrix;
+		float bias;
 	} mCascade;
 
 	static Frustum mFrustum;

@@ -4,14 +4,11 @@
 #include "CustomFile.h"
 #include "CustomString.h"
 #include "Utility.h"
+#include "CustomArray.h"
 
-#include <d3dcompiler.h>
-#include <cstdlib>
 #include <vector>
-#include <locale>
-#include <codecvt>
-
-using namespace std;
+#include <d3dcompiler.h>
+#include <string>
 
 void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3D10Blob** blob)
 {
@@ -27,18 +24,18 @@ void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3
 
 	ShaderInclude include;
 
-	std::vector<D3D_SHADER_MACRO> vDefine;
-	//if (DepthMap::GetEnable()) vDefine.push_back({ "DEPTH_MAP", 0 });
-	//if (SelectMap::GetEnable()) vDefine.push_back({ "SELECT_MAP", 0 });
-	//if (ColorMap::GetEnable()) vDefine.push_back({ "COLOR_MAP", 0 });
+	Array<D3D_SHADER_MACRO> define;
 
-	//if (DepthMap::GetDraw()) vDefine.push_back({ "DEPTH_MAP_DRAW", 0 });
-	//if (SelectMap::GetDraw()) vDefine.push_back({ "SELECT_MAP_DRAW", 0 });
-	//if (ColorMap::GetDraw()) vDefine.push_back({ "COLOR_MAP_DRAW", 0 });
-	vDefine.push_back({ 0, 0 });
+	String temp0 = String::ToString(MAX_POINT_LIGHT);
+	define.Add({ "MAX_POINT_LIGHT", temp0 });
+
+	String temp1 = String::ToString(MAX_CASCADES);
+	define.Add({ "MAX_CASCADES", temp1 });
+
+	define.Add({ 0, 0 });
 
 	ID3DBlob* pErrorBlob = 0;
-	FOG_TRACE(D3DCompileFromFile(fileName.GetWCHAR(), vDefine.data(), &include, entryPoint.GetCHAR(), shaderModel.GetCHAR(), dwShaderFlags, 0, blob, &pErrorBlob));
+	FOG_TRACE(D3DCompileFromFile(fileName.GetWCHAR(), define.Data(), &include, entryPoint.GetCHAR(), shaderModel.GetCHAR(), dwShaderFlags, 0, blob, &pErrorBlob));
 
 	if (pErrorBlob)
 	{
@@ -68,6 +65,6 @@ SHADERAPI ShaderInclude::Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVO
 
 SHADERAPI ShaderInclude::Close(LPCVOID pData)
 {
-	std::free(const_cast<void*>(pData));
+	std::free((void*)(pData));
 	return S_OK;
 }

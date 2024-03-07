@@ -157,7 +157,7 @@ void OutlineMap::Bind()
 	{
 		Model* model = ObjectManager::GetWithNumber<Model>(i);
 
-		if (model->outline)
+		if (model->outline && model->enable)
 		{
 			UpdateInitBuffer1(model);
 
@@ -172,7 +172,7 @@ void OutlineMap::Bind()
 	{
 		PointLight* light = ObjectManager::GetWithNumber<PointLight>(i);
 
-		if (light->outline)
+		if (light->outline && light->enable)
 		{
 			UpdateInitBuffer1(light->GetModel());
 
@@ -187,7 +187,7 @@ void OutlineMap::Bind()
 	{
 		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
 
-		if (light->outline)
+		if (light->outline && light->enable)
 		{
 			UpdateInitBuffer1(light->GetModel());
 
