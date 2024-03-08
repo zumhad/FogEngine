@@ -9,14 +9,21 @@ class FOG_API Model;
 class FOG_API VertexShader;
 class FOG_API PixelShader;
 class FOG_API InputLayout;
+class FOG_API PipelineState;
+class FOG_API Application;
 
-class FOG_API Skybox
+class FOG_API SkyboxPass
 {
-public:
+	friend class PipelineState;
+	friend class Application;
+
+private:
 	static void Setup();
 	static void Shotdown();
-
 	static void Bind();
+
+private:
+	static void UpdateBuffer0();
 
 private:
 	static Model* mModel;
@@ -24,7 +31,7 @@ private:
 	static PixelShader mPixelShader;
 	static InputLayout mInputLayout;
 
-	struct SkyboxBuffer;
-	static ConstantBuffer<SkyboxBuffer> mSkyboxBuffer;
+	struct Buffer0;
+	static ConstantBuffer<Buffer0> mBuffer0;
 };
 

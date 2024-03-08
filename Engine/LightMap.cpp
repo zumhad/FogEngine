@@ -6,7 +6,7 @@
 #include "Utility.h"
 #include "PipelineState.h"
 #include "Camera.h"
-#include "ShadowMap.h"
+#include "ShadowPass.h"
 #include "Light.h"
 #include "Matrix.h"
 #include "ConstantBuffer.h"
@@ -25,7 +25,8 @@ struct FOG_API LightMap::LightBuffer
 		Color color;
 		Vector3 direction;
 		float power;
-		float bias; float pad[3];
+		float bias; 
+		float blend; float pad[2];
 	} dirLight;
 	struct
 	{
@@ -99,14 +100,15 @@ void LightMap::UpdateBuffer(DirectionLight& dir)
 	mBuffer.dirLight.color = dir.color;
 	mBuffer.dirLight.direction = dir.GetDirection();
 	mBuffer.dirLight.power = dir.power;
-	mBuffer.dirLight.bias = ShadowMap::GetBias();
+	mBuffer.dirLight.bias = ShadowPass::GetBias();
+	mBuffer.dirLight.blend = ShadowPass::GetBlend();
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		mBuffer.dirLight.split[i].split = ShadowMap::GetSplit(i);
-		mBuffer.dirLight.offset[i] = ShadowMap::GetOffset(i);
-		mBuffer.dirLight.scale[i] = ShadowMap::GetScale(i);
-		mBuffer.dirLight.viewProj = ShadowMap::GetMatrix();
+		mBuffer.dirLight.split[i].split = ShadowPass::GetSplit(i);
+		mBuffer.dirLight.offset[i] = ShadowPass::GetOffset(i);
+		mBuffer.dirLight.scale[i] = ShadowPass::GetScale(i);
+		mBuffer.dirLight.viewProj = ShadowPass::GetMatrix();
 	}
 }
 

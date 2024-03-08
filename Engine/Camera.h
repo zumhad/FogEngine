@@ -11,13 +11,13 @@ class FOG_API DepthMap;
 class FOG_API SelectMap;
 class FOG_API PassMap;
 class FOG_API PipelineState;
-class FOG_API ShadowMap;
+class FOG_API ShadowPass;
 class FOG_API LightMap;
 class FOG_API Frustum;
 class FOG_API Vector3;
 class FOG_API Matrix;
-class FOG_API Skybox;
-class FOG_API OutlineMap;
+class FOG_API SkyboxPass;
+class FOG_API OutlinePass;
 class FOG_API PrePass;
 
 struct FOG_API APPCLASS;
@@ -31,10 +31,10 @@ class FOG_API Camera
 	friend class SelectMap;
 	friend class PassMap;
 	friend class PipelineState;
-	friend class ShadowMap;
+	friend class ShadowPass;
 	friend class LightMap;
-	friend class Skybox;
-	friend class OutlineMap;
+	friend class SkyboxPass;
+	friend class OutlinePass;
 	friend class PrePass;
 
 public:

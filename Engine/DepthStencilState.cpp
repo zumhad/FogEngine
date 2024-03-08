@@ -14,7 +14,7 @@ void DepthStencilState::Create(DepthStencilStateType type)
 
 	switch (type)
 	{
-		case DepthStencilStateType::Default:
+		case DepthStencilStateType::ReadWrite:
 		{
 			desc.DepthEnable = true;
 			desc.DepthFunc = D3D11_COMPARISON_GREATER;
@@ -23,7 +23,7 @@ void DepthStencilState::Create(DepthStencilStateType type)
 			break;
 		}
 
-		case DepthStencilStateType::GUI:
+		case DepthStencilStateType::Disable:
 		{
 			desc.DepthEnable = false;
 			desc.DepthFunc = D3D11_COMPARISON_NEVER;
@@ -32,7 +32,7 @@ void DepthStencilState::Create(DepthStencilStateType type)
 			break;
 		}
 
-		case DepthStencilStateType::Skybox:
+		case DepthStencilStateType::ReadOnly:
 		{
 			desc.DepthEnable = true;
 			desc.DepthFunc = D3D11_COMPARISON_GREATER_EQUAL;

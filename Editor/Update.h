@@ -82,17 +82,35 @@ void UpdateTransform(Button* button, Object* object)
 	static Button* scaleY = button->GetChildWithNumber(11);
 	static Button* scaleZ = button->GetChildWithNumber(12);
 
-	posX->text.text = String::ToString(object->position.x);
-	posY->text.text = String::ToString(object->position.y);
-	posZ->text.text = String::ToString(object->position.z);
+	static Vector3 position = Vector3(-1.0f, -1.0f, -1.0f);
+	if (position != object->position)
+	{
+		posX->text.text = String::ToString(object->position.x);
+		posY->text.text = String::ToString(object->position.y);
+		posZ->text.text = String::ToString(object->position.z);
 
-	rotX->text.text = String::ToString(object->rotation.x);
-	rotY->text.text = String::ToString(object->rotation.y);
-	rotZ->text.text = String::ToString(object->rotation.z);
+		position = object->position;
+	}
 
-	scaleX->text.text = String::ToString(object->scale.x);
-	scaleY->text.text = String::ToString(object->scale.y);
-	scaleZ->text.text = String::ToString(object->scale.z);
+	static Vector3 rotation = Vector3(-1.0f, -1.0f, -1.0f);
+	if(rotation != object->rotation)
+	{
+		rotX->text.text = String::ToString(object->rotation.x);
+		rotY->text.text = String::ToString(object->rotation.y);
+		rotZ->text.text = String::ToString(object->rotation.z);
+
+		rotation = object->rotation;
+	}
+
+	static Vector3 scale = Vector3(-1.0f, -1.0f, -1.0f);
+	if(scale != object->scale)
+	{
+		scaleX->text.text = String::ToString(object->scale.x);
+		scaleY->text.text = String::ToString(object->scale.y);
+		scaleZ->text.text = String::ToString(object->scale.z);
+
+		scale = object->scale;
+	}
 }
 
 void UpdateMaterial(Button* button, Model* model)
@@ -103,9 +121,29 @@ void UpdateMaterial(Button* button, Model* model)
 	static Button* metallic = button->GetChildWithNumber(6);
 	static Button* roughness = button->GetChildWithNumber(8);
 
-	colorR->text.text = String::ToString(model->color.r);
-	colorG->text.text = String::ToString(model->color.g);
-	colorB->text.text = String::ToString(model->color.b);
-	metallic->text.text = String::ToString(model->metallic);
-	roughness->text.text = String::ToString(model->roughness);
+	static Color color = Color(-1.0f, -1.0f, -1.0f);
+	if (color != model->color)
+	{
+		colorR->text.text = String::ToString(model->color.r);
+		colorG->text.text = String::ToString(model->color.g);
+		colorB->text.text = String::ToString(model->color.b);
+
+		color = model->color;
+	}
+
+	static float _metallic = -1.0f;
+	if (_metallic != model->metallic)
+	{
+		metallic->text.text = String::ToString(model->metallic);
+
+		_metallic = model->metallic;
+	}
+
+	static float _roughness = -1.0f;
+	if (_roughness != model->roughness)
+	{
+		roughness->text.text = String::ToString(model->roughness);
+
+		_roughness = model->roughness;
+	}
 }

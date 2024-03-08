@@ -14,24 +14,24 @@
 #include "Object.h"
 
 class FOG_API PipelineState;
-class FOG_API ShadowMap;
+class FOG_API ShadowPass;
 class FOG_API Mesh;
-class FOG_API Skybox;
+class FOG_API SkyboxPass;
 class FOG_API ObjectManager;
 class FOG_API PointLight;
 class FOG_API DirectionLight;
-class FOG_API OutlineMap;
+class FOG_API OutlinePass;
 class FOG_API PrePass;
 
 class FOG_API Model : public Object
 {
 	friend class PipelineState;
-	friend class ShadowMap;
-	friend class Skybox;
+	friend class ShadowPass;
+	friend class SkyboxPass;
 	friend class ObjectManager;
 	friend class PointLight;
 	friend class DirectionLight;
-	friend class OutlineMap;
+	friend class OutlinePass;
 	friend class PrePass;
 
 public:

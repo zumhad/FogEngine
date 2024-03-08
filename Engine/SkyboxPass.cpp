@@ -1,4 +1,4 @@
-#include "Skybox.h"
+#include "SkyboxPass.h"
 
 #include "Model.h"
 #include "Utility.h"
@@ -11,18 +11,18 @@
 
 using namespace DirectX;
 
-struct Skybox::SkyboxBuffer
+struct SkyboxPass::Buffer0
 {
 	Matrix worldViewProj;
 };
 
-Model* Skybox::mModel = 0;
-VertexShader Skybox::mVertexShader;
-PixelShader Skybox::mPixelShader;
-InputLayout Skybox::mInputLayout;
-ConstantBuffer<Skybox::SkyboxBuffer> Skybox::mSkyboxBuffer;
+Model* SkyboxPass::mModel = 0;
+VertexShader SkyboxPass::mVertexShader;
+PixelShader SkyboxPass::mPixelShader;
+InputLayout SkyboxPass::mInputLayout;
+ConstantBuffer<SkyboxPass::Buffer0> SkyboxPass::mBuffer0;
 
-void Skybox::Setup()
+void SkyboxPass::Setup()
 {
 	Model model;
 	model.name = L"sphere.obj";
@@ -31,8 +31,8 @@ void Skybox::Setup()
 	mModel = new Model(std::move(model));
 
 	{
-		mVertexShader.Create(L"Skybox.hlsl");
-		mPixelShader.Create(L"Skybox.hlsl");
+		mVertexShader.Create(L"SkyboxPass.hlsl");
+		mPixelShader.Create(L"SkyboxPass.hlsl");
 
 		Array<String> input;
 		input.Add(L"POSITION");
@@ -41,10 +41,24 @@ void Skybox::Setup()
 		mInputLayout.Create(mVertexShader.GetBlob(), input);
 	}
 
-	mSkyboxBuffer.Create();
+	mBuffer0.Create();
 }
 
-void Skybox::Bind()
+void SkyboxPass::Bind()
+{
+	UpdateBuffer0();
+
+	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout.Get());
+	Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPixelShader.Get(), 0, 0);
+
+	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mBuffer0.Get());
+
+	mModel->BindTexture();
+	mModel->Draw();
+}
+
+void SkyboxPass::UpdateBuffer0()
 {
 	Vector3 pos = Camera::GetPosition();
 
@@ -53,26 +67,17 @@ void Skybox::Bind()
 	world.m[3][1] = pos.y;
 	world.m[3][2] = pos.z;
 
-	static SkyboxBuffer buffer{};
+	static Buffer0 buffer{};
 	buffer.worldViewProj = world * Camera::GetViewMatrix() * Camera::GetProjMatrix();
-	mSkyboxBuffer.Bind(buffer);
-
-	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout.Get());
-	Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mPixelShader.Get(), 0, 0);
-
-	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mSkyboxBuffer.Get());
-
-	mModel->BindTexture();
-	mModel->Draw();
+	mBuffer0.Bind(buffer);
 }
 
-void Skybox::Shotdown()
+void SkyboxPass::Shotdown()
 {
 	mVertexShader.Release();
 	mPixelShader.Release();
 	mInputLayout.Release();
-	mSkyboxBuffer.Release();
+	mBuffer0.Release();
 
 	SAFE_DELETE(mModel);
 }

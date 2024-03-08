@@ -1,7 +1,6 @@
-
 RWTexture2D<int2> gTexture : register(u0);
 
-cbuffer cbOutlineBuffer : register(b0)
+cbuffer Buffer2 : register(b0)
 {
     int gStepSize;
     int gWidth;

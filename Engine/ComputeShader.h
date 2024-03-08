@@ -6,16 +6,16 @@
 
 #include <d3d11.h>
 
-class FOG_API OutlineMap;
+class FOG_API OutlinePass;
 
 class FOG_API ComputeShader
 {
-	friend class OutlineMap;
+	friend class OutlinePass;
 
 private:
 	ComputeShader();
 
-	void Create(String name);
+	void Create(String name, String entry = L"CS");
 	ID3D11ComputeShader* Get();
 	void Release();
 

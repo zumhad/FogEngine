@@ -6,11 +6,11 @@
 #include "Vector3.h"
 #include "Vector4.h"
 
-class FOG_API ShadowMap;
+class FOG_API ShadowPass;
 
 class FOG_API Frustum
 {
-    friend class ShadowMap;
+    friend class ShadowPass;
 
 public:
     Frustum();

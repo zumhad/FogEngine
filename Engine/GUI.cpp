@@ -35,7 +35,7 @@ ConstantBuffer<GUI::FrameBuffer> GUI::mFrameBuffer;
 
 void GUI::Setup()
 {
-	mDepthStencilState.Create(DepthStencilStateType::GUI);
+	mDepthStencilState.Create(DepthStencilStateType::Disable);
 	mSamplerState.Create(SamplerStateType::GUI);
 	mFrameBuffer.Create();
 

@@ -31,6 +31,7 @@ private:
 
 private:
 	static ID3D11DepthStencilView* const GetDepthDSV();
+
 	static ID3D11RenderTargetView* const* GetColorRTV();
 	static ID3D11RenderTargetView* const* GetNormalLightRTV();
 	static ID3D11RenderTargetView* const* GetRangeMaterialRTV();
@@ -43,6 +44,7 @@ private:
 	static ID3D11ShaderResourceView* const* GetPositionIDSRV();
 
 private:
+	static void UpdateViewport();
 	static void Clear();
 	static void UpdateBuffer0();
 	static void UpdateBuffer1(Model* model);

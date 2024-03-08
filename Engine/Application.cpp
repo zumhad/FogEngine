@@ -15,10 +15,10 @@
 #include "PipelineState.h"
 #include "LightMap.h"
 #include "PostProcess.h"
-#include "ShadowMap.h"
+#include "ShadowPass.h"
 #include "Font.h"
-#include "Skybox.h"
-#include "OutlineMap.h"
+#include "SkyboxPass.h"
+#include "OutlinePass.h"
 #include "PrePass.h"
 
 #include <ctime>
@@ -135,10 +135,10 @@ void Application::InitModules(APPCLASS app)
 {
     Direct3D::Setup();
     PrePass::Setup();
-    OutlineMap::Setup();
-    Skybox::Setup();
+    OutlinePass::Setup();
+    SkyboxPass::Setup();
     Font::Setup();
-    ShadowMap::Setup();
+    ShadowPass::Setup();
     PostProcess::Setup();
     LightMap::Setup();
     Picking::Setup();
@@ -215,10 +215,10 @@ void Application::Shotdown() //exit
     Picking::Shotdown();   
     LightMap::Shotdown();
     PostProcess::Shotdown();
-    ShadowMap::Shotdown();
+    ShadowPass::Shotdown();
     Font::Shotdown();
-    Skybox::Shotdown();
-    OutlineMap::Shotdown();
+    SkyboxPass::Shotdown();
+    OutlinePass::Shotdown();
     PrePass::Shotdown();
     Direct3D::Shotdown();
 }
@@ -375,13 +375,17 @@ int Application::GetCaptionHeight() { return mCaptionHeight; }
 
 void Application::SetCaptionHeight(int height) { mCaptionHeight = height; }
 
-int Application::GetCascadeResolution() { return ShadowMap::GetResolution(); }
+int Application::GetCascadeResolution() { return ShadowPass::GetResolution(); }
 
-void Application::SetCascadeResolution(int resolution) { ShadowMap::SetResolution(resolution); }
+void Application::SetCascadeResolution(int resolution) { ShadowPass::SetResolution(resolution); }
 
-void Application::SetCascadeSplit(int index, float split) { ShadowMap::SetSplit(index, split); }
+void Application::SetCascadeSplit(int index, float split) { ShadowPass::SetSplit(index, split); }
 
-void Application::SetCascadeBias(float bias) { ShadowMap::SetBias(bias); }
+void Application::SetCascadeBias(float bias) { ShadowPass::SetBias(bias); }
+
+void Application::SetCascadeBlend(float blend) { ShadowPass::SetBlend(blend); }
+
+float Application::GetCascadeBlend() { return ShadowPass::GetBlend(); }
 
 void Application::Restore()
 { 
@@ -418,12 +422,12 @@ void Application::OpenFileDialog()
 
 void Application::SetOutlineWidth(int width)
 {
-    OutlineMap::mOutline.width = width;
+    OutlinePass::SetWidth(width);
 }
 
 void Application::SetOutlineColor(Color color)
 {
-    OutlineMap::mOutline.color = color;
+    OutlinePass::SetColor(color);
 }
 
 void Application::Close() { PostQuitMessage(0); }

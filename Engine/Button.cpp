@@ -41,6 +41,7 @@ Button::Button()
 	mRect = {};
 	mStaticText = {};
 	mStaticRect = {};
+	mStaticWindow = {};
 }
 
 Button::Button(const Button& button) : Button()
@@ -327,6 +328,30 @@ void Button::NeedUpdateText()
 	if (mStaticRect.alignm.vertical != rect.alignm.vertical)
 	{
 		mStaticRect.alignm.vertical = rect.alignm.vertical;
+		mNeedUpdateText = true;
+	}
+
+	int width, height;
+
+	if (Application::IsGame())
+	{
+		width = Application::GetGameWidth();
+		height = Application::GetGameHeight();
+	}
+	else
+	{
+		width = Application::GetEditorWidth();
+		height = Application::GetEditorHeight();
+	}
+
+	if (mStaticWindow.width != width)
+	{
+		mStaticWindow.width = width;
+		mNeedUpdateText = true;
+	}
+	if (mStaticWindow.height != height)
+	{
+		mStaticWindow.height = height;
 		mNeedUpdateText = true;
 	}
 

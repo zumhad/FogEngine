@@ -3,7 +3,7 @@
 #include "MathHelper.h"
 #include "Quaternion.h"
 #include "CustomString.h"
-#include "ShadowMap.h"
+#include "ShadowPass.h"
 
 #include <d3d11.h>
 #include <limits>

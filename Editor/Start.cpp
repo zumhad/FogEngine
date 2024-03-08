@@ -366,7 +366,7 @@ void Update()
 	pos += move;
 
 	Vector3 vel;
-	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 0.2f);
+	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 1.0f);
 	Camera::SetPosition(res);
 
 	MoveObject();
@@ -374,11 +374,9 @@ void Update()
 	Object* obj = Picking::GetPickObject();
 	static Button* transform = GUI::GetWithID(idTransform);
 	static Button* material = GUI::GetWithID(idMaterial);
+	static Button* light = GUI::GetWithID(idLight);
 
-	//if (Input::Down(MOUSE_LEFT))
-	//{
-		UpdateSelectObject(obj);
-	//}
+	UpdateSelectObject(obj);
 
 	if (obj)
 	{
@@ -394,11 +392,48 @@ void Update()
 		{
 			material->enable = false;
 		}
+
+		if (obj->GetType() == TypeObject::DirectionLight)
+		{
+			light->enable = true;
+			//UpdateMaterial(material, ObjectManager::Get<Model>(obj));
+		}
+		else
+		{
+			light->enable = false;
+		}
 	}
 	else
 	{
 		transform->enable = false;
 		material->enable = false;
+		light->enable = false;
+	}
+
+	static Object* currentObject = 0;
+
+	if (currentObject != obj)
+	{
+		static Button* properties = GUI::GetWithID(idProperties);
+
+		int size = properties->GetChildCount();
+		for (int i = 1; i < size; i++)
+		{
+			Button* b1 = properties->GetChildWithNumber(i - 1);
+			Button* b2 = properties->GetChildWithNumber(i);
+
+			if (!b2->enable) continue;
+
+			int j = i - 2;
+			while (!b1->enable)
+			{
+				b1 = properties->GetChildWithNumber(j--);
+			}
+
+			b2->rect.y = b1->rect.y + b1->rect.height + 5;
+		}
+
+		currentObject = obj;
 	}
 
 	static Button* fps = GUI::GetWithID(idFPS);
@@ -414,13 +449,14 @@ void Start()
 	Camera::SetNear(0.1f);
 	Camera::SetFar(500.0f);
 
-	Application::SetCascadeSplit(0, 0.05f);
-	Application::SetCascadeSplit(1, 0.1f);
-	Application::SetCascadeSplit(2, 0.2f);
-	Application::SetCascadeSplit(3, 0.3f);
+	Application::SetCascadeSplit(0, 0.01f);
+	Application::SetCascadeSplit(1, 0.05f);
+	Application::SetCascadeSplit(2, 0.1f);
+	Application::SetCascadeSplit(3, 0.15f);
 
 	Application::SetCascadeResolution(1024);
-	Application::SetCascadeBias(0.005f);
+	Application::SetCascadeBias(0.000f);
+	Application::SetCascadeBlend(0.1f);
 
 	Application::SetOutlineWidth(5);
 	Application::SetOutlineColor(Color(1.0f, 1.0f, 0.0f));
@@ -591,7 +627,7 @@ void Start()
 	transformText.text.x = 20;
 	transformText.event.hoverOn = HoverOn;
 	transformText.event.hoverOff = HoverOff;
-	transformText.event.leftClick = TransformClick;
+	transformText.event.leftClick = PropertiesClick;
 
 	GUI::AddChild(idTransform, transformText);
 
@@ -700,7 +736,7 @@ void Start()
 	materialText.text.x = 20;
 	materialText.event.hoverOn = HoverOn;
 	materialText.event.hoverOff = HoverOff;
-	materialText.event.leftClick = MaterialClick;
+	materialText.event.leftClick = PropertiesClick;
 	GUI::AddChild(idMaterial, materialText);
 
 	Button color;
@@ -768,6 +804,49 @@ void Start()
 	roughness.event.leftPress = SliderRoughness;
 	GUI::AddChild(idMaterial, roughness);
 
+	Button light;
+	light.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	light.rect.color = Color(0.2f, 0.2f, 0.2f);
+	light.rect.x = 5;
+	light.rect.y = transform.rect.y + transform.rect.height + 5;
+	light.rect.width = properties.rect.width - 10;
+	light.rect.height = 140;
+	light.enable = false;
+	idLight = GUI::AddChild(idProperties, light);
+
+	Button lightText;
+	lightText.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	lightText.rect.color = Color(0.2f, 0.2f, 0.2f);
+	lightText.rect.x = 0;
+	lightText.rect.y = 0;
+	lightText.rect.width = transform.rect.width;
+	lightText.rect.height = 30;
+	lightText.text.text = L"Light";
+	lightText.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	lightText.text.x = 20;
+	lightText.event.hoverOn = HoverOn;
+	lightText.event.hoverOff = HoverOff;
+	lightText.event.leftClick = PropertiesClick;
+	GUI::AddChild(idLight, lightText);
+
+	Button power;
+	power.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	power.rect.x = 5;
+	power.rect.y = lightText.rect.y + lightText.rect.height + 5;
+	power.rect.width = 167;
+	power.rect.height = 30;
+	power.text.text = L"Power";
+	power.rect.color = Color(0.1f, 0.1f, 0.1f);
+	power.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	power.text.x = 20;
+	GUI::AddChild(idLight, power);
+
+	power.rect.x += power.rect.width + 5;
+	power.text.text = L"0.0";
+	power.rect.width = 136;
+	//power.event.leftPress = SliderRoughness;
+	GUI::AddChild(idLight, power);
+
 	AddRoom();
 }
 
@@ -780,8 +859,8 @@ APPCLASS Setting()
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;
-	app.camera.rotationSmooth = 50;
-	app.camera.moveSmooth = 10;
+	//app.camera.rotationSmooth = 1;
+	//app.camera.moveSmooth = 150;
 	app.fpsMax = 0;
 
 	app.game.width = 1920;

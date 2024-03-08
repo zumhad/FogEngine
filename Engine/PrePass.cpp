@@ -238,38 +238,7 @@ void PrePass::Setup()
 
 void PrePass::Bind()
 {
-	int width, height;
-
-	if (Application::IsGame())
-	{
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
-
-	{
-		static D3D11_VIEWPORT viewport{};
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = 0.0f;
-		viewport.TopLeftY = 0.0f;
-		viewport.Width = (FLOAT)width;
-		viewport.Height = (FLOAT)height;
-
-		static D3D11_RECT rect{};
-		rect.left = 0;
-		rect.top = 0;
-		rect.right = width;
-		rect.bottom = height;
-
-		Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
-		Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
-	}
-
+	UpdateViewport();
 	Clear();
 
 	Direct3D::DeviceContext()->OMSetRenderTargets(mRTV.Size(), mRTV.Data(), mDepthDSV);
@@ -331,6 +300,39 @@ void PrePass::Bind()
 	}
 }
 
+void PrePass::UpdateViewport()
+{
+	int width, height;
+
+	if (Application::IsGame())
+	{
+		width = Application::GetGameWidth();
+		height = Application::GetGameHeight();
+	}
+	else
+	{
+		width = Application::GetSceneWidth();
+		height = Application::GetSceneHeight();
+	}
+
+	static D3D11_VIEWPORT viewport{};
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = (FLOAT)width;
+	viewport.Height = (FLOAT)height;
+
+	static D3D11_RECT rect{};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = width;
+	rect.bottom = height;
+
+	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
+}
+
 void PrePass::UpdateBuffer0()
 {
 	Matrix view = Camera::GetViewMatrix();
@@ -361,7 +363,6 @@ void PrePass::UpdateBuffer2(Model* model)
 
 	mBuffer2.Bind(buffer);
 }
-
 void PrePass::Clear()
 {
 	static const float color[4]{ 0.0f, 0.0f, 0.0f, 0.0f };

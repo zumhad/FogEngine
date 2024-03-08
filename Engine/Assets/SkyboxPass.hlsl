@@ -1,4 +1,4 @@
-cbuffer cbSkyboxBuffer : register(b0)
+cbuffer Buffer0 : register(b0)
 {
 	float4x4 gWorldViewProj;
 };
@@ -40,8 +40,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
 	PS_OUTPUT output;
 
 	output.color = gTexture.Sample(gSampler, input.uv);
-	output.color.rgb = pow(abs(output.color.xyz), 2.2f);
-	output.color.a = 0.0f;
+	output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
 
 	return output;
 }

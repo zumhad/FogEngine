@@ -31,12 +31,6 @@ DirectionLight::DirectionLight(DirectionLight&& light) noexcept : DirectionLight
 
 void DirectionLight::Bind()
 {
-	mModel->position = position;
-	mModel->rotation = rotation;
-	mModel->scale = scale;
-	mModel->color = color;
-	mModel->mID = mID;
-
 	mModel->Draw();
 }
 
@@ -47,6 +41,12 @@ void DirectionLight::BindTexture()
 
 Model* DirectionLight::GetModel()
 {
+	mModel->position = position;
+	mModel->rotation = rotation;
+	mModel->scale = scale;
+	mModel->color = color;
+	mModel->mID = mID;
+
 	return mModel;
 }
 
@@ -96,12 +96,6 @@ PointLight::~PointLight()
 
 void PointLight::Bind()
 {
-	mModel->position = position;
-	mModel->rotation = rotation;
-	mModel->scale = scale;
-	mModel->color = color;
-	mModel->mID = mID;
-
 	mModel->Draw();
 }
 
@@ -112,5 +106,11 @@ void PointLight::BindTexture()
 
 Model* PointLight::GetModel()
 {
+	mModel->position = position;
+	mModel->rotation = rotation;
+	mModel->scale = scale;
+	mModel->color = color;
+	mModel->mID = mID;
+
 	return mModel;
 }

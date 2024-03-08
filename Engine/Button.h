@@ -136,6 +136,12 @@ private:
 		int width, height;
 	}mStaticRect;
 
+	struct
+	{
+		int width;
+		int height;
+	}mStaticWindow;
+
 	struct TextBuffer;
 	ConstantBuffer<TextBuffer> mTextBuffer;
 

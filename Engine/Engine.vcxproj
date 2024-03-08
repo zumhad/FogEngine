@@ -216,7 +216,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
-    <ClCompile Include="OutlineMap.cpp" />
+    <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="PathHelper.cpp" />
     <ClCompile Include="Picking.cpp" />
     <ClCompile Include="PipelineState.cpp" />
@@ -228,9 +228,9 @@
     <ClCompile Include="RayCasting.cpp" />
     <ClCompile Include="SamplerState.cpp" />
     <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Button.cpp" />
-    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SkyboxPass.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureMap.cpp" />
     <ClCompile Include="Timer.cpp" />
@@ -275,7 +275,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
-    <ClInclude Include="OutlineMap.h" />
+    <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="PathHelper.h" />
     <ClInclude Include="Picking.h" />
     <ClInclude Include="PipelineState.h" />
@@ -287,9 +287,9 @@
     <ClInclude Include="RayCasting.h" />
     <ClInclude Include="SamplerState.h" />
     <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Button.h" />
-    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SkyboxPass.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureMap.h" />
     <ClInclude Include="Timer.h" />
@@ -336,7 +336,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\Skybox.hlsl">
+    <None Include="Assets\SkyboxPass.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
@@ -346,12 +346,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\OutlineInit.hlsl">
+    <None Include="Assets\OutlinePassCS.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\OutlinePrePass.hlsl">
+    <None Include="Assets\Shadow.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

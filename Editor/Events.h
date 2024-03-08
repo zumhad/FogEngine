@@ -7,10 +7,11 @@ int idSceneTree = -1;
 int idProperties = -1;
 int idTransform = -1;
 int idMaterial = -1;
+int idLight = -1;
 
 int gScrollPos = 0;
 
-void TransformClick(Button& button)
+void PropertiesClick(Button& button)
 {
 	Button* parent = button.GetParent();
 
@@ -35,35 +36,15 @@ void TransformClick(Button& button)
 	{
 		Button* b1 = properties->GetChildWithNumber(i - 1);
 		Button* b2 = properties->GetChildWithNumber(i);
-		b2->rect.y = b1->rect.y + b1->rect.height + 5;
-	}
-}
 
-void MaterialClick(Button& button)
-{
-	Button* parent = button.GetParent();
+		if (!b2->enable) continue;
 
-	int size = parent->GetChildCount();
-	for (int i = 1; i < size; i++)
-	{
-		Button* b = parent->GetChildWithNumber(i);
-		b->enable = !b->enable;
-
-		if (i == 1)
+		int j = i - 2;
+		while (!b1->enable)
 		{
-			if (b->enable) parent->rect.height = 140;
-			else parent->rect.height = 30;
+			b1 = properties->GetChildWithNumber(j--);
 		}
-	}
 
-	static Button* properties = GUI::GetWithID(idProperties);
-	int n = parent->GetChildNumber();
-
-	size = properties->GetChildCount();
-	for (int i = n + 1; i < size; i++)
-	{
-		Button* b1 = properties->GetChildWithNumber(i - 1);
-		Button* b2 = properties->GetChildWithNumber(i);
 		b2->rect.y = b1->rect.y + b1->rect.height + 5;
 	}
 }

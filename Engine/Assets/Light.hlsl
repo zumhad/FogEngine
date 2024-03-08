@@ -15,7 +15,8 @@ struct DirectionalLight
     float4 color;
     float3 direction;
     float power;
-    float bias; float3 pad;
+    float bias;
+    float blend; float2 pad;
 };
 
 struct PointLight

@@ -111,7 +111,7 @@
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="LightMap.cpp" />
     <ClCompile Include="PostProcess.cpp" />
-    <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Image.cpp" />
@@ -119,9 +119,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="Model.cpp" />
-    <ClCompile Include="Skybox.cpp" />
+    <ClCompile Include="SkyboxPass.cpp" />
     <ClCompile Include="Matrix3.cpp" />
-    <ClCompile Include="OutlineMap.cpp" />
+    <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="PrePass.cpp" />
   </ItemGroup>
@@ -238,14 +238,14 @@
     <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="LightMap.h" />
     <ClInclude Include="PostProcess.h" />
-    <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="Font.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="Model.h" />
-    <ClInclude Include="Skybox.h" />
+    <ClInclude Include="SkyboxPass.h" />
     <ClInclude Include="Matrix3.h" />
-    <ClInclude Include="OutlineMap.h" />
+    <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="PrePass.h" />
   </ItemGroup>
@@ -271,16 +271,16 @@
     <None Include="Assets\Text.hlsl">
       <Filter>stuff</Filter>
     </None>
-    <None Include="Assets\Skybox.hlsl">
+    <None Include="Assets\SkyboxPass.hlsl">
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\OutlinePass.hlsl">
       <Filter>stuff</Filter>
     </None>
-    <None Include="Assets\OutlineInit.hlsl">
+    <None Include="Assets\OutlinePassCS.hlsl">
       <Filter>stuff</Filter>
     </None>
-    <None Include="Assets\OutlinePrePass.hlsl">
+    <None Include="Assets\Shadow.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

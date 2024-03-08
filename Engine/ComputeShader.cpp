@@ -11,12 +11,12 @@ ComputeShader::ComputeShader()
 	mBlob = 0;
 }
 
-void ComputeShader::Create(String name)
+void ComputeShader::Create(String name, String entry)
 {
 	String path = PathHelper::GetAssetsPath();
 	path += name;
 
-	Shader::Compile(path, L"CS", L"cs_5_0", &mBlob);
+	Shader::Compile(path, entry, L"cs_5_0", &mBlob);
 	FOG_TRACE(Direct3D::Device()->CreateComputeShader(mBlob->GetBufferPointer(), mBlob->GetBufferSize(), 0, &mComputeShader));
 }
 

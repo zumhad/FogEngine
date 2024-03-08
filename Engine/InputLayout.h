@@ -11,17 +11,19 @@ class Array;
 
 class FOG_API PipelineState;
 class FOG_API GUI;
-class FOG_API Skybox;
-class FOG_API OutlineMap;
+class FOG_API SkyboxPass;
+class FOG_API OutlinePass;
 class FOG_API PrePass;
+class FOG_API ShadowPass;
 
 class FOG_API InputLayout
 {
 	friend class PipelineState;
 	friend class GUI;
-	friend class Skybox;
-	friend class OutlineMap;
+	friend class SkyboxPass;
+	friend class OutlinePass;
 	friend class PrePass;
+	friend class ShadowPass;
 
 private:
 	InputLayout();

@@ -15,7 +15,7 @@ void PixelShader::Release()
 	SAFE_RELEASE(mPixelShader);
 }
 
-void PixelShader::Create(String name)
+void PixelShader::Create(String name, String entry)
 {
 	SAFE_RELEASE(mPixelShader);
 
@@ -24,7 +24,7 @@ void PixelShader::Create(String name)
 
 	ID3D10Blob* blob = 0;
 
-	Shader::Compile(path, L"PS", L"ps_5_0", &blob);
+	Shader::Compile(path, entry, L"ps_5_0", &blob);
 	FOG_TRACE(Direct3D::Device()->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), 0, &mPixelShader));
 }
 

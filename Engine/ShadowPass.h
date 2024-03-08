@@ -17,8 +17,11 @@ class FOG_API Application;
 class FOG_API PipelineState;
 class FOG_API Model;
 class FOG_API LightMap;
+class FOG_API VertexShader;
+class FOG_API PixelShader;
+class FOG_API InputLayout;
 
-class FOG_API ShadowMap
+class FOG_API ShadowPass
 {
 	friend class Application;
 	friend class PipelineState;
@@ -27,18 +30,25 @@ class FOG_API ShadowMap
 private:
 	static void Setup();
 	static void Shotdown();
-	static void UpdateTexture();
+	static void Bind();
 
 	static int GetResolution();
 	static void SetResolution(int resolution);
 	static void SetSplit(int index, float split);
 	static void SetBias(float bias);
 	static float GetBias();
+	static float GetBlend();
+	static void SetBlend(float blend);
 
-	static void Clear(int index);
-	static void UpdateBuffer(Model& mesh, int index);
-	static ID3D11Buffer* const* GetBuffer();
+	static void Clear();
+	static void UpdateBuffer0(int index);
+	static void UpdateBuffer1(Model* model);
 	static void UpdateCascade(Vector3 dir);
+	static void UpdateTexture();
+	static void CreateOffsetsAndScales(int index);
+	static Matrix CreateSplits(Vector3 dir);
+	static void CreateMatrix(Vector3 dir);
+	static void UpdateViewport();
 
 	static Matrix GetMatrix();
 	static Matrix GetMatrix(int index);
@@ -46,19 +56,21 @@ private:
 	static Vector4 GetScale(int index);
 	static float GetSplit(int index);
 
-	static void CreateOffsetsAndScales(int index);
-	static Matrix CreateSplits(Vector3 dir);
-	static void CreateMatrix(Vector3 dir);
-
-	static ID3D11ShaderResourceView* const* GetSRV();
-	static ID3D11DepthStencilView* GetDSV(int index);
+	static ID3D11ShaderResourceView* const* GetDepthSRV();
+	static ID3D11DepthStencilView* GetDepthDSV(int index);
 
 private:
-	static Array<ID3D11DepthStencilView*> mDepthStencilView;
-	static ID3D11ShaderResourceView* mShaderResourceView;
+	static Array<ID3D11DepthStencilView*> mDepthDSV;
+	static ID3D11ShaderResourceView* mDepthSRV;
 
-	struct ShadowBuffer;
-	static ConstantBuffer<ShadowBuffer> mShadowBuffer;
+	static VertexShader mVertexShader;
+	static InputLayout mInputLayout;
+
+	struct Buffer0;
+	static ConstantBuffer<Buffer0> mBuffer0;
+
+	struct Buffer1;
+	static ConstantBuffer<Buffer1> mBuffer1;
 
 	static struct
 	{
@@ -69,6 +81,7 @@ private:
 		Array<Matrix> matrices;
 		Matrix matrix;
 		float bias;
+		float blend;
 	} mCascade;
 
 	static Frustum mFrustum;

@@ -6,9 +6,9 @@
 
 enum class DepthStencilStateType
 {
-	Default,
-	GUI,
-	Skybox
+	ReadOnly,
+	Disable,
+	ReadWrite
 };
 
 class FOG_API PipelineState;
@@ -22,7 +22,7 @@ class FOG_API DepthStencilState
 private:
 	DepthStencilState();
 
-	void Create(DepthStencilStateType type = DepthStencilStateType::Default);
+	void Create(DepthStencilStateType type = DepthStencilStateType::ReadWrite);
 	void Release();
 	ID3D11DepthStencilState* Get();
 

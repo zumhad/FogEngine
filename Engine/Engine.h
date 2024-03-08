@@ -19,7 +19,6 @@
 #include "RayCasting.h"
 #include "Utility.h"
 #include "CustomArray.h"
-#include "ShadowMap.h"
 #include "Vector4.h"
 #include "Button.h"
 

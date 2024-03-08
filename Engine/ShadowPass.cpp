@@ -1,6 +1,6 @@
 #pragma warning(disable : 6387)
 
-#include "ShadowMap.h"
+#include "ShadowPass.h"
 
 #include "Application.h"
 #include "Camera.h"
@@ -8,49 +8,76 @@
 #include "ConstantBuffer.h"
 #include "Model.h"
 #include "MathHelper.h"
+#include "ObjectManager.h"
+#include "Light.h"
+#include "PixelShader.h"
+#include "VertexShader.h"
+#include "InputLayout.h"
 
 using namespace DirectX;
 
-struct ShadowMap::ShadowBuffer
+struct ShadowPass::Buffer0
 {
-	Matrix worldViewProj;
+	Matrix viewProj;
 };
 
-decltype(ShadowMap::mCascade) ShadowMap::mCascade{};
+struct ShadowPass::Buffer1
+{
+	Matrix world;
+};
 
-Array<ID3D11DepthStencilView*> ShadowMap::mDepthStencilView;
-ID3D11ShaderResourceView* ShadowMap::mShaderResourceView = 0;
-ConstantBuffer<ShadowMap::ShadowBuffer> ShadowMap::mShadowBuffer;
-Frustum ShadowMap::mFrustum;
+decltype(ShadowPass::mCascade) ShadowPass::mCascade{};
 
-void ShadowMap::Setup()
+Array<ID3D11DepthStencilView*> ShadowPass::mDepthDSV;
+
+ID3D11ShaderResourceView* ShadowPass::mDepthSRV = 0;
+
+VertexShader ShadowPass::mVertexShader;
+InputLayout ShadowPass::mInputLayout;
+
+ConstantBuffer<ShadowPass::Buffer0> ShadowPass::mBuffer0;
+ConstantBuffer<ShadowPass::Buffer1> ShadowPass::mBuffer1;
+
+Frustum ShadowPass::mFrustum;
+
+void ShadowPass::Setup()
 {
 	mCascade.resolution = 1024;
 	mCascade.splits.Resize(MAX_CASCADES);
 	mCascade.offsets.Resize(MAX_CASCADES);
 	mCascade.scales.Resize(MAX_CASCADES);
 	mCascade.matrices.Resize(MAX_CASCADES);
-	mCascade.bias = 0.005f;
+	mCascade.bias = 0.005f; 
+	mCascade.blend = 0.1f;
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
 		mCascade.splits[i] = (1.0f / (float)MAX_CASCADES) * (float)(i + 1);
 	}
 
-	mDepthStencilView.Resize(MAX_CASCADES);
+	mDepthDSV.Resize(MAX_CASCADES);
 
 	UpdateTexture();
 
-	mShadowBuffer.Create();
+	mBuffer0.Create();
+	mBuffer1.Create();
+
+	{
+		mVertexShader.Create(L"ShadowPass.hlsl");
+
+		Array<String> input;
+		input.Add(L"POSITION");
+		mInputLayout.Create(mVertexShader.GetBlob(), input);
+	}
 }
 
-void ShadowMap::UpdateTexture()
+void ShadowPass::UpdateTexture()
 {
-	SAFE_RELEASE(mShaderResourceView);
+	SAFE_RELEASE(mDepthSRV);
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		SAFE_RELEASE(mDepthStencilView[i]);
+		SAFE_RELEASE(mDepthDSV[i]);
 	}
 
 	ID3D11Texture2D* texture = 0;
@@ -60,7 +87,7 @@ void ShadowMap::UpdateTexture()
 		desc.Height = mCascade.resolution;
 		desc.MipLevels = 1;
 		desc.ArraySize = MAX_CASCADES;
-		desc.Format = DXGI_FORMAT_R16_TYPELESS;
+		desc.Format = DXGI_FORMAT_R32_TYPELESS;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -69,35 +96,38 @@ void ShadowMap::UpdateTexture()
 	}
 	{
 		D3D11_DEPTH_STENCIL_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_D16_UNORM;
+		desc.Format = DXGI_FORMAT_D32_FLOAT;
 		desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2DArray.ArraySize = 1;
 
 		for (int i = 0; i < MAX_CASCADES; i++)
 		{
 			desc.Texture2DArray.FirstArraySlice = i;
-			FOG_TRACE(Direct3D::Device()->CreateDepthStencilView(texture, &desc, &mDepthStencilView[i]));
+			FOG_TRACE(Direct3D::Device()->CreateDepthStencilView(texture, &desc, &mDepthDSV[i]));
 		}
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R16_UNORM;
+		desc.Format = DXGI_FORMAT_R32_FLOAT;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
 		desc.Texture2DArray.ArraySize = MAX_CASCADES;
 		desc.Texture2DArray.FirstArraySlice = 0;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mShaderResourceView));
+		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mDepthSRV));
 	}
 	SAFE_RELEASE(texture);
 }
 
-void ShadowMap::Clear(int index)
+void ShadowPass::Clear()
 {
-	Direct3D::DeviceContext()->ClearDepthStencilView(mDepthStencilView[index], D3D11_CLEAR_DEPTH, 0.0f, 0);
+	for (int i = 0; i < MAX_CASCADES; i++)
+	{
+		Direct3D::DeviceContext()->ClearDepthStencilView(mDepthDSV[i], D3D11_CLEAR_DEPTH, 0.0f, 0);
+	}
 }
 
-void ShadowMap::CreateOffsetsAndScales(int index)
+void ShadowPass::CreateOffsetsAndScales(int index)
 {
 	XMMATRIX texScaleBias;
 	texScaleBias.r[0] = XMVectorSet(0.5f, 0.0f, 0.0f, 0.0f);
@@ -120,7 +150,7 @@ void ShadowMap::CreateOffsetsAndScales(int index)
 	mCascade.scales[index] = Vector4(cascadeScale.x, cascadeScale.y, cascadeScale.z, 1.0f);
 }
 
-Matrix ShadowMap::CreateSplits(Vector3 dir)
+Matrix ShadowPass::CreateSplits(Vector3 dir)
 {
 	Vector3 corner[8];
 	mFrustum.GetCorners(corner);
@@ -167,7 +197,7 @@ Matrix ShadowMap::CreateSplits(Vector3 dir)
 	return view * proj;
 }
 
-void ShadowMap::CreateMatrix(Vector3 dir)
+void ShadowPass::CreateMatrix(Vector3 dir)
 {
 	Vector3 frustumCorners[8] =
 	{
@@ -205,7 +235,7 @@ void ShadowMap::CreateMatrix(Vector3 dir)
 	mCascade.matrix = (view * proj) * scaling * translation;
 }
 
-void ShadowMap::UpdateCascade(Vector3 dir)
+void ShadowPass::UpdateCascade(Vector3 dir)
 {
 	Matrix view = Camera::GetViewMatrix();
 
@@ -227,16 +257,105 @@ void ShadowMap::UpdateCascade(Vector3 dir)
 	}
 }
 
-void ShadowMap::UpdateBuffer(Model& model, int index)
+void ShadowPass::Bind()
 {
-	static ShadowBuffer buffer;
+	Vector3 lightDir = Vector3(0.0f, 0.0f, 0.0f);
 
-	buffer.worldViewProj = model.GetWorldMatrix() * mCascade.matrices[index];
+	int size = ObjectManager::Size<DirectionLight>();
+	for (int i = 0; i < size; i++)
+	{
+		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
+		if (!light->enable) continue;
 
-	mShadowBuffer.Bind(buffer);
+		lightDir = light->GetDirection();
+
+		break;
+	}
+
+	if (lightDir != Vector3(0.0f, 0.0f, 0.0f))
+	{
+		UpdateViewport();
+		Clear();
+
+		UpdateCascade(lightDir);
+
+		Direct3D::DeviceContext()->IASetInputLayout(mInputLayout.Get());
+		Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
+		Direct3D::DeviceContext()->PSSetShader(0, 0, 0);
+
+		Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mBuffer0.Get());
+		Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mBuffer1.Get());
+
+		for (int i = 0; i < MAX_CASCADES; i++)
+		{
+			Direct3D::DeviceContext()->OMSetRenderTargets(0, 0, mDepthDSV[i]);
+
+			UpdateBuffer0(i);
+
+			size = ObjectManager::Size<Model>();
+			for (int j = 0; j < size; j++)
+			{
+				Model* model = ObjectManager::GetWithNumber<Model>(j);
+
+				UpdateBuffer1(model);
+
+				model->Draw();
+			}
+		}
+	}
 }
 
-void ShadowMap::SetSplit(int index, float split)
+void ShadowPass::UpdateViewport()
+{
+	static D3D11_VIEWPORT viewport{};
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftY = 0.0f;
+	viewport.Width = (float)mCascade.resolution;
+	viewport.Height = (float)mCascade.resolution;
+
+	static D3D11_RECT rect{};
+	rect.left = 0;
+	rect.top = 0;
+	rect.right = mCascade.resolution;
+	rect.bottom = mCascade.resolution;
+
+	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
+	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
+}
+
+void ShadowPass::UpdateBuffer0(int index)
+{
+	static Buffer0 buffer;
+
+	buffer.viewProj = mCascade.matrices[index];
+
+	mBuffer0.Bind(buffer);
+}
+
+void ShadowPass::UpdateBuffer1(Model* model)
+{
+	static Buffer1 buffer;
+
+	buffer.world = model->GetWorldMatrix();
+
+	mBuffer1.Bind(buffer);
+}
+
+float ShadowPass::GetBlend()
+{
+	return mCascade.blend;
+}
+
+void ShadowPass::SetBlend(float blend)
+{
+	FOG_ASSERT(blend >= 0.0f);
+
+	mCascade.blend = blend;
+}
+
+void ShadowPass::SetSplit(int index, float split)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 	FOG_ASSERT(split > 0.0f && split <= 1.0f);
@@ -244,19 +363,19 @@ void ShadowMap::SetSplit(int index, float split)
 	mCascade.splits[index] = split;
 }
 
-void ShadowMap::SetBias(float bias)
+void ShadowPass::SetBias(float bias)
 {
 	FOG_ASSERT(bias >= 0.0f);
 
 	mCascade.bias = bias;
 }
 
-float ShadowMap::GetBias()
+float ShadowPass::GetBias()
 {
 	return mCascade.bias;
 }
 
-float ShadowMap::GetSplit(int index)
+float ShadowPass::GetSplit(int index)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
@@ -264,38 +383,38 @@ float ShadowMap::GetSplit(int index)
 	return Camera::GetNear() + mCascade.splits[index] * len;
 }
 
-Matrix ShadowMap::GetMatrix()
+Matrix ShadowPass::GetMatrix()
 {
 	return mCascade.matrix;
 }
 
-Matrix ShadowMap::GetMatrix(int index)
+Matrix ShadowPass::GetMatrix(int index)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.matrices[index];
 }
 
-Vector4 ShadowMap::GetOffset(int index)
+Vector4 ShadowPass::GetOffset(int index)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.offsets[index];
 }
 
-Vector4 ShadowMap::GetScale(int index)
+Vector4 ShadowPass::GetScale(int index)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
 	return mCascade.scales[index];
 }
 
-int ShadowMap::GetResolution()
+int ShadowPass::GetResolution()
 {
 	return mCascade.resolution;
 }
 
-void ShadowMap::SetResolution(int resolution)
+void ShadowPass::SetResolution(int resolution)
 {
 	FOG_ASSERT(resolution > 0);
 
@@ -303,29 +422,27 @@ void ShadowMap::SetResolution(int resolution)
 	UpdateTexture();
 }
 
-ID3D11Buffer* const* ShadowMap::GetBuffer()
+ID3D11DepthStencilView* ShadowPass::GetDepthDSV(int index)
 {
-	return mShadowBuffer.Get();
+	return mDepthDSV[index];
 }
 
-ID3D11DepthStencilView* ShadowMap::GetDSV(int index)
+ID3D11ShaderResourceView* const* ShadowPass::GetDepthSRV()
 {
-	return mDepthStencilView[index];
+	return &mDepthSRV;
 }
 
-ID3D11ShaderResourceView* const* ShadowMap::GetSRV()
+void ShadowPass::Shotdown()
 {
-	return &mShaderResourceView;
-}
-
-void ShadowMap::Shotdown()
-{
-	SAFE_RELEASE(mShaderResourceView);
+	SAFE_RELEASE(mDepthSRV);
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		SAFE_RELEASE(mDepthStencilView[i]);
+		SAFE_RELEASE(mDepthDSV[i]);
 	}
 
-	mShadowBuffer.Release();
+	mBuffer0.Release();
+	mBuffer1.Release();
+	mVertexShader.Release();
+	mInputLayout.Release();
 }

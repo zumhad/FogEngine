@@ -39,8 +39,9 @@ private:
 	static SamplerState mShadowSamplerState;
 	static SamplerState mSamplerState;
 	static SamplerState mPostProcessSamplerState;
-	static DepthStencilState mDepthStencilState;
-	static DepthStencilState mSkyboxDepthStencilState;
+	static DepthStencilState mReadWriteDSS;
+	static DepthStencilState mReadOnlyDSS;
+	static DepthStencilState mDisableDSS;
 
 	static VertexShader mPassVS;
 	static PixelShader mPassPS;
@@ -49,9 +50,5 @@ private:
 	static VertexShader mPostProcessVS;
 	static PixelShader mPostProcessPS;
 	static InputLayout mPostProcessIL;
-
-	static VertexShader mShadowPassVS;
-	static PixelShader mShadowPassPS;
-	static InputLayout mShadowPassIL;
 };
 

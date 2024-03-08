@@ -8,22 +8,24 @@
 
 class FOG_API PipelineState;
 class FOG_API GUI;
-class FOG_API Skybox;
-class FOG_API OutlineMap;
+class FOG_API SkyboxPass;
+class FOG_API OutlinePass;
 class FOG_API PrePass;
+class FOG_API ShadowPass;
 
 class FOG_API VertexShader
 {
 	friend class PipelineState;
 	friend class GUI;
-	friend class Skybox;
-	friend class OutlineMap;
+	friend class SkyboxPass;
+	friend class OutlinePass;
 	friend class PrePass;
+	friend class ShadowPass;
 
 private:
 	VertexShader();
 
-	void Create(String name);
+	void Create(String name, String entry = L"VS");
 	ID3D11VertexShader* Get();
 	ID3D10Blob* GetBlob();
 	void Release();

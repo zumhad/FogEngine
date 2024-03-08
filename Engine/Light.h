@@ -9,14 +9,14 @@
 class FOG_API ObjectManager;
 class FOG_API Model;
 class FOG_API PipelineState;
-class FOG_API OutlineMap;
+class FOG_API OutlinePass;
 class FOG_API PrePass;
 
 class FOG_API DirectionLight : public Object
 {
 	friend class ObjectManager;
 	friend class PipelineState;
-	friend class OutlineMap;
+	friend class OutlinePass;
 	friend class PrePass;
 
 public:
@@ -46,7 +46,7 @@ class FOG_API PointLight : public Object
 {
 	friend class ObjectManager;
 	friend class PipelineState;
-	friend class OutlineMap;
+	friend class OutlinePass;
 	friend class PrePass;
 
 public:

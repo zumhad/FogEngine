@@ -1,4 +1,4 @@
-#include "OutlineMap.h"
+#include "OutlinePass.h"
 
 #include "Utility.h"
 #include "Direct3D.h"
@@ -19,50 +19,50 @@
 #include "MathHelper.h"
 #include "ComputeShader.h"
 
-decltype(OutlineMap::mOutline) OutlineMap::mOutline{};
+decltype(OutlinePass::mOutline) OutlinePass::mOutline{};
 
-VertexShader OutlineMap::mInitVS;
-PixelShader OutlineMap::mInitPS;
-InputLayout OutlineMap::mInitIL;
-ComputeShader OutlineMap::mPrePassCS;
-VertexShader OutlineMap::mPassVS;
-PixelShader OutlineMap::mPassPS;
-InputLayout OutlineMap::mPassIL;
+VertexShader OutlinePass::mVertexShader0;
+PixelShader OutlinePass::mPixelShader0;
+InputLayout OutlinePass::mInputLayout0;
+ComputeShader OutlinePass::mCopmuteShader;
+VertexShader OutlinePass::mVertexShader1;
+PixelShader OutlinePass::mPixelShader1;
+InputLayout OutlinePass::mInputLayout1;
 
-ID3D11RenderTargetView* OutlineMap::mRenderTargetView = 0;
-ID3D11ShaderResourceView* OutlineMap::mShaderResourceView = 0;
-ID3D11UnorderedAccessView* OutlineMap::mUnorderedAccessView = 0;
+ID3D11RenderTargetView* OutlinePass::mOffsetRTV = 0;
+ID3D11ShaderResourceView* OutlinePass::mOffsetSRV = 0;
+ID3D11UnorderedAccessView* OutlinePass::mOffsetUAV = 0;
 
-struct OutlineMap::OutlineInitBuffer0
+struct OutlinePass::Buffer0
 {
 	Matrix viewProj;
 };
-ConstantBuffer<OutlineMap::OutlineInitBuffer0> OutlineMap::mOutlineInitBuffer0;
+ConstantBuffer<OutlinePass::Buffer0> OutlinePass::mBuffer0;
 
-struct OutlineMap::OutlineInitBuffer1
+struct OutlinePass::Buffer1
 {
 	Matrix world;
 };
-ConstantBuffer<OutlineMap::OutlineInitBuffer1> OutlineMap::mOutlineInitBuffer1;
+ConstantBuffer<OutlinePass::Buffer1> OutlinePass::mBuffer1;
 
-struct OutlineMap::OutlinePrePassBuffer
+struct OutlinePass::Buffer2
 {
 	int stepSize;
 	int width;
 	int height; float pad;
 };
-ConstantBuffer<OutlineMap::OutlinePrePassBuffer> OutlineMap::mOutlinePrePassBuffer;
+ConstantBuffer<OutlinePass::Buffer2> OutlinePass::mBuffer2;
 
-struct OutlineMap::OutlinePassBuffer
+struct OutlinePass::Buffer3
 {
 	Color color;
 	int stepSize;
 	int width;
 	int height; float pad;
 };
-ConstantBuffer<OutlineMap::OutlinePassBuffer> OutlineMap::mOutlinePassBuffer;
+ConstantBuffer<OutlinePass::Buffer3> OutlinePass::mBuffer3;
 
-void OutlineMap::Setup()
+void OutlinePass::Setup()
 {
 	int width, height;
 
@@ -95,7 +95,7 @@ void OutlineMap::Setup()
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		desc.Format = DXGI_FORMAT_R16G16_SINT;
-		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mRenderTargetView));
+		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mOffsetRTV));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
@@ -103,54 +103,58 @@ void OutlineMap::Setup()
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mShaderResourceView));
+		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mOffsetSRV));
 	}
 	{
 		D3D11_UNORDERED_ACCESS_VIEW_DESC desc{};
 		desc.Format = DXGI_FORMAT_R16G16_SINT;
 		desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MipSlice = 0;
-		Direct3D::Device()->CreateUnorderedAccessView(texture, &desc, &mUnorderedAccessView);
+		Direct3D::Device()->CreateUnorderedAccessView(texture, &desc, &mOffsetUAV);
 	}
 	SAFE_RELEASE(texture);
 
 	{
-		mInitVS.Create(L"OutlineInit.hlsl");
-		mInitPS.Create(L"OutlineInit.hlsl");
+		mVertexShader0.Create(L"OutlinePass.hlsl", L"VS0");
+		mPixelShader0.Create(L"OutlinePass.hlsl", L"PS0");
 
 		Array<String> input;
 		input.Add(L"POSITION");
-		mInitIL.Create(mInitVS.GetBlob(), input);
+		mInputLayout0.Create(mVertexShader0.GetBlob(), input);
 	}
 	{
-		mPassVS.Create(L"OutlinePass.hlsl");
-		mPassPS.Create(L"OutlinePass.hlsl");
+		mCopmuteShader.Create("OutlinePassCS.hlsl");
+	}
+	{
+		mVertexShader1.Create(L"OutlinePass.hlsl", L"VS1");
+		mPixelShader1.Create(L"OutlinePass.hlsl", L"PS1");
 
 		Array<String> input;
 		input.Add(L"TEXCOORD");
-		mPassIL.Create(mPassVS.GetBlob(), input);
-	}
-	{
-		mPrePassCS.Create("OutlinePrePass.hlsl");
+		mInputLayout1.Create(mVertexShader1.GetBlob(), input);
 	}
 
-	mOutlineInitBuffer0.Create();
-	mOutlineInitBuffer1.Create();
-	mOutlinePrePassBuffer.Create();
-	mOutlinePassBuffer.Create();
+	mBuffer0.Create();
+	mBuffer1.Create();
+	mBuffer2.Create();
+	mBuffer3.Create();
 }
 
-void OutlineMap::Bind()
+void OutlinePass::Bind()
 {
 	bool isDrawOutline = false;
 
-	Direct3D::DeviceContext()->IASetInputLayout(mInitIL.Get());
-	Direct3D::DeviceContext()->VSSetShader(mInitVS.Get(), 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mInitPS.Get(), 0, 0);
+	Clear();
+	UpdateBuffer0();
 
-	Direct3D::DeviceContext()->OMSetRenderTargets(1, &mRenderTargetView, 0);
+	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout0.Get());
+	Direct3D::DeviceContext()->VSSetShader(mVertexShader0.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPixelShader0.Get(), 0, 0);
 
-	UpdateInitBuffer0();
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, &mOffsetRTV, 0);
+
+	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mBuffer0.Get());
+	Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mBuffer1.Get());
 
 	int size = ObjectManager::Size<Model>();
 	for (int i = 0; i < size; i++)
@@ -159,7 +163,7 @@ void OutlineMap::Bind()
 
 		if (model->outline && model->enable)
 		{
-			UpdateInitBuffer1(model);
+			UpdateBuffer1(model);
 
 			model->Draw();
 
@@ -174,7 +178,7 @@ void OutlineMap::Bind()
 
 		if (light->outline && light->enable)
 		{
-			UpdateInitBuffer1(light->GetModel());
+			UpdateBuffer1(light->GetModel());
 
 			light->Bind();
 
@@ -189,7 +193,7 @@ void OutlineMap::Bind()
 
 		if (light->outline && light->enable)
 		{
-			UpdateInitBuffer1(light->GetModel());
+			UpdateBuffer1(light->GetModel());
 
 			light->Bind();
 
@@ -203,8 +207,8 @@ void OutlineMap::Bind()
 
 	//////////////////////////////////////////////////////////////////////////
 
-	Direct3D::DeviceContext()->CSSetShader(mPrePassCS.Get(), 0, 0);
-	Direct3D::DeviceContext()->CSSetUnorderedAccessViews(0, 1, &mUnorderedAccessView, 0);
+	Direct3D::DeviceContext()->CSSetShader(mCopmuteShader.Get(), 0, 0);
+	Direct3D::DeviceContext()->CSSetUnorderedAccessViews(0, 1, &mOffsetUAV, 0);
 
 	int width, height;
 
@@ -225,8 +229,8 @@ void OutlineMap::Bind()
 	int it = Math::Ceil(Math::Log2(mOutline.width + 1.0f));
 	for (int i = 0; i < it; i++)
 	{
-		UpdatePrePassBuffer((int)Math::Pow(2.0f, (float)it - i - 1.0f));
-		Direct3D::DeviceContext()->CSSetConstantBuffers(0, 1, mOutlinePrePassBuffer.Get());
+		UpdateBuffer2((int)Math::Pow(2.0f, (float)it - i - 1.0f));
+		Direct3D::DeviceContext()->CSSetConstantBuffers(0, 1, mBuffer2.Get());
 
 		Direct3D::DeviceContext()->Dispatch(threadX, threadY, 1);
 	}
@@ -235,41 +239,40 @@ void OutlineMap::Bind()
 
 	////////////////////////////////////////////////////////////////////////////////
 
+	UpdateBuffer3();
+
 	Direct3D::DeviceContext()->OMSetRenderTargets(1, LightMap::GetRTV(), 0);
 
-	Direct3D::DeviceContext()->IASetInputLayout(mPassIL.Get());
-	Direct3D::DeviceContext()->VSSetShader(mPassVS.Get(), 0, 0);
-	Direct3D::DeviceContext()->PSSetShader(mPassPS.Get(), 0, 0);
+	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout1.Get());
+	Direct3D::DeviceContext()->VSSetShader(mVertexShader1.Get(), 0, 0);
+	Direct3D::DeviceContext()->PSSetShader(mPixelShader1.Get(), 0, 0);
 
-	UpdatePassBuffer();
-	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, mOutlinePassBuffer.Get());
+	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, mBuffer3.Get());
 
-	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, &mShaderResourceView);
+	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, &mOffsetSRV);
 
 	TextureMap::Bind();
 
 	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Direct3D::NullSRV());
 }
 
-void OutlineMap::UpdateInitBuffer0()
+void OutlinePass::UpdateBuffer0()
 {
-	static OutlineInitBuffer0 buffer{};
+	static Buffer0 buffer{};
 	buffer.viewProj = Camera::GetViewMatrix() * Camera::GetProjMatrix();
 
-	mOutlineInitBuffer0.Bind(buffer);
-	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mOutlineInitBuffer0.Get());
+	mBuffer0.Bind(buffer);
 }
 
-void OutlineMap::UpdateInitBuffer1(Model* obj)
+void OutlinePass::UpdateBuffer1(Model* obj)
 {
-	static OutlineInitBuffer1 buffer{};
+	static Buffer1 buffer{};
 	buffer.world = obj->GetWorldMatrix();
 
-	mOutlineInitBuffer1.Bind(buffer);
-	Direct3D::DeviceContext()->VSSetConstantBuffers(1, 1, mOutlineInitBuffer1.Get());
+	mBuffer1.Bind(buffer);
 }
 
-void OutlineMap::UpdatePrePassBuffer(int stepSize)
+void OutlinePass::UpdateBuffer2(int stepSize)
 {
 	int width, height;
 
@@ -284,15 +287,15 @@ void OutlineMap::UpdatePrePassBuffer(int stepSize)
 		height = Application::GetSceneHeight();
 	}
 
-	static OutlinePrePassBuffer buffer{};
+	static Buffer2 buffer{};
 	buffer.stepSize = stepSize;
 	buffer.width = width;
 	buffer.height = height;
 
-	mOutlinePrePassBuffer.Bind(buffer);
+	mBuffer2.Bind(buffer);
 }
 
-void OutlineMap::UpdatePassBuffer()
+void OutlinePass::UpdateBuffer3()
 {
 	int width, height;
 
@@ -307,41 +310,61 @@ void OutlineMap::UpdatePassBuffer()
 		height = Application::GetSceneHeight();
 	}
 
-	static OutlinePassBuffer buffer{};
+	static Buffer3 buffer{};
 	buffer.color = mOutline.color;
 	buffer.stepSize = mOutline.width;
 	buffer.width = width;
 	buffer.height = height;
 
-	mOutlinePassBuffer.Bind(buffer);
+	mBuffer3.Bind(buffer);
 }
 
-void OutlineMap::Shotdown()
+void OutlinePass::Shotdown()
 {
-	mInitVS.Release();
-	mInitPS.Release();
-	mInitIL.Release();
-	mPrePassCS.Release();
-	mPassVS.Release();
-	mPassPS.Release();
-	mPassIL.Release();
-	mOutlineInitBuffer0.Release();
-	mOutlineInitBuffer1.Release();
-	mOutlinePrePassBuffer.Release();
-	mOutlinePassBuffer.Release();
+	mVertexShader0.Release();
+	mPixelShader0.Release();
+	mInputLayout0.Release();
+	mCopmuteShader.Release();
+	mVertexShader1.Release();
+	mPixelShader1.Release();
+	mInputLayout1.Release();
+	mBuffer0.Release();
+	mBuffer1.Release();
+	mBuffer2.Release();
+	mBuffer3.Release();
 
-	SAFE_RELEASE(mUnorderedAccessView);
-	SAFE_RELEASE(mRenderTargetView);
-	SAFE_RELEASE(mShaderResourceView);
+	SAFE_RELEASE(mOffsetRTV);
+	SAFE_RELEASE(mOffsetSRV);
+	SAFE_RELEASE(mOffsetUAV);
 }
 
-void OutlineMap::Clear()
+void OutlinePass::SetColor(Color color)
+{
+	mOutline.color = color;
+}
+
+void OutlinePass::SetWidth(int width)
+{
+	mOutline.width = width;
+}
+
+void OutlinePass::Clear()
 {
 	static const float color[4]{ 32767.0f, 32767.0f, 32767.0f, 32767.0f };
-	Direct3D::DeviceContext()->ClearRenderTargetView(mRenderTargetView, color);
+	Direct3D::DeviceContext()->ClearRenderTargetView(mOffsetRTV, color);
 }
 
-ID3D11RenderTargetView* OutlineMap::GetRTV()
+ID3D11RenderTargetView* const* OutlinePass::GetOffsetRTV()
 {
-	return mRenderTargetView;
+	return &mOffsetRTV;
+}
+
+ID3D11ShaderResourceView* const* OutlinePass::GetOffsetSRV()
+{
+	return &mOffsetSRV;
+}
+
+ID3D11UnorderedAccessView* const* OutlinePass::GetOffsetUAV()
+{
+	return &mOffsetUAV;
 }

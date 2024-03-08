@@ -61,6 +61,8 @@ public:
     static void SetCascadeResolution(int resolution);
     static void SetCascadeSplit(int index, float split);
     static void SetCascadeBias(float bias);
+    static void SetCascadeBlend(float blend);
+    static float GetCascadeBlend();
 
     static void SaveProject();
     static void OpenFileDialog();
