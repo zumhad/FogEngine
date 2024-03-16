@@ -9,13 +9,13 @@ SamplerState::SamplerState()
 	mSamplerState = 0;
 }
 
-void SamplerState::Create(SamplerStateType type)
+void SamplerState::Create(Type type)
 {
 	D3D11_SAMPLER_DESC desc{};
 
 	switch (type)
 	{
-		case SamplerStateType::Default:
+		case Type::Default:
 		{
 			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -30,7 +30,7 @@ void SamplerState::Create(SamplerStateType type)
 			break;
 		}
 
-		case SamplerStateType::Outline:
+		case Type::Outline:
 		{
 			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -45,7 +45,7 @@ void SamplerState::Create(SamplerStateType type)
 			break;
 		}
 
-		case SamplerStateType::GUI:
+		case Type::GUI:
 		{
 			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -60,7 +60,7 @@ void SamplerState::Create(SamplerStateType type)
 			break;
 		}
 
-		case SamplerStateType::Shadow:
+		case Type::Shadow:
 		{
 			desc.Filter = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 			desc.AddressU = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -79,7 +79,7 @@ void SamplerState::Create(SamplerStateType type)
 			break;
 		}
 
-		case SamplerStateType::PostProcess:
+		case Type::PostProcess:
 		{
 			desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 			desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;

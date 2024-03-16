@@ -22,8 +22,13 @@ private:
 	static void Setup();
 	static void Shotdown();
 
+	static Vector3 ReadPosition();
+	static int ReadID();
+
+
 private:
-	static ID3D11Texture2D* mStaging;
+	static ID3D11Texture2D* mStagingPosition;
+	static ID3D11Texture2D* mStagingID;
 
 	static Object* mPickObject;
 	static Vector3 mPickPosition;

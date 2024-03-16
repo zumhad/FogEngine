@@ -14,8 +14,6 @@
 #include "VertexShader.h"
 #include "InputLayout.h"
 
-using namespace DirectX;
-
 struct ShadowPass::Buffer0
 {
 	Matrix viewProj;
@@ -47,12 +45,12 @@ void ShadowPass::Setup()
 	mCascade.offsets.Resize(MAX_CASCADES);
 	mCascade.scales.Resize(MAX_CASCADES);
 	mCascade.matrices.Resize(MAX_CASCADES);
-	mCascade.bias = 0.005f; 
-	mCascade.blend = 0.1f;
+
+	float len = Camera::GetFar() - Camera::GetNear();
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		mCascade.splits[i] = (1.0f / (float)MAX_CASCADES) * (float)(i + 1);
+		mCascade.splits[i] = (1.0f / (float)MAX_CASCADES) * (float)(i + 1) * len;
 	}
 
 	mDepthDSV.Resize(MAX_CASCADES);
@@ -65,9 +63,8 @@ void ShadowPass::Setup()
 	{
 		mVertexShader.Create(L"ShadowPass.hlsl");
 
-		Array<String> input;
-		input.Add(L"POSITION");
-		mInputLayout.Create(mVertexShader.GetBlob(), input);
+		mInputLayout.Add(L"POSITION");
+		mInputLayout.Create(mVertexShader.GetBlob());
 	}
 }
 
@@ -87,7 +84,7 @@ void ShadowPass::UpdateTexture()
 		desc.Height = mCascade.resolution;
 		desc.MipLevels = 1;
 		desc.ArraySize = MAX_CASCADES;
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
+		desc.Format = DXGI_FORMAT_R16_TYPELESS;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -96,7 +93,7 @@ void ShadowPass::UpdateTexture()
 	}
 	{
 		D3D11_DEPTH_STENCIL_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_D32_FLOAT;
+		desc.Format = DXGI_FORMAT_D16_UNORM;
 		desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2DArray.ArraySize = 1;
 
@@ -108,7 +105,7 @@ void ShadowPass::UpdateTexture()
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R32_FLOAT;
+		desc.Format = DXGI_FORMAT_R16_UNORM;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
@@ -129,28 +126,28 @@ void ShadowPass::Clear()
 
 void ShadowPass::CreateOffsetsAndScales(int index)
 {
-	XMMATRIX texScaleBias;
-	texScaleBias.r[0] = XMVectorSet(0.5f, 0.0f, 0.0f, 0.0f);
-	texScaleBias.r[1] = XMVectorSet(0.0f, -0.5f, 0.0f, 0.0f);
-	texScaleBias.r[2] = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
-	texScaleBias.r[3] = XMVectorSet(0.5f, 0.5f, 0.0f, 1.0f);
+	Matrix texScaleBias;
+	texScaleBias.v[0] = Vector4(0.5f, 0.0f, 0.0f, 0.0f);
+	texScaleBias.v[1] = Vector4(0.0f, -0.5f, 0.0f, 0.0f);
+	texScaleBias.v[2] = Vector4(0.0f, 0.0f, 1.0f, 0.0f);
+	texScaleBias.v[3] = Vector4(0.5f, 0.5f, 0.0f, 1.0f);
 
 	Matrix viewProj = mCascade.matrices[index];
-	viewProj = XMMatrixMultiply(viewProj, texScaleBias);
+	viewProj = viewProj * texScaleBias;
 
-	Matrix invCascadeMat = XMMatrixInverse(0, viewProj);
-	Vector3 cascadeCorner = XMVector3Transform(Vector3(0.0f, 0.0f, 0.0f), invCascadeMat);
-	cascadeCorner = XMVector3Transform(cascadeCorner, mCascade.matrix);
+	Matrix invCascadeMat = Matrix::Inverse(viewProj);
+	Vector3 cascadeCorner = Vector3::Transform(Vector3(0.0f, 0.0f, 0.0f), invCascadeMat);
+	cascadeCorner = Vector3::Transform(cascadeCorner, mCascade.matrix);
 
-	Vector3 otherCorner = XMVector3Transform(Vector3(1.0f, 1.0f, 1.0f), invCascadeMat);
-	otherCorner = XMVector3Transform(otherCorner, mCascade.matrix);
+	Vector3 otherCorner = Vector3::Transform(Vector3(1.0f, 1.0f, 1.0f), invCascadeMat);
+	otherCorner = Vector3::Transform(otherCorner, mCascade.matrix);
 
 	Vector3 cascadeScale = Vector3(1.0f, 1.0f, 1.0f) / (otherCorner - cascadeCorner);
 	mCascade.offsets[index] = Vector4(-cascadeCorner.x, -cascadeCorner.y, -cascadeCorner.z, 0.0f);
 	mCascade.scales[index] = Vector4(cascadeScale.x, cascadeScale.y, cascadeScale.z, 1.0f);
 }
 
-Matrix ShadowPass::CreateSplits(Vector3 dir)
+Matrix ShadowPass::CreateSplits(const Vector3& dir)
 {
 	Vector3 corner[8];
 	mFrustum.GetCorners(corner);
@@ -165,7 +162,7 @@ Matrix ShadowPass::CreateSplits(Vector3 dir)
 	float sphereRadius = 0.0f;
 	for (int i = 0; i < 8; ++i)
 	{
-		float dist = XMVectorGetX(XMVector3Length(corner[i] - center));
+		float dist = Vector3::Lenght(corner[i] - center);
 		sphereRadius = Math::Max(sphereRadius, dist);
 	}
 	sphereRadius = Math::Ceil(sphereRadius * 16.0f) / 16.0f;
@@ -174,30 +171,33 @@ Matrix ShadowPass::CreateSplits(Vector3 dir)
 	Vector3 minExtents = -maxExtents;
 	Vector3 cascadeExtents = maxExtents - minExtents;
 
-	Matrix proj = XMMatrixOrthographicOffCenterLH(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, cascadeExtents.z);
+	Matrix proj = DirectX::XMMatrixOrthographicOffCenterLH(minExtents.x, maxExtents.x, minExtents.y, maxExtents.y, 0.0f, cascadeExtents.z);
+
+	Vector3 rot;
+	rot.x = -Math::ASin(dir.y);
+	rot.y = Math::ATan2(dir.x, dir.z);
+	Quaternion q = Quaternion::Euler(rot);
+	Vector3 up = Vector3::Rotate(Vector3(0.0f, 1.0f, 0.0f), q);
 
 	Vector3 pos = center + dir * -minExtents.z;
-	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
-	Matrix view = XMMatrixLookAtLH(pos, center, up);
 
-	Vector3 shadowOrigin = Vector3(0.0f, 0.0f, 0.0f);
-	shadowOrigin = XMVector4Transform(shadowOrigin, view * proj);
-	shadowOrigin = XMVectorScale(shadowOrigin, mCascade.resolution * 0.5f);
+	Matrix view = DirectX::XMMatrixLookAtLH(pos, center, up);
 
-	Vector3 roundedOrigin = XMVectorRound(shadowOrigin);
-	Vector3 roundOffset = XMVectorSubtract(roundedOrigin, shadowOrigin);
-	roundOffset = XMVectorScale(roundOffset, 2.0f / mCascade.resolution);
-	roundOffset = XMVectorSetZ(roundOffset, 0.0f);
-	roundOffset = XMVectorSetW(roundOffset, 0.0f);
+	Vector3 shadowOrigin = -Camera::GetOffsetPosition();
+	shadowOrigin = Vector3::Transform(shadowOrigin, view * proj);
+	shadowOrigin *= mCascade.resolution * 0.5f;
 
-	proj.m[3][0] += roundOffset.x;
-	proj.m[3][1] += roundOffset.y;
-	proj.m[3][2] += roundOffset.z;
+	Vector3 roundedOrigin = Vector3::Round(shadowOrigin);
+	Vector3 roundOffset = roundedOrigin - shadowOrigin;
+	roundOffset *= 2.0f / mCascade.resolution;
+	roundOffset.z = 0.0f;
+
+	proj.v[3] += Vector4(roundOffset, 0.0f);
 
 	return view * proj;
 }
 
-void ShadowPass::CreateMatrix(Vector3 dir)
+void ShadowPass::CreateMatrix(const Vector3& dir)
 {
 	Vector3 frustumCorners[8] =
 	{
@@ -213,42 +213,45 @@ void ShadowPass::CreateMatrix(Vector3 dir)
 
 	Matrix view = Camera::GetViewMatrix();
 	Matrix proj = Camera::GetProjMatrix();
-	Matrix invViewProj = XMMatrixInverse(0, view * proj);
+	Matrix invViewProj = Matrix::Inverse(view * proj);
 
 	Vector3 frustumCenter = 0.0f;
 	for (int i = 0; i < 8; ++i)
 	{
-		frustumCorners[i] = XMVector3Transform(frustumCorners[i], invViewProj);
+		frustumCorners[i] = Vector3::Transform(frustumCorners[i], invViewProj);
 		frustumCenter += frustumCorners[i];
 	}
 	frustumCenter /= 8.0f;
 
-	Vector3 up = Vector3(0.0f, 1.0f, 0.0f);
+	Vector3 rot;
+	rot.x = -Math::ASin(dir.y);
+	rot.y = Math::ATan2(dir.x, dir.z);
+	Quaternion q = Quaternion::Euler(rot);
+	Vector3 up = Vector3::Rotate(Vector3(0.0f, 1.0f, 0.0f), q);
+
 	Vector3 pos = frustumCenter + dir * -0.5f;
 
-	view = XMMatrixLookAtLH(pos, frustumCenter, up);
-	proj = XMMatrixOrthographicOffCenterLH(-0.5f, 0.5f, -0.5f, 0.5f, 0.0f, 1.0f);
+	view = DirectX::XMMatrixLookAtLH(pos, frustumCenter, up);
+	proj = DirectX::XMMatrixOrthographicOffCenterLH(-0.5f, 0.5f, -0.5f, 0.5f, 0.0f, 1.0f);
 
-	Matrix scaling = XMMatrixScaling(0.5f, -0.5f, 1.0f);
-	Matrix translation = XMMatrixTranslation(0.5f, 0.5f, 0.0f);
+	Matrix scaling = Matrix::Scaling(0.5f, -0.5f, 1.0f);
+	Matrix translation = Matrix::Translation(0.5f, 0.5f, 0.0f);
 
 	mCascade.matrix = (view * proj) * scaling * translation;
 }
 
-void ShadowPass::UpdateCascade(Vector3 dir)
+void ShadowPass::UpdateCascade(const Vector3& dir)
 {
 	Matrix view = Camera::GetViewMatrix();
-
-	float len = Camera::GetFar() - Camera::GetNear();
 
 	CreateMatrix(dir);
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		float n = Camera::GetNear() + (i ? mCascade.splits[i - 1] * len : 0);
-		float f = Camera::GetNear() + mCascade.splits[i] * len;
+		float n = Camera::GetNear() + (i ? mCascade.splits[i - 1] : 0.0f);
+		float f = Camera::GetNear() + mCascade.splits[i];
 
-		Matrix proj = XMMatrixPerspectiveFovLH(Camera::GetFOV(), Camera::GetAspectRatio(), n, f);
+		Matrix proj = DirectX::XMMatrixPerspectiveFovLH(Camera::GetFOV(), Camera::GetAspectRatio(), n, f);
 
 		mFrustum.Update(view, proj);
 		
@@ -265,7 +268,7 @@ void ShadowPass::Bind()
 	for (int i = 0; i < size; i++)
 	{
 		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
-		if (!light->enable) continue;
+		if (!light->GetEnable()) continue;
 
 		lightDir = light->GetDirection();
 
@@ -358,7 +361,6 @@ void ShadowPass::SetBlend(float blend)
 void ShadowPass::SetSplit(int index, float split)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
-	FOG_ASSERT(split > 0.0f && split <= 1.0f);
 
 	mCascade.splits[index] = split;
 }
@@ -375,24 +377,26 @@ float ShadowPass::GetBias()
 	return mCascade.bias;
 }
 
+void ShadowPass::SetNormalBias(float bias)
+{
+	mCascade.normalBias = bias;
+}
+
+float ShadowPass::GetNormalBias()
+{
+	return mCascade.normalBias;
+}
+
 float ShadowPass::GetSplit(int index)
 {
 	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
 
-	float len = Camera::GetFar() - Camera::GetNear();
-	return Camera::GetNear() + mCascade.splits[index] * len;
+	return mCascade.splits[index];
 }
 
 Matrix ShadowPass::GetMatrix()
 {
 	return mCascade.matrix;
-}
-
-Matrix ShadowPass::GetMatrix(int index)
-{
-	FOG_ASSERT(index >= 0 && index < MAX_CASCADES);
-
-	return mCascade.matrices[index];
 }
 
 Vector4 ShadowPass::GetOffset(int index)

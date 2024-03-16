@@ -3,7 +3,7 @@
 #include "Application.h"
 #include "CustomString.h"
 
-FOG_API void MessageBoxError(String file, int line, String msg)
+FOG_API void MessageBoxError(const String& file, int line, const String& msg)
 {	
 	Application::Close();
 
@@ -12,5 +12,5 @@ FOG_API void MessageBoxError(String file, int line, String msg)
 	str += L"Line: " + String::ToString(line) + L"\n";
 	str += L"Msg: " + msg;
 
-	MessageBox(0, str.GetWCHAR(), L"Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
+	MessageBox(0, str, L"Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
 }

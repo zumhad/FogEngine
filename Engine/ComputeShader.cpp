@@ -11,7 +11,7 @@ ComputeShader::ComputeShader()
 	mBlob = 0;
 }
 
-void ComputeShader::Create(String name, String entry)
+void ComputeShader::Create(const String& name, const String& entry)
 {
 	String path = PathHelper::GetAssetsPath();
 	path += name;

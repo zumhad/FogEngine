@@ -27,7 +27,7 @@ public:
 	static void Setup();
 	static void Shotdown();
 	static void Bind();
-	static void SetColor(Color color);
+	static void SetColor(const Color& color);
 	static void SetWidth(int width);
 
 private:

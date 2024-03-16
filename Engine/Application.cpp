@@ -82,7 +82,7 @@ void Application::InitWindow()
     FOG_ASSERT(mHwnd);
 }
 
-void Application::InitProp(APPCLASS app)
+void Application::InitProp(const APPCLASS& app)
 {
     mIsGame = app.isGame;
     mCaptionHeight = (int)Math::Max(0.0f, (float)app.captionHeight);
@@ -108,7 +108,7 @@ void Application::InitProp(APPCLASS app)
     mScene.color = app.scene.color;
 }
 
-void Application::InitApp(APPCLASS app)
+void Application::InitApp(const APPCLASS& app)
 {
     CheckDebug();
     srand((unsigned int)time(0));
@@ -131,14 +131,13 @@ void Application::CheckDebug()
 #endif
 }
 
-void Application::InitModules(APPCLASS app)
+void Application::InitModules(const APPCLASS& app)
 {
     Direct3D::Setup();
     PrePass::Setup();
     OutlinePass::Setup();
     SkyboxPass::Setup();
     Font::Setup();
-    ShadowPass::Setup();
     PostProcess::Setup();
     LightMap::Setup();
     Picking::Setup();
@@ -147,6 +146,7 @@ void Application::InitModules(APPCLASS app)
     GUI::Setup();
     Time::Setup();
     Camera::Setup(app);
+    ShadowPass::Setup();
     PipelineState::Setup();
 }
 
@@ -165,7 +165,7 @@ void Application::InitBuffers()
 	}
 }
 
-int Application::Run(APPCLASS app)
+int Application::Run(const APPCLASS& app)
 {
 	InitApp(app);
 
@@ -209,13 +209,13 @@ void Application::Shotdown() //exit
     UnregisterClass(APP_CLASS, 0);
 
     PipelineState::Shotdown();
+    ShadowPass::Shotdown();
     ObjectManager::Shotdown();
     GUI::Shotdown();
     TextureMap::Shotdown();
     Picking::Shotdown();   
     LightMap::Shotdown();
     PostProcess::Shotdown();
-    ShadowPass::Shotdown();
     Font::Shotdown();
     SkyboxPass::Shotdown();
     OutlinePass::Shotdown();
@@ -251,7 +251,7 @@ void Application::SetSceneHeight(int height)
     mScene.height = (int)Math::Max(0.0f, float(height));;
 }
 
-void Application::SetSceneColor(Color color)
+void Application::SetSceneColor(const Color& color)
 { 
     if (mIsGame) return;
 
@@ -293,7 +293,7 @@ Color Application::GetSceneColor()
     return mScene.color;
 }
 
-void Application::SetEditorColor(Color color)
+void Application::SetEditorColor(const Color& color)
 {
     if (mIsGame) return;
 
@@ -339,7 +339,7 @@ void Application::SetGameHeight(int height)
     Direct3D::Resize();
 }
 
-void Application::SetGameColor(Color color)
+void Application::SetGameColor(const Color& color)
 {
     if (!mIsGame) return;
 
@@ -381,11 +381,19 @@ void Application::SetCascadeResolution(int resolution) { ShadowPass::SetResoluti
 
 void Application::SetCascadeSplit(int index, float split) { ShadowPass::SetSplit(index, split); }
 
+float Application::GetCascadeSplit(int index) { return ShadowPass::GetSplit(index); }
+
 void Application::SetCascadeBias(float bias) { ShadowPass::SetBias(bias); }
+
+float Application::GetCascadeBias() { return ShadowPass::GetBias(); }
 
 void Application::SetCascadeBlend(float blend) { ShadowPass::SetBlend(blend); }
 
 float Application::GetCascadeBlend() { return ShadowPass::GetBlend(); }
+
+void Application::SetNormalBias(float bias) { ShadowPass::SetNormalBias(bias); }
+
+float Application::GetNormalBias() { return ShadowPass::GetNormalBias(); }
 
 void Application::Restore()
 { 
@@ -425,7 +433,7 @@ void Application::SetOutlineWidth(int width)
     OutlinePass::SetWidth(width);
 }
 
-void Application::SetOutlineColor(Color color)
+void Application::SetOutlineColor(const Color& color)
 {
     OutlinePass::SetColor(color);
 }

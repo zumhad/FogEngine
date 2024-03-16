@@ -7,8 +7,6 @@
 #include "Camera.h"
 #include "Vector3.h"
 
-#include <DirectXMath.h>
-
 using namespace DirectX;
 
 bool Cursor::mVisible = true;
@@ -29,7 +27,7 @@ void Cursor::Update()
 
 int Cursor::GetPosition(CursorAxis axis)
 {
-	if (axis == CursorAxis::CURSOR_X)
+	if (axis == CURSOR_X)
 		return mX;
 	else
 		return mY;
@@ -83,15 +81,15 @@ Vector3 Cursor::GetDirection()
 		yWindow = (float)Application::GetSceneY();
 	}
 
-	XMMATRIX proj = Camera::GetProjMatrix();
-	XMMATRIX view = Camera::GetViewMatrix();
-	XMMATRIX world = XMMatrixIdentity();
+	Matrix proj = Camera::GetProjMatrix();
+	Matrix view = Camera::GetViewMatrix();
+	Matrix world = Matrix();
 
-	XMVECTOR v1 = XMVectorSet(xCursor, yCursor, 1.0f, 0.0f);
-    XMVECTOR ray1 = XMVector3Unproject(v1, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
+	Vector3 v1 = Vector3(xCursor, yCursor, 1.0f);
+	Vector3 ray1 = XMVector3Unproject(v1, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
 
-	XMVECTOR v2 = XMVectorSet(xCursor, yCursor, 0.0f, 0.0f);
-	XMVECTOR ray2 = XMVector3Unproject(v2, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
+	Vector3 v2 = Vector3(xCursor, yCursor, 0.0f);
+	Vector3 ray2 = XMVector3Unproject(v2, xWindow, yWindow, widthWindow, heightWindow, 0.0f, 1.0f, proj, view, world);
 
     return Vector3::Normalize(ray2 - ray1);
 }

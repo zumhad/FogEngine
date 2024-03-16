@@ -11,35 +11,34 @@
 #include <assimp/postprocess.h>
 
 using namespace Assimp;
-using namespace DirectX;
 
 Model::Model() : Object()
 {
-	name = L"";
-	texture = L"white.png";
-	color = Color(1.0f, 1.0f, 1.0f);
-	lighting = true;
-	metallic = 0.0f;
-	roughness = 1.0f;
+	mModelPath = L"";
+	mTexturePath = L"white.png";
+	mColor = Color(1.0f, 1.0f, 1.0f);
+	mLighting = true;
+	mMetallic = 0.0f;
+	mRoughness = 1.0f;
 }
 
 Model::Model(const Model& model) : Object(model)
 {
-	name = model.name;
-	texture = model.texture;
-	color = model.color;
-	lighting = model.lighting;
-	metallic = model.metallic;
-	roughness = model.roughness;
+	mModelPath = model.mModelPath;
+	mTexturePath = model.mTexturePath;
+	mColor = model.mColor;
+	mLighting = model.mLighting;
+	mMetallic = model.mMetallic;
+	mRoughness = model.mRoughness;
 }
 
 Model::Model(Model&& model) noexcept : Model(model)
 {
 	String path = PathHelper::GetAssetsPath();
-	path += name;
+	path += mModelPath;
 
 	Importer importer;
-	const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_ConvertToLeftHanded | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+	const aiScene* scene = importer.ReadFile(StringConverter(path), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
 
 	mArr.Resize(scene->mNumMeshes);
 
@@ -91,7 +90,82 @@ Model::Model(Model&& model) noexcept : Model(model)
 		mArr[i] = new Mesh(vertex, index);
 	}
 
-	mTexture.Create(texture);
+	mTexture.Create(mTexturePath);
+}
+
+void Model::SetModelPath(const String& modelPath)
+{
+	mModelPath = modelPath;
+}
+
+String Model::GetModelPath()
+{
+	return mModelPath;
+}
+
+void Model::SetTexturePath(const String& texturePath)
+{
+	mTexturePath = texturePath;
+}
+
+String Model::GetTexturePath()
+{
+	return mTexturePath;
+}
+
+void Model::SetColor(const Color& color)
+{
+	mColor = color;
+}
+
+void Model::SetColorR(float r)
+{
+	mColor.r = r;
+}
+
+void Model::SetColorG(float g)
+{
+	mColor.g = g;
+}
+
+void Model::SetColorB(float b)
+{
+	mColor.b = b;
+}
+
+Color Model::GetColor()
+{
+	return mColor;
+}
+
+void Model::SetLighting(bool lighting)
+{
+	mLighting = lighting;
+}
+
+bool Model::GetLighting()
+{
+	return mLighting;
+}
+
+void Model::SetMetallic(float metallic)
+{
+	mMetallic = metallic;
+}
+
+float Model::GetMetallic()
+{
+	return mMetallic;
+}
+
+void Model::SetRoughness(float roughness)
+{
+	mRoughness = roughness;
+}
+
+float Model::GetRoughness()
+{
+	return mRoughness;
 }
 
 void Model::BindTexture()
@@ -106,65 +180,6 @@ void Model::Draw()
 	{
 		mArr[i]->Draw();
 	}
-}
-
-Matrix Model::GetWorldMatrix()
-{
-	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-	return XMMatrixAffineTransformation(scale, Vector3(0.0f, 0.0f, 0.0f), q, position);
-}
-
-void Model::SetPosition(Vector3 v)
-{
-	position = v;
-}
-
-void Model::SetRotation(Vector3 v)
-{
-	rotation = v;
-}
-
-void Model::SetScale(Vector3 v)
-{
-	scale = v;
-}
-
-Vector3 Model::GetPosition()
-{
-	return position;
-}
-
-Vector3 Model::GetRotation()
-{
-	return rotation;
-}
-
-Vector3 Model::GetScale()
-{
-	return scale;
-}
-
-void Model::Move(Vector3 v)
-{
-	position += v;
-}
-
-void Model::Rotate(Vector3 v)
-{
-	rotation += v;
-}
-
-void Model::Scale(Vector3)
-{
-	//scale = v;
-}
-
-Vector3 Model::GetDirection()
-{
-	Vector3 v = Vector3(0.0f, 0.0f, 1.0f);
-	Quaternion q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(rotation));
-
-	return XMVector3Rotate(v, q);
 }
 
 Model::~Model()

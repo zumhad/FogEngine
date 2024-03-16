@@ -32,7 +32,6 @@ Button::Button()
 
 	mNeedUpdateText = false;
 	mVertexSize = 0;
-	mVertexBuffer = 0;
 	mFocus = false;
 	mClick = false;
 	mHover = false;
@@ -55,17 +54,16 @@ Button::Button(const Button& button) : Button()
 
 Button::Button(Button&& button) noexcept : Button(button)
 {
-	mVertexBuffer = 0;
 	mTextBuffer.Create();
 }
 
 Button::~Button()
 {
-	SAFE_RELEASE(mVertexBuffer);
+	mVertexBuffer.Release();
 	mTextBuffer.Release();
 }
 
-int Button::BinarySearch(Array<Button*>& arr, int i)
+int Button::BinarySearch(const Array<Button*>& arr, int i)
 {
 	int size = arr.Size();
 	int left = 0;
@@ -264,7 +262,7 @@ void Button::DrawText()
 
 	static UINT stride = mVertexSize;
 	static UINT offset = 0;
-	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, &mVertexBuffer, &stride, &offset);
+	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, mVertexBuffer.Get(), &stride, &offset);
 	Direct3D::DeviceContext()->Draw(4 * text.text.Size(), 0);
 }
 
@@ -435,14 +433,6 @@ void Button::UpdateText()
 		vertex[i * 4 + 3] = v;
 	}
 
-	SAFE_RELEASE(mVertexBuffer);
-
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = (UINT)sizeof(vertex[0]) * (UINT)vertex.Size();
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	D3D11_SUBRESOURCE_DATA InitData = {};
-	InitData.pSysMem = vertex.Data();
-	FOG_TRACE(Direct3D::Device()->CreateBuffer(&bd, &InitData, &mVertexBuffer));
+	mVertexBuffer.Release();
+	mVertexBuffer.Create(vertex);
 }

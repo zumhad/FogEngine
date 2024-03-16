@@ -39,7 +39,7 @@ PS_OUTPUT PS(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
-	output.color = gTexture.Sample(gSampler, input.uv);
+	output.color.rgb = gTexture.Sample(gSampler, input.uv).rgb;
 	output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
 
 	return output;

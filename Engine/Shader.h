@@ -18,5 +18,5 @@ private:
 class FOG_API Shader
 {
 public:
-    static void Compile(String fileName, String entryPoint, String shaderModel, ID3D10Blob** blob);
+    static void Compile(const String& fileName, const String& entryPoint, const String& shaderModel, ID3D10Blob** blob);
 };

@@ -19,9 +19,10 @@ public:
     static float Min(float a, float b);
     static float Max(float a, float b);
     static float Clamp(float value, float min, float max);
-    static float Floor(float f);
+    static int Floor(float f);
     static int Ceil(float f);
-    static float Round(float f);
+    static int Round(float f);
+    static float Round(float f, int presicion);
     static float Repeat(float t, float length);
     static float DeltaAngle(float current, float target);
     static float SmoothDampAngle(float current, float target, float& currentVelocity, float smoothTime);
@@ -30,12 +31,13 @@ public:
     static float ASin(float a);
     static float ConvertToDegrees(float a);
     static float ConvertToRadians(float a);
-    static float Float16ToFloat32(unsigned short float16);
-    static float StringToFloat(String s);
+    static float F16ToF32(unsigned short float16);
+    static float StringToFloat(const String& s);
     static float Log2(float x);
+    static float PI();
 
     template <typename T>
-    static int BinarySearch(Array<T>& arr, T t);
+    static int BinarySearch(const Array<T>& arr, T t);
 
 private:
     static float mEpsilon;
@@ -45,7 +47,7 @@ private:
 };
 
 template <typename T>
-int Math::BinarySearch(Array<T>& arr, T t)
+int Math::BinarySearch(const Array<T>& arr, T t)
 {
     int size = arr.Size();
     int left = 0;

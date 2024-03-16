@@ -39,7 +39,7 @@ int ObjectManager::Add(PointLight& light)
 
 	if (mArrPointLight.Size() == MAX_POINT_LIGHT)
 	{
-		l->enable = false;
+		l->SetEnable(false);
 	}
 
 	mArrObject.Add(l);

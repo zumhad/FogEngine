@@ -8,7 +8,7 @@ cbuffer cbLightPassBuffer : register(b0)
     int gPointCount; float2 pad;
 };
 
-Texture2DArray<float> gTextureShadow : register(t5);
+Texture2DArray<float> gTextureShadow : register(t4);
 SamplerComparisonState gShadowSampler : register(s1);
 
 float SampleShadowMap(float2 base_uv, float u, float v, float depth, int index, float2 shadowMapSizeInv)
@@ -56,14 +56,12 @@ float SampleShadowMapOptimizedPCF(float3 shadowPos, in float3 shadowPosDX, float
     float v0 = (2 - t) / vw0 - 1;
     float v1 = t / vw1 + 1;
 
-    //return gTextureShadow.SampleCmpLevelZero(gShadowSampler, float3(shadowPos.xy, (float)index), lightDepth);
-
     sum += uw0 * vw0 * SampleShadowMap(base_uv, u0, v0, lightDepth, index, shadowMapSizeInv);
     sum += uw1 * vw0 * SampleShadowMap(base_uv, u1, v0, lightDepth, index, shadowMapSizeInv);
     sum += uw0 * vw1 * SampleShadowMap(base_uv, u0, v1, lightDepth, index, shadowMapSizeInv);
     sum += uw1 * vw1 * SampleShadowMap(base_uv, u1, v1, lightDepth, index, shadowMapSizeInv);
 
-    return sum * 1.0f / 16;
+    return sum * 1.0f / 16.0f;
 }
 
 float SampleShadowCascade(float3 position, float3 shadowPosDX, float3 shadowPosDY, int index)
@@ -74,42 +72,60 @@ float SampleShadowCascade(float3 position, float3 shadowPosDX, float3 shadowPosD
     shadowPosDX *= gDirLight.scale[index].xyz;
     shadowPosDY *= gDirLight.scale[index].xyz;
 
+    if (position.z <= 0.0f) return 0.0f;
+
     return SampleShadowMapOptimizedPCF(position, shadowPosDX, shadowPosDY, index);
 }
 
-float Shadow(float range, float3 position)
+float3 GetShadowPosOffset(float nDotL, float3 normal)
 {
-    int index = -1;
+    float2 shadowMapSize;
+    float numSlices;
+    gTextureShadow.GetDimensions(shadowMapSize.x, shadowMapSize.y, numSlices);
+    float texelSize = 2.0f / shadowMapSize.x;
+    float nmlOffsetScale = saturate(1.0f - nDotL);
+    return texelSize * gDirLight.normalBias * nmlOffsetScale * normal;
+}
+
+float Shadow(float3 position, float3 normal)
+{
+    int index = MAX_CASCADES - 1;
+
+    float3 projectionPos = mul(gDirLight.viewProj, float4(position, 1.0f)).xyz;
 
     [unroll]
     for (int i = MAX_CASCADES - 1; i >= 0; i--)
     {
-        if (range < gDirLight.split[i].split) index = i;
+        float3 cascadePos = projectionPos + gDirLight.offset[i].xyz;
+        cascadePos *= gDirLight.scale[i].xyz;
+        cascadePos = abs(cascadePos - 0.5f);
+
+        if (all(cascadePos <= 0.49f)) // default 0.5f
+            index = i;
     }
 
-    float shadow = 0.0f;
+    float nDotL = saturate(dot(normal, -gDirLight.direction));
+    float3 offset = GetShadowPosOffset(nDotL, normal) / abs(gDirLight.scale[index].z);
+    float3 shadowPos = mul(gDirLight.viewProj, float4(position + offset, 1.0f)).xyz;
+	float3 shadowPosDX = ddx_fine(shadowPos);
+	float3 shadowPosDY = ddy_fine(shadowPos);
+    float shadow = SampleShadowCascade(shadowPos, shadowPosDX, shadowPosDY, index);
 
-    if (index != -1)
-    {
-        float3 shadowPos = mul(gDirLight.viewProj, float4(position, 1.0f)).xyz;
-        float3 shadowPosDX = ddx_fine(shadowPos);
-        float3 shadowPosDY = ddy_fine(shadowPos);
-        shadow = SampleShadowCascade(shadowPos, shadowPosDX, shadowPosDY, index);
+    float3 cascadePos = projectionPos + gDirLight.offset[index].xyz;
+    cascadePos *= gDirLight.scale[index].xyz;
+    cascadePos = abs(cascadePos * 2.0f - 1.0f);
+    float distToEdge = 1.0f - max(max(cascadePos.x, cascadePos.y), cascadePos.z);
 
-        float nextSplit = gDirLight.split[index].split;
-        float splitSize = index == 0 ? nextSplit : nextSplit - gDirLight.split[index - 1].split;
-        float fadeFactor = (nextSplit - range) / splitSize;
+    [branch]
+	if (distToEdge <= gDirLight.blend)
+	{
+		float3 nextOffset = GetShadowPosOffset(nDotL, normal) / abs(gDirLight.scale[index - 1].z);
+		float3 nextPosition = mul(gDirLight.viewProj, float4(position + nextOffset, 1.0f)).xyz;
+        float3 nextShadow = ((index != MAX_CASCADES - 1) ? SampleShadowCascade(nextPosition, shadowPosDX, shadowPosDY, index + 1) : 0.0f);
 
-        [branch]
-        if (fadeFactor <= gDirLight.blend && index != MAX_CASCADES - 1)
-        {
-            float3 nextPosition = mul(gDirLight.viewProj, float4(position, 1.0f)).xyz;
-
-            float3 nextSplitVisibility = SampleShadowCascade(nextPosition, shadowPosDX, shadowPosDY, index + 1);
-            float lerpAmt = smoothstep(0.0f, gDirLight.blend, fadeFactor);
-            shadow = lerp(nextSplitVisibility, shadow, lerpAmt).x;
-        }
-    }
+        float lerpAmt = smoothstep(0.0f, gDirLight.blend, distToEdge);
+        shadow = lerp(nextShadow, shadow, lerpAmt).x;
+	}
 
     return shadow;
 }

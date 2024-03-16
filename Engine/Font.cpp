@@ -9,7 +9,7 @@ ID3D11ShaderResourceView* Font::mTexture = 0;
 void Font::Setup()
 {
 	int width, height;
-	unsigned char* data = Image::Load("Font.png", width, height, ImageType::A);
+	unsigned char* data = Image::Load(L"Font.png", width, height, Image::Type::A);
 	
 	ID3D11Texture2D* texture;
 	{

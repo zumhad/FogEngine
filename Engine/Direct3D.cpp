@@ -15,8 +15,6 @@
 
 #include <dxgidebug.h>
 
-using namespace DirectX;
-
 ID3D11Device* Direct3D::mDevice = 0;
 ID3D11DeviceContext* Direct3D::mDeviceContext = 0;
 ID3D11DeviceContext1* Direct3D::mDeviceContext1 = 0;

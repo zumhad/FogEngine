@@ -35,22 +35,21 @@ ConstantBuffer<GUI::FrameBuffer> GUI::mFrameBuffer;
 
 void GUI::Setup()
 {
-	mDepthStencilState.Create(DepthStencilStateType::Disable);
-	mSamplerState.Create(SamplerStateType::GUI);
+	mDepthStencilState.Create(DepthStencilState::Type::Disable);
+	mSamplerState.Create(SamplerState::Type::GUI);
 	mFrameBuffer.Create();
 
 	{
 		mVertexShader.Create(L"Text.hlsl");
 		mPixelShader.Create(L"Text.hlsl");
 
-		Array<String> input;
-		input.Add(L"TEXPOS");
-		input.Add(L"TEXCOORD");
-		mInputLayout.Create(mVertexShader.GetBlob(), input);
+		mInputLayout.Add(L"TEXCOORD", 0);
+		mInputLayout.Add(L"TEXCOORD", 1);
+		mInputLayout.Create(mVertexShader.GetBlob());
 	}
 }
 
-int GUI::BinarySearch(Array<Button*>& arr, int i)
+int GUI::BinarySearch(const Array<Button*>& arr, int i)
 {
 	int size = arr.Size();
 	int left = 0;
@@ -165,8 +164,8 @@ void GUI::Draw()
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
-	viewport.Width = (FLOAT)Application::GetEditorWidth();
-	viewport.Height = (FLOAT)Application::GetEditorHeight();
+	viewport.Width = (float)Application::GetEditorWidth();
+	viewport.Height = (float)Application::GetEditorHeight();
 	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
 
 	Direct3D::DeviceContext()->ClearRenderTargetView(*Direct3D::GetRTV(), Application::GetEditorColor());

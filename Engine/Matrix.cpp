@@ -3,6 +3,7 @@
 #pragma warning(disable : 26495)
 
 #include "Utility.h"
+#include "Quaternion.h"
 
 using namespace DirectX;
 
@@ -41,39 +42,28 @@ Matrix::operator DirectX::XMFLOAT4X4() const
 
 Matrix& Matrix::operator+= (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    XMStoreFloat4x4((XMFLOAT4X4*)m, m1 + m2);
+    *this = XMMATRIX(*this) + XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix& Matrix::operator-= (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    XMStoreFloat4x4((XMFLOAT4X4*)m, m1 - m2);
+    *this = XMMATRIX(*this) - XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix& Matrix::operator*= (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    XMStoreFloat4x4((XMFLOAT4X4*)m, m1 * m2);
+    *this = XMMATRIX(*this) * XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix& Matrix::operator*= (float f)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    XMStoreFloat4x4((XMFLOAT4X4*)m, m1 * f);
+    *this = XMMATRIX(*this) * f;
 
     return *this;
 }
@@ -82,94 +72,75 @@ Matrix& Matrix::operator/= (float f)
 {
     FOG_ASSERT(f != 0);
 
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    XMStoreFloat4x4((XMFLOAT4X4*)m, m1 / f);
+    *this = XMMATRIX(*this) / f;
 
     return *this;
 }
 
 Matrix Matrix::operator+ () const
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    Matrix _m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(_m.m), +m1);
-
-    return _m;
+    return +XMMATRIX(*this);
 }
 
 Matrix Matrix::operator- () const
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    Matrix _m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(_m.m), -m1);
-
-    return _m;
+    return -XMMATRIX(*this);
 }
 
 Matrix Matrix::operator+ (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    Matrix __m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(__m.m), m1 + m2);
-
-    return __m;
+    return XMMATRIX(*this) + XMMATRIX(_m);
 }
 
 Matrix Matrix::operator- (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    Matrix __m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(__m.m), m1 - m2);
-
-    return __m;
+    return XMMATRIX(*this) - XMMATRIX(_m);
 }
 
 Matrix Matrix::operator* (const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-    XMMATRIX m2 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
-
-    Matrix __m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(__m.m), m1 * m2);
-
-    return __m;
+    return XMMATRIX(*this) * XMMATRIX(_m);
 }
 
 Matrix Matrix::operator* (float f)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    Matrix _m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(_m.m), m1 * f);
-
-    return _m;
+    return XMMATRIX(*this) * f;
 }
 
 Matrix Matrix::operator/ (float f)
 {
     FOG_ASSERT(f != 0.0f);
 
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)m);
-
-    Matrix _m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(_m.m), m1 / f);
-
-    return _m;
+    return XMMATRIX(*this) / f;
 }
 
-Matrix Matrix::Inverse(Matrix& _m)
+Matrix Matrix::Inverse(const Matrix& _m)
 {
-    XMMATRIX m1 = XMLoadFloat4x4((XMFLOAT4X4*)(_m.m));
+    return XMMatrixInverse(0, _m);
+}
 
-    Matrix __m;
-    XMStoreFloat4x4((XMFLOAT4X4*)(__m.m), XMMatrixInverse(0, m1));
+Matrix Matrix::Scaling(const Vector3& _v)
+{
+    return XMMatrixScalingFromVector(_v);
+}
 
-    return __m;
+Matrix Matrix::Scaling(float x, float y, float z)
+{
+    return XMMatrixScaling(x, y, z);
+}
+
+Matrix Matrix::Translation(const Vector3& _v)
+{
+    return XMMatrixTranslationFromVector(_v);
+}
+
+Matrix Matrix::AffineTransformation(const Vector3& position, const Vector3& rotation, const Vector3& scale)
+{
+    Quaternion q = Quaternion::Euler(rotation);
+    return XMMatrixAffineTransformation(scale, Quaternion::Identity(), q, position);
+}
+
+Matrix Matrix::Translation(float x, float y, float z)
+{
+    return XMMatrixTranslation(x, y, z);
 }

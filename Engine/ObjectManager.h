@@ -81,7 +81,7 @@ private:
     static void Shotdown();
 
     template <typename T>
-    static int BinarySearch(Array<T*>& arr, int id);
+    static int BinarySearch(const Array<T*>& arr, int id);
 
 private:
     static Array<Object*> mArrObject;
@@ -92,7 +92,7 @@ private:
 };
 
 template <typename T>
-static int ObjectManager::BinarySearch(Array<T*>& arr, int id)
+static int ObjectManager::BinarySearch(const Array<T*>& arr, int id)
 {
     int size = arr.Size();
     int left = 0;

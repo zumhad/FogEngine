@@ -40,7 +40,7 @@ private:
 	static void Update();
 	static bool IsEvent();
 	static bool IsEnable(Button* button);
-	static int BinarySearch(Array<Button*>& arr, int i);
+	static int BinarySearch(const Array<Button*>& arr, int i);
 
 private:
 	static Array<Button*> mArr;

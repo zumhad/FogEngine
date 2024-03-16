@@ -1,6 +1,7 @@
 #include "Quaternion.h"
 
 #include "MathHelper.h"
+#include "Matrix.h"
 
 using namespace DirectX;
 
@@ -30,27 +31,107 @@ Quaternion& Quaternion::operator= (DirectX::FXMVECTOR v)
     return *this;
 }
 
+bool Quaternion::operator == (const Quaternion& q) const
+{
+    return XMQuaternionEqual(*this, q);
+}
+
+bool Quaternion::operator != (const Quaternion& q) const
+{
+    return XMQuaternionNotEqual(*this, q);
+}
+
+Quaternion& Quaternion::operator+= (const Quaternion& q)
+{
+    *this = XMVectorAdd(*this, q);
+    return *this;
+}
+
+Quaternion& Quaternion::operator-= (const Quaternion& q)
+{
+    *this = XMVectorSubtract(*this, q);
+    return *this;
+}
+
+Quaternion& Quaternion::operator*= (const Quaternion& q)
+{
+    *this = XMQuaternionMultiply(*this, q);
+    return *this;
+}
+
+Quaternion& Quaternion::operator*= (float f)
+{
+    *this = XMVectorScale(*this, f);
+    return *this;
+}
+
+Quaternion& Quaternion::operator/= (const Quaternion& q)
+{
+    *this = XMQuaternionMultiply(*this, XMQuaternionInverse(q));
+    return *this;
+}
+
+Quaternion Quaternion::operator+ () const
+{
+    return *this;
+}
+
+Quaternion Quaternion::operator- () const
+{
+    return XMVectorNegate(*this);
+}
+
+Quaternion operator+ (const Quaternion& q1, const Quaternion& q2)
+{
+    return XMVectorAdd(q1, q2);
+}
+
+Quaternion operator- (const Quaternion& q1, const Quaternion& q2)
+{
+    return XMVectorSubtract(q1, q2);
+}
+
+Quaternion operator* (const Quaternion& q1, const Quaternion& q2)
+{
+    return XMQuaternionMultiply(q1, q2);
+}
+
+Quaternion operator* (const Quaternion& q, float f)
+{
+    return XMVectorScale(q, f);
+}
+
+Quaternion operator/ (const Quaternion& q1, const Quaternion& q2)
+{
+    return XMQuaternionMultiply(q1, XMQuaternionInverse(q2));
+}
+
+Quaternion operator* (float f, const Quaternion& q)
+{
+    return XMVectorScale(q, f);
+}
+
 Quaternion& Quaternion::operator= (const DirectX::XMFLOAT4& f)
 {
     x = f.x; y = f.y; z = f.z; w = f.w;
     return *this;
 }
 
-Vector3 Quaternion::GetEulerAngles() const
+Vector3 Quaternion::GetEuler(const Quaternion& q)
 {
-    const float xx = x * x;
-    const float yy = y * y;
-    const float zz = z * z;
+    const float xx = q.x * q.x;
+    const float yy = q.y * q.y;
+    const float zz = q.z * q.z;
 
-    const float m31 = 2.0f * x * z + 2.0f * y * w;
-    const float m32 = 2.0f * y * z - 2.0f * x * w;
+    const float m31 = 2.0f * q.x * q.z + 2.0f * q.y * q.w;
+    const float m32 = 2.0f * q.y * q.z - 2.0f * q.x * q.w;
     const float m33 = 1.0f - 2.f * xx - 2.0f * yy;
 
     const float cy = Math::Sqrt(m33 * m33 + m31 * m31);
     const float cx = Math::ATan2(-m32, cy);
     if (cy > 16.0f * Math::Epsilon())
     {
-        const float m12 = 2.0f * x * y + 2.0f * z * w;
+        const float m12 = 2.0f * q.x * q.y + 2.0f * q.z * q.w;
         const float m22 = 1.0f - 2.0f * xx - 2.0f * zz;
 
         return Vector3(cx, Math::ATan2(m31, m33), Math::ATan2(m12, m22));
@@ -58,89 +139,29 @@ Vector3 Quaternion::GetEulerAngles() const
     else
     {
         const float m11 = 1.0f - 2.0f * yy - 2.0f * zz;
-        const float m21 = 2.0f * x * y - 2.0f * z * w;
+        const float m21 = 2.0f * q.x * q.y - 2.0f * q.z * q.w;
 
         return Vector3(cx, 0.0f, Math::ATan2(-m21, m11));
     }
 }
 
-void Quaternion::SetEulerAngles(float _x, float _y, float _z)
+Quaternion Quaternion::Rotation(const Matrix& m)
 {
-    float pitch = Math::ConvertToRadians(_x);
-    float yaw = Math::ConvertToRadians(_y);
-    float roll = Math::ConvertToRadians(_z);
+    return XMQuaternionRotationMatrix(m);
+}
 
-    *this = XMQuaternionRotationRollPitchYaw(pitch, yaw, roll);
+Quaternion Quaternion::Euler(const Vector3& v)
+{
+    return XMQuaternionRotationRollPitchYawFromVector(v);
 }
 
 Quaternion Quaternion::Euler(float _x, float _y, float _z)
 {
-    float pitch = Math::ConvertToRadians(_x);
-    float yaw = Math::ConvertToRadians(_y);
-    float roll = Math::ConvertToRadians(_z);
-
-    return XMQuaternionRotationRollPitchYaw(pitch, yaw, roll);
+    return XMQuaternionRotationRollPitchYaw(_x, _y, _z);
 }
 
 const Quaternion& Quaternion::Identity()
 {
     static Quaternion q(0.0f, 0.0f, 0.0f, 1.0f);
     return q;
-}
-
-Quaternion Quaternion::FromToRotation(const Vector3& fromDir, const Vector3& toDir)
-{
-    Quaternion result;
-
-    const XMVECTOR F = XMVector3Normalize(fromDir);
-    const XMVECTOR T = XMVector3Normalize(toDir);
-
-    const float dot = XMVectorGetX(XMVector3Dot(F, T));
-    if (dot >= 1.0f)
-    {
-        result = Identity();
-    }
-    else if (dot <= -1.f)
-    {
-        XMVECTOR axis = XMVector3Cross(F, Vector3::Right());
-        if (XMVector3NearEqual(XMVector3LengthSq(axis), g_XMZero, g_XMEpsilon))
-        {
-            axis = XMVector3Cross(F, Vector3::Up());
-        }
-
-        result = XMQuaternionRotationAxis(axis, XM_PI);
-    }
-    else
-    {
-        result = XMVector3Cross(F, T);
-
-        const float s = Math::Sqrt((1.0f + dot) * 2.0f);
-        result.x /= s;
-        result.y /= s;
-        result.z /= s;
-        result.w = s * 0.5f;
-    }
-
-    return result;
-}
-
-Quaternion Quaternion::LookRotation(const Vector3& forward, const Vector3& up)
-{
-    Quaternion result;
-
-    Quaternion q1 = FromToRotation(Vector3::Forward(), forward);
-
-    const XMVECTOR C = XMVector3Cross(forward, up);
-    if (XMVector3NearEqual(XMVector3LengthSq(C), g_XMZero, g_XMEpsilon))
-    {
-        result = q1;
-        return result;
-    }
-
-    const XMVECTOR U = XMQuaternionMultiply(q1, Vector3::Up());
-
-    Quaternion q2 = FromToRotation(U, up);
-    
-    result = XMQuaternionMultiply(q2, q1);
-    return result;
 }

@@ -1,5 +1,6 @@
 #include "Light.hlsl"
 #include "Shadow.hlsl"
+#include "Pack.hlsl"
 
 struct VS_INPUT
 {
@@ -27,12 +28,10 @@ VS_OUTPUT VS(VS_INPUT input)
 
 Texture2D<float4> gTextureColor : register(t0);
 Texture2D<float> gTextureDepth : register(t1);
-Texture2D<float4> gTexturePositionID : register(t2);
+Texture2D<uint4> gTexturePositionMaterial : register(t2);
 Texture2D<float4> gTextureNormalLighting : register(t3);
-Texture2D<unsigned int> gTextureRangeMaterial : register(t4);
 
 SamplerState gSampler : register(s0);
-
 
 struct PS_OUTPUT
 {
@@ -53,31 +52,28 @@ PS_OUTPUT PS(VS_OUTPUT input)
 {
     PS_OUTPUT output;
 
-    float4 diffuse = gTextureColor.Sample(gSampler, input.uv);
-    //float4 normalLighting = gTextureNormalLighting.Sample(gSampler, input.uv);
-    float4 normalLighting = gTextureNormalLighting.Load(int3(input.uv * int2(1280.0f, 720.0f), 0));
-    float4 positionID = gTexturePositionID.Sample(gSampler, input.uv);
-    unsigned int rangeMaterial = gTextureRangeMaterial.Load(int3(input.uv * int2(gWidth, gHeight), 0));
+    float4 color = gTextureColor.Sample(gSampler, input.uv);
     float depth = gTextureDepth.Sample(gSampler, input.uv);
+    uint4 positionMaterial = gTexturePositionMaterial.Load(int3(input.uv.x * gWidth, input.uv.y * gHeight, 0));
+    float4 normalLighting = gTextureNormalLighting.Sample(gSampler, input.uv);
 
-    float3 position = positionID.rgb;
+    float3 position = f16tof32(positionMaterial.rgb);
     bool lighting = normalLighting.a;
-    float roughness = (rangeMaterial & 0x000000ff) / 255.0f;
-    float metallic = ((rangeMaterial & 0x0000ff00) >> 8) / 255.0f;
-    float range = f16tof32(rangeMaterial >> 16);
+    float metallic = (positionMaterial.a >> 8) / 255.0f;
+    float roughness = (positionMaterial.a & 0xff) / 255.0f;
     float3 normal = (normalLighting.rgb - 0.5f) * 2.0f;
     normal = normalize(normal);
 
-    output.color = diffuse;
+    output.color.rgb = color.rgb;
 
     if (depth && lighting)
     {
-        output.color.rgb = diffuse.rgb * 0.001f;
+        output.color.rgb *= 0.001f; // ambient
 
         if (gDirLight.power)
         {
-            float shadow = Shadow(range, position);
-            output.color.rgb += ApplyDirectionLight(gDirLight, normal, diffuse.rgb, position, gCameraPosition, metallic, roughness) * (1.0f - shadow);
+            float shadow = Shadow(position, normal);
+            output.color.rgb += ApplyDirectionLight(gDirLight, normal, color.rgb, position, gCameraPosition, metallic, roughness) * (1.0f - shadow);
         }
         
         [unroll]
@@ -85,12 +81,13 @@ PS_OUTPUT PS(VS_OUTPUT input)
         {
             if (gPointLight[j].power)
             {
-                output.color.rgb += ApplyPointLight(gPointLight[j], normal, diffuse.rgb, position, gCameraPosition, metallic, roughness);
+                output.color.rgb += ApplyPointLight(gPointLight[j], normal, color.rgb, position, gCameraPosition, metallic, roughness);
             }
         }
     }
 
-    output.color.rgb = ToneMapping(output.color.rgb);
+    if (lighting) output.color.rgb = ToneMapping(output.color.rgb);
+
     output.color.rgb = GammaCorrection(output.color.rgb);
     output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
 

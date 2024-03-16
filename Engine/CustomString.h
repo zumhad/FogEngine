@@ -15,34 +15,28 @@ class FOG_API String
 {
 public:
 	String() : mStr() {}
-	String(CHAR ch);
 	String(WCHAR ch);
-	String(const CHAR* str);
 	String(const WCHAR* str) : mStr(str) {}
 	String(const String& str) : mStr(str.mStr) {}
 
-	operator const char* ();
-	operator const wchar_t* ();
+	operator WCHAR* ();
+	operator const WCHAR* () const;
 
 	void Clear();
 	void Delete(int i);
 	void Delete(int start, int end);
 	int Size();
-	WCHAR* GetWCHAR();
-	CHAR* GetCHAR();
 
+	static String ToString(short _Val);
+	static String ToString(unsigned short _Val);
 	static String ToString(int _Val);
 	static String ToString(unsigned int _Val);
-	static String ToString(long _Val);
-	static String ToString(unsigned long _Val);
 	static String ToString(long long _Val);
 	static String ToString(unsigned long long _Val);
-	static String ToString(double _Val);
-	static String ToString(float _Val);
-	static String ToString(long double _Val);
-	static String ToString(const Vector3& _Val);
-	static String ToString(const Vector4& _Val);
-	static String ToString(const Color& _Val);
+	static String ToString(float _Val, int precision);
+	static String ToString(const Vector3& _Val, int precision);
+	static String ToString(const Vector4& _Val, int precision);
+	static String ToString(const Color& _Val, int precision);
 
 	static int Find(const String& str, const String& f);
 	static void Copy(String& dest, const String& src, int start, int end);
@@ -63,7 +57,25 @@ public:
 
 private:
 	std::wstring mStr;
-	std::string mBuffer;
+};
+
+class FOG_API StringConverter
+{
+public:
+	StringConverter(CHAR ch);
+	StringConverter(const CHAR* str);
+	StringConverter(WCHAR ch);
+	StringConverter(const WCHAR* str);
+	StringConverter(const String& str);
+	
+	operator CHAR* ();
+	operator const CHAR* () const;
+	operator WCHAR* ();
+	operator const WCHAR* () const;
+
+private:
+	std::string mString1;
+	std::wstring mString2;
 };
 
 #pragma warning(pop)

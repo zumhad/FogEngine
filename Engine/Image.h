@@ -2,18 +2,18 @@
 
 #include "Core.h"
 
-enum class ImageType
-{
-	RGBA,
-	A,
-	HDR
-};
-
 class FOG_API String;
 
 class FOG_API Image
 {
 public:
-	static unsigned char* Load(String name, int& width, int& height, ImageType type = ImageType::RGBA);
+	enum class Type
+	{
+		RGBA,
+		A,
+		HDR
+	};
+
+	static unsigned char* Load(const String& name, int& width, int& height, Type type = Type::RGBA);
 };
 

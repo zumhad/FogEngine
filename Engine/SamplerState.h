@@ -4,15 +4,6 @@
 
 #include <d3d11.h>
 
-enum class SamplerStateType
-{
-	Default,
-	Shadow,
-	GUI,
-	PostProcess,
-	Outline
-};
-
 class FOG_API PipelineState;
 class FOG_API GUI;
 class FOG_API OutlineMap;
@@ -24,9 +15,18 @@ class FOG_API SamplerState
 	friend class OutlineMap;
 
 private:
+	enum class Type
+	{
+		Default,
+		Shadow,
+		GUI,
+		PostProcess,
+		Outline
+	};
+
 	SamplerState();
 
-	void Create(SamplerStateType type = SamplerStateType::Default);
+	void Create(Type type = Type::Default);
 	void Release();
 	ID3D11SamplerState* const* Get();
 

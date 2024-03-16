@@ -99,7 +99,6 @@
     <ClCompile Include="TextureMap.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="Utility.cpp" />
     <ClCompile Include="PipelineState.cpp" />
     <ClCompile Include="PixelShader.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
@@ -115,15 +114,14 @@
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="Font.cpp" />
     <ClCompile Include="Image.cpp" />
-    <ClCompile Include="ConstantBuffer.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="SkyboxPass.cpp" />
     <ClCompile Include="Matrix3.cpp" />
     <ClCompile Include="OutlinePass.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
     <ClCompile Include="PrePass.cpp" />
+    <ClCompile Include="DepthPass.cpp" />
+    <ClCompile Include="Utility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -248,6 +246,7 @@
     <ClInclude Include="OutlinePass.h" />
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="PrePass.h" />
+    <ClInclude Include="DepthPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PrePass.hlsl">
@@ -281,6 +280,9 @@
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\Shadow.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\Pack.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

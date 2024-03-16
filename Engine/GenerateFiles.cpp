@@ -37,7 +37,7 @@ void wsystem(const String& cmd)
 
 	_flushall();
 
-	if (CreateProcess(_wgetenv(L"COMSPEC"), command.GetWCHAR(), NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
+	if (CreateProcess(_wgetenv(L"COMSPEC"), command, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi))
 	{
 		WaitForSingleObject(pi.hProcess, INFINITE);
 		CloseHandle(pi.hProcess);

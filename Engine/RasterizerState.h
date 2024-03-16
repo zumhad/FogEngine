@@ -4,13 +4,6 @@
 
 #include <d3d11.h>
 
-enum class RasterizerStateType
-{
-	Default,
-	Shadow,
-	Skybox
-};
-
 class FOG_API PipelineState;
 
 class FOG_API RasterizerState
@@ -18,9 +11,16 @@ class FOG_API RasterizerState
 	friend class PipelineState;
 
 private:
+	enum class Type
+	{
+		Default,
+		Shadow,
+		Skybox
+	};
+
 	RasterizerState();
 
-	void Create(RasterizerStateType type = RasterizerStateType::Default);
+	void Create(Type type = Type::Default);
 	ID3D11RasterizerState* Get();
 	void Release();
 

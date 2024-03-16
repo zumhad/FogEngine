@@ -25,7 +25,7 @@ class FOG_API VertexShader
 private:
 	VertexShader();
 
-	void Create(String name, String entry = L"VS");
+	void Create(const String& name, const String& entry = L"VS");
 	ID3D11VertexShader* Get();
 	ID3D10Blob* GetBlob();
 	void Release();

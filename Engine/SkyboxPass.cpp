@@ -9,8 +9,6 @@
 #include "ConstantBuffer.h"
 #include "Camera.h"
 
-using namespace DirectX;
-
 struct SkyboxPass::Buffer0
 {
 	Matrix worldViewProj;
@@ -25,8 +23,8 @@ ConstantBuffer<SkyboxPass::Buffer0> SkyboxPass::mBuffer0;
 void SkyboxPass::Setup()
 {
 	Model model;
-	model.name = L"sphere.obj";
-	model.texture = L"skybox.png";
+	model.SetModelPath(L"sphere.obj");
+	model.SetTexturePath(L"skybox.png");
 
 	mModel = new Model(std::move(model));
 
@@ -34,11 +32,10 @@ void SkyboxPass::Setup()
 		mVertexShader.Create(L"SkyboxPass.hlsl");
 		mPixelShader.Create(L"SkyboxPass.hlsl");
 
-		Array<String> input;
-		input.Add(L"POSITION");
-		input.Add(L"NORMAL");
-		input.Add(L"TEXCOORD");
-		mInputLayout.Create(mVertexShader.GetBlob(), input);
+		mInputLayout.Add(L"POSITION");
+		mInputLayout.Add(L"NORMAL");
+		mInputLayout.Add(L"TEXCOORD");
+		mInputLayout.Create(mVertexShader.GetBlob());
 	}
 
 	mBuffer0.Create();
@@ -60,12 +57,8 @@ void SkyboxPass::Bind()
 
 void SkyboxPass::UpdateBuffer0()
 {
-	Vector3 pos = Camera::GetPosition();
-
 	static Matrix world;
-	world.m[3][0] = pos.x;
-	world.m[3][1] = pos.y;
-	world.m[3][2] = pos.z;
+	world.v[3] = Camera::GetRealPosition();
 
 	static Buffer0 buffer{};
 	buffer.worldViewProj = world * Camera::GetViewMatrix() * Camera::GetProjMatrix();

@@ -42,34 +42,34 @@ public:
 	Model(Model&& model) noexcept;
 	~Model();
 
-	void SetPosition(Vector3 v);
-	void SetRotation(Vector3 v);
-	void SetScale(Vector3 v);
-
-	Vector3 GetPosition();
-	Vector3 GetRotation();
-	Vector3 GetScale();
-	Vector3 GetDirection();
-
-	void Move(Vector3 v);
-	void Rotate(Vector3 v);
-	void Scale(Vector3 v);
+	void SetModelPath(const String& modelPath);
+	String GetModelPath();
+	void SetTexturePath(const String& texturePath);
+	String GetTexturePath();
+	void SetColor(const Color& color);
+	void SetColorR(float r);
+	void SetColorG(float g);
+	void SetColorB(float b);
+	Color GetColor();
+	void SetLighting(bool lighting);
+	bool GetLighting();
+	void SetMetallic(float metallic);
+	float GetMetallic();
+	void SetRoughness(float roughness);
+	float GetRoughness();
 
 private:
 	void BindTexture();
 	void Draw();
 
-	Matrix GetWorldMatrix();
-
-public:
-	String name;
-	String texture;
-	Color color;
-	bool lighting;
-	float metallic;
-	float roughness;
-
 private:
+	String mModelPath;
+	String mTexturePath;
+	Color mColor;
+	bool mLighting;
+	float mMetallic;
+	float mRoughness;
+
 	Array<Mesh*> mArr;
 	Texture mTexture;
 };

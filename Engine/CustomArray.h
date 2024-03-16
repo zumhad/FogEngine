@@ -14,7 +14,7 @@ public:
 	Array() : mArr() {}
 
 	void Add(T t);
-	int Size();
+	int Size() const;
 	void Clear();
 	void Delete(int i);
 	void Resize(int size);
@@ -48,7 +48,7 @@ void Array<T>::Add(T t)
 }
 
 template <typename T>
-int Array<T>::Size()
+int Array<T>::Size() const
 {
 	return (int)mArr.size();
 }

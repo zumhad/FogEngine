@@ -15,7 +15,7 @@ class FOG_API ComputeShader
 private:
 	ComputeShader();
 
-	void Create(String name, String entry = L"CS");
+	void Create(const String& name, const String& entry = L"CS");
 	ID3D11ComputeShader* Get();
 	void Release();
 

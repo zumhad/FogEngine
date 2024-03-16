@@ -11,7 +11,7 @@ VertexShader::VertexShader()
 	mBlob = 0;
 }
 
-void VertexShader::Create(String name, String entry)
+void VertexShader::Create(const String& name, const String& entry)
 {
 	SAFE_RELEASE(mVertexShader);
 	SAFE_RELEASE(mBlob);

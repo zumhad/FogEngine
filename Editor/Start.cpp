@@ -11,7 +11,7 @@ void MyUpdate()
 
 		if (obj)
 		{
-			int number = GUI::GetWithID(obj->data)->GetChildNumber();
+			int number = GUI::GetWithID(obj->GetData())->GetChildNumber();
 
 			Button* tree = GUI::GetWithID(idSceneTree);
 
@@ -22,8 +22,8 @@ void MyUpdate()
 				b->rect.y -= b->rect.height;
 			}
 
-			GUI::DeleteWithID(obj->data);
-			GUI::DeleteWithID(obj->data + 1);
+			GUI::DeleteWithID(obj->GetData());
+			GUI::DeleteWithID(obj->GetData() + 1);
 
 			Button* scrollBar = tree->GetChildWithNumber(0);
 			Button* scroll = scrollBar->GetChildWithNumber(0);
@@ -62,11 +62,10 @@ void MyUpdate()
 	if (Input::Down(KEY_L))
 	{
 		PointLight light;
-		light.position.y = 5.0;
-		light.position.z = 0;
-		light.radius = 20.0f;
-		light.power = 100.0f;
-		light.scale = Vector3(0.2f, 0.2f, 0.2f);
+		light.SetPosition(Vector3(0.0f, 5.0f, 0.0f));
+		light.SetScale(Vector3(0.2f, 0.2f, 0.2f));
+		light.SetRadius(20.0f);
+		light.SetPower(100.0f);
 		int id = ObjectManager::Add(light);
 
 		static Button* tree = GUI::GetWithID(idSceneTree);
@@ -80,7 +79,7 @@ void MyUpdate()
 		}
 
 		Button b;
-		b.text.text = "Point Light";
+		b.text.text = L"Point Light";
 		b.rect.x = 5;
 		b.rect.y = offsetY;
 		b.rect.width = tree->rect.width / 2;
@@ -96,11 +95,11 @@ void MyUpdate()
 		int idButton = GUI::AddChild(idSceneTree, b);
 
 		Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
-		obj->data = idButton;
+		obj->SetData(idButton);
 
 		b.rect.x = b.rect.width;
 		b.rect.width -= 25;
-		b.text.text = "Point Light";
+		b.text.text = L"Point Light";
 		GUI::AddChild(idSceneTree, b);
 
 		Button* scrollBar = tree->GetChildWithNumber(0);
@@ -126,10 +125,10 @@ void MyUpdate()
 	if (Input::Down(KEY_K))
 	{
 		DirectionLight light;
-		light.color = Color(1, 1, 1);
-		light.rotation = Vector3(45.0f, 45.0f, 0.0f);
-		light.scale = Vector3(0.2f, 0.2f, 0.2f);
-		light.power = 1.2f;
+		light.SetColor(Color(1.0f, 1.0f, 1.0f));
+		light.SetRotation(Vector3(45.0f, 45.0f, 0.0f));
+		light.SetScale(Vector3(0.2f, 0.2f, 0.2f));
+		light.SetPower(2.2f);
 		int id = ObjectManager::Add(light);
 
 		static Button* tree = GUI::GetWithID(idSceneTree);
@@ -143,7 +142,7 @@ void MyUpdate()
 		}
 
 		Button b;
-		b.text.text = "Direction Light";
+		b.text.text = L"Direction Light";
 		b.rect.x = 5;
 		b.rect.y = offsetY;
 		b.rect.width = tree->rect.width / 2;
@@ -159,11 +158,11 @@ void MyUpdate()
 		int idButton = GUI::AddChild(idSceneTree, b);
 
 		Object* obj = ObjectManager::GetWithNumber<Object>(ObjectManager::Size<Object>() - 1);
-		obj->data = idButton;
+		obj->SetData(idButton);
 
 		b.rect.x = b.rect.width;
 		b.rect.width -= 25;
-		b.text.text = "Direction Light";
+		b.text.text = L"Direction Light";
 		GUI::AddChild(idSceneTree, b);
 
 		Button* scrollBar = tree->GetChildWithNumber(0);
@@ -315,13 +314,13 @@ void MoveObject()
 
 			pick2 = RayCasting::RayCast(dir, Camera::GetPosition(), plane);
 
-			if (Math::Sign(limit) == sign && pick1 != pick2)
+			if (Math::Sign(limit) == sign && pick1 != pick2 && pick2 == pick2)
 			{
 				Model& model = (Model&)(*obj);
 
-				if (x) model.position.x += pick2.x - pick1.x;
-				if (y) model.position.y += pick2.y - pick1.y;
-				if (z) model.position.z += pick2.z - pick1.z;
+				if (x) model.Move(Vector3(pick2.x - pick1.x, 0.0f, 0.0f));
+				if (y) model.Move(Vector3(0.0f, pick2.y - pick1.y, 0.0f));
+				if (z) model.Move(Vector3(0.0f, 0.0f, pick2.z - pick1.z));
 
 				pick1 = pick2;
 			}
@@ -341,7 +340,6 @@ void Update()
 	float moveSpeed = 10.0f;
 	float rotationSpeed = 0.2f;
 
-	static Vector3 pos = Camera::GetPosition();
 	Vector3 rot = Camera::GetRotation();
 
 	static bool isRotate = false;
@@ -362,12 +360,9 @@ void Update()
 	float moveX = (Input::Press(KEY_D) - Input::Press(KEY_A)) * moveSpeed * Time::DeltaTime();
 
 	Vector3 move = Vector3(moveX, 0.0f, moveZ);
-	move = move.Rotate(move, Quaternion::Euler(rot.x, rot.y, 0.0f));
-	pos += move;
+	move = Vector3::Rotate(move, Quaternion::Euler(Vector3::ConvertToRadians(rot)));
 
-	Vector3 vel;
-	Vector3 res = Vector3::SmoothDamp(Camera::GetPosition(), pos, vel, Time::DeltaTime() * 1.0f);
-	Camera::SetPosition(res);
+	Camera::Move(move);
 
 	MoveObject();
 
@@ -396,7 +391,7 @@ void Update()
 		if (obj->GetType() == TypeObject::DirectionLight)
 		{
 			light->enable = true;
-			//UpdateMaterial(material, ObjectManager::Get<Model>(obj));
+			UpdateLight(light, ObjectManager::Get<DirectionLight>(obj));
 		}
 		else
 		{
@@ -449,14 +444,15 @@ void Start()
 	Camera::SetNear(0.1f);
 	Camera::SetFar(500.0f);
 
-	Application::SetCascadeSplit(0, 0.01f);
-	Application::SetCascadeSplit(1, 0.05f);
-	Application::SetCascadeSplit(2, 0.1f);
-	Application::SetCascadeSplit(3, 0.15f);
+	Application::SetCascadeSplit(0, 10.0f);
+	Application::SetCascadeSplit(1, 30.0f);
+	Application::SetCascadeSplit(2, 40.0f);
+	Application::SetCascadeSplit(3, 50.0f);
 
 	Application::SetCascadeResolution(1024);
-	Application::SetCascadeBias(0.000f);
+	Application::SetCascadeBias(0.002f);
 	Application::SetCascadeBlend(0.1f);
+	Application::SetNormalBias(0.4f);
 
 	Application::SetOutlineWidth(5);
 	Application::SetOutlineColor(Color(1.0f, 1.0f, 0.0f));
@@ -829,10 +825,38 @@ void Start()
 	lightText.event.leftClick = PropertiesClick;
 	GUI::AddChild(idLight, lightText);
 
+	Button colorLight;
+	colorLight.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	colorLight.rect.x = 5;
+	colorLight.rect.y = lightText.rect.y + lightText.rect.height + 5;
+	colorLight.rect.width = 167;
+	colorLight.rect.height = 30;
+	colorLight.text.text = L"Color";
+	colorLight.rect.color = Color(0.1f, 0.1f, 0.1f);
+	colorLight.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	colorLight.text.x = 20;
+	GUI::AddChild(idLight, colorLight);
+
+	colorLight.rect.x += colorLight.rect.width + 5;
+	colorLight.text.text = L"0.0";
+	colorLight.rect.width = 136;
+	colorLight.event.leftPress = SliderLightColorR;
+	GUI::AddChild(idLight, colorLight);
+
+	colorLight.rect.x += colorLight.rect.width + 5;
+	colorLight.text.text = L"0.0";
+	colorLight.event.leftPress = SliderLightColorG;
+	GUI::AddChild(idLight, colorLight);
+
+	colorLight.rect.x += colorLight.rect.width + 5;
+	colorLight.text.text = L"0.0";
+	colorLight.event.leftPress = SliderLightColorB;
+	GUI::AddChild(idLight, colorLight);
+
 	Button power;
 	power.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
 	power.rect.x = 5;
-	power.rect.y = lightText.rect.y + lightText.rect.height + 5;
+	power.rect.y = colorLight.rect.y + colorLight.rect.height + 5;
 	power.rect.width = 167;
 	power.rect.height = 30;
 	power.text.text = L"Power";
@@ -844,7 +868,7 @@ void Start()
 	power.rect.x += power.rect.width + 5;
 	power.text.text = L"0.0";
 	power.rect.width = 136;
-	//power.event.leftPress = SliderRoughness;
+	power.event.leftPress = SliderPower;
 	GUI::AddChild(idLight, power);
 
 	AddRoom();
@@ -859,8 +883,6 @@ APPCLASS Setting()
 	app.cursorShow = true;
 	app.foo.start = Start;
 	app.foo.update = Update;
-	//app.camera.rotationSmooth = 1;
-	//app.camera.moveSmooth = 150;
 	app.fpsMax = 0;
 
 	app.game.width = 1920;

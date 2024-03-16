@@ -4,13 +4,6 @@
 
 #include <d3d11.h>
 
-enum class DepthStencilStateType
-{
-	ReadOnly,
-	Disable,
-	ReadWrite
-};
-
 class FOG_API PipelineState;
 class FOG_API GUI;
 
@@ -20,9 +13,16 @@ class FOG_API DepthStencilState
 	friend class GUI;
 
 private:
+	enum class Type
+	{
+		ReadOnly,
+		Disable,
+		ReadWrite
+	};
+
 	DepthStencilState();
 
-	void Create(DepthStencilStateType type = DepthStencilStateType::ReadWrite);
+	void Create(Type type = Type::ReadWrite);
 	void Release();
 	ID3D11DepthStencilState* Get();
 

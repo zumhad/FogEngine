@@ -14,7 +14,7 @@ public:
 	ConstantBuffer();
 
 	void Create();
-	void Bind(T& t);
+	void Bind(const T& t);
 	void Release();
 	ID3D11Buffer* const* Get();
 
@@ -46,7 +46,7 @@ void ConstantBuffer<T>::Release()
 }
 
 template <typename T>
-void ConstantBuffer<T>::Bind(T& t)
+void ConstantBuffer<T>::Bind(const T& t)
 {
 	static HRESULT hr = 0;
 

@@ -1,5 +1,7 @@
 #include "Vector2.h"
 
+#include "Utility.h"
+
 using namespace DirectX;
 
 Vector2::operator DirectX::XMVECTOR() const
@@ -31,7 +33,7 @@ bool Vector2::operator == (const Vector2& v)
 
 bool Vector2::operator != (const Vector2& v)
 {
-    return XMVector3NotEqual(*this, v);
+    return XMVector2NotEqual(*this, v);
 }
 
 Vector2& Vector2::operator= (FXMVECTOR v)
@@ -52,76 +54,78 @@ Vector2& Vector2::operator= (const XMFLOAT2& f)
 
 Vector2& Vector2::operator+= (const Vector2& v)
 {
-    *this = XMVectorAdd(*this, v);
+    *this = XMVECTOR(*this) + XMVECTOR(v);
     return *this;
 }
 
 Vector2& Vector2::operator-= (const Vector2& v)
 {
-    *this = XMVectorSubtract(*this, v);
+    *this = XMVECTOR(*this) - XMVECTOR(v);
     return *this;
 }
 
 Vector2& Vector2::operator*= (const Vector2& v)
 {
-    *this = XMVectorMultiply(*this, v);
+    *this = XMVECTOR(*this) + XMVECTOR(v);
     return *this;
 }
 
 Vector2& Vector2::operator*= (float f)
 {
-    *this = XMVectorScale(*this, f);
+    *this = XMVECTOR(*this) * f;
     return *this;
 }
 
 Vector2& Vector2::operator/= (float f)
 {
-    assert(f != 0.0f);
-    *this = XMVectorScale(*this, 1.0f / f);
+    FOG_ASSERT(f != 0.0f);
+
+    *this = XMVECTOR(*this) / f;
+
     return *this;
 }
 
 Vector2 Vector2::operator+ ()
 {
-    return *this;
+    return +XMVECTOR(*this);
 }
 
 Vector2 Vector2::operator- ()
 {
-    return XMVectorNegate(*this);
+    return -XMVECTOR(*this);
 }
 
 Vector2 operator+ (const Vector2& v1, const Vector2& v2)
 {
-    return XMVectorAdd(v1, v2);
+    return XMVECTOR(v1) + XMVECTOR(v2);
 }
 
 Vector2 operator- (const Vector2& v1, const Vector2& v2)
 {
-    return XMVectorSubtract(v1, v2);
+    return XMVECTOR(v1) - XMVECTOR(v2);
 }
 
 Vector2 operator* (const Vector2& v1, const Vector2& v2)
 {
-    return XMVectorMultiply(v1, v2);
+    return XMVECTOR(v1) * XMVECTOR(v2);
 }
 
 Vector2 operator* (const Vector2& v, float f)
 {
-    return XMVectorScale(v, f);
+    return XMVECTOR(v) * f;
 }
 
 Vector2 operator/ (const Vector2& v1, const Vector2& v2)
 {
-    return XMVectorDivide(v1, v2);
+    return XMVECTOR(v1) / XMVECTOR(v2);
 }
 
 Vector2 operator/ (const Vector2& v, float f)
 {
-    return XMVectorScale(v, 1.0f / f);
+    return XMVECTOR(v) / f;
 }
 
 Vector2 operator* (float f, const Vector2& v)
 {
-    return XMVectorScale(v, f);
+    return XMVECTOR(v) * f;
 }

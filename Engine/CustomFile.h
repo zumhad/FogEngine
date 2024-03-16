@@ -6,25 +6,27 @@
 
 #include <windows.h>
 
-enum class FileOpenMode
-{
-    Read,
-    Write
-};
+
 
 class FOG_API File
 {
 public:
-    File(String name, FileOpenMode mode);
+    enum class Mode
+    {
+        Read,
+        Write
+    };
+
+    File(const String& name, Mode mode);
     ~File();
 
-    void Open(String name, FileOpenMode mode);
+    void Open(const String& name, Mode mode);
     void Close();
     void Read(void* data, int size);
     int Size();
     void Write(const void* data, size_t size);
 
-    static bool Exists(String name);
+    static bool Exists(const String& name);
 
 private:
     HANDLE mFile;

@@ -11,7 +11,7 @@ class FOG_API Texture
 public:
 	Texture();
 
-	void Create(String name);
+	void Create(const String& name);
 	void Bind();
 	void Release();
 

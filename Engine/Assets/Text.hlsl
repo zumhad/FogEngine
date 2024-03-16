@@ -6,14 +6,14 @@ cbuffer cbTextBuffer : register(b0)
 
 struct VS_INPUT
 {
-	float2 pos : TEXPOS;
-	float2 uv : TEXCOORD;
+	float2 pos : TEXCOORD0;
+	float2 uv : TEXCOORD1;
 };
 
 struct VS_OUTPUT
 {
 	float4 pos : SV_POSITION;
-	float2 uv : TEXCOORD;
+	float2 uv : TEXCOORD0;
 };
 
 VS_OUTPUT VS(VS_INPUT input)

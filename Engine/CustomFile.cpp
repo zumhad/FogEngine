@@ -4,7 +4,7 @@
 
 #include <cstdio>
 
-File::File(String name, FileOpenMode mode) : mFile(INVALID_HANDLE_VALUE)
+File::File(const String& name, Mode mode) : mFile(INVALID_HANDLE_VALUE)
 {
     Open(name, mode);
 }
@@ -14,20 +14,21 @@ File::~File()
     Close();
 }
 
-void File::Open(String name, FileOpenMode mode)
+void File::Open(const String& name, Mode mode)
 {
-    if (mode == FileOpenMode::Read)
+    if (mode == Mode::Read)
     {
-        mFile = CreateFile(name.GetWCHAR(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        mFile = CreateFile(name, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     }
     else
     {
         if (Exists(name))
-            DeleteFile(name.GetWCHAR());
+            DeleteFile(name);
 
-        mFile = CreateFile(name.GetWCHAR(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+        mFile = CreateFile(name, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
     }
 }
+
 
 void File::Close()
 {
@@ -61,9 +62,9 @@ void File::Write(const void* data, size_t size)
     WriteFile(mFile, data, static_cast<DWORD>(size), &bytesWritten, NULL);
 }
 
-bool File::Exists(String name)
+bool File::Exists(const String& name)
 {
-    if (FILE* file = _wfopen(name.GetWCHAR(), L"r"))
+    if (FILE* file = _wfopen(name, L"r"))
     {
         fclose(file);
         return true;

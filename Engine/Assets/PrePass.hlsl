@@ -1,3 +1,5 @@
+#include "Pack.hlsl"
+
 cbuffer Buffer0 : register(b0)
 {
 	float4x4 gViewProj;
@@ -53,8 +55,8 @@ struct PS_OUTPUT
 {
 	float4 color : SV_TARGET0;
 	float4 normalLighting : SV_TARGET1;
-	float4 positionID : SV_TARGET2;
-	unsigned int rangeMaterial : SV_TARGET3;
+	uint4 positionMaterial : SV_TARGET2;
+	uint id : SV_TARGET3;
 };
 
 Texture2D<float4> gTexture : register(t0);
@@ -64,17 +66,17 @@ PS_OUTPUT PS(VS_OUTPUT input)
 {
 	PS_OUTPUT output;
 
-	output.color = gTexture.Sample(gSampler, input.uv);
+	output.color.rgb = gTexture.Sample(gSampler, input.uv).rgb;
 	output.color.rgb = pow(abs(output.color.rgb), 2.2f) * gColor.rgb;
+	output.color.a = 1.0f;
 
-	output.normalLighting = float4(input.normal, gLighting);
-	output.positionID = float4(input.posW, gID);
+	output.normalLighting.rgb = input.normal;
+	output.normalLighting.a = gLighting;
 
-	unsigned int rangeMaterial = f32tof16(input.pos.w);
-	rangeMaterial = (rangeMaterial << 8) | (unsigned int)(gMetallic * 255.0f);
-	rangeMaterial = (rangeMaterial << 8) | (unsigned int)(gRoughness * 255.0f);
+	output.positionMaterial.rgb = uint3(f32tof16(input.posW.x), f32tof16(input.posW.y), f32tof16(input.posW.z));
+	output.positionMaterial.a = uint(uint(gMetallic * 255.0f) << 8 | (uint)(gRoughness * 255.0f));
 
-	output.rangeMaterial = rangeMaterial;
+	output.id = gID;
 
 	return output;
 }

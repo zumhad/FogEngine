@@ -1,6 +1,8 @@
 #include "Vector4.h"
 
 #include "Vector3.h"
+#include "Utility.h"
+#include "Matrix.h"
 
 using namespace DirectX;
 
@@ -14,6 +16,11 @@ Vector4::Vector4(FXMVECTOR v)
 Vector4::Vector4(const XMFLOAT4& f)
 {
 	x = f.x; y = f.y; z = f.z; w = f.w;
+}
+
+Vector4::Vector4(Vector3 v, float f)
+{
+	x = v.x; y = v.y; z = v.z; w = f;
 }
 
 Vector4::operator DirectX::XMVECTOR() const
@@ -59,76 +66,93 @@ Vector4& Vector4::operator= (const XMFLOAT4& f)
 
 Vector4& Vector4::operator+= (const Vector4& v)
 {
-	*this = XMVectorAdd(*this, v);
+	*this = XMVECTOR(*this) + XMVECTOR(v);
 	return *this;
 }
 
 Vector4& Vector4::operator-= (const Vector4& v)
 {
-	*this = XMVectorSubtract(*this, v);
+	*this = XMVECTOR(*this) - XMVECTOR(v);
 	return *this;
 }
 
 Vector4& Vector4::operator*= (const Vector4& v)
 {
-	*this = XMVectorMultiply(*this, v);
+	*this = XMVECTOR(*this) * XMVECTOR(v);
 	return *this;
 }
 
 Vector4& Vector4::operator*= (float f)
 {
-	*this = XMVectorScale(*this, f);
+	*this = XMVECTOR(*this) * f;
 	return *this;
 }
 
 Vector4& Vector4::operator/= (float f)
 {
-	assert(f != 0.0f);
-	*this = XMVectorScale(*this, 1.0f / f);
+	FOG_ASSERT(f != 0.0f);
+
+	*this = XMVECTOR(*this) / f;
+
 	return *this;
 }
 
 Vector4 Vector4::operator+ ()
 {
-	return *this;
+	return +XMVECTOR(*this);
 }
 
 Vector4 Vector4::operator- ()
 {
-	return XMVectorNegate(*this);
+	return -XMVECTOR(*this);
 }
 
 Vector4 operator+ (const Vector4& v1, const Vector4& v2)
 {
-	return XMVectorAdd(v1, v2);;
+	return XMVECTOR(v1) + XMVECTOR(v2);
 }
 
 Vector4 operator- (const Vector4& v1, const Vector4& v2)
 {
-	return XMVectorSubtract(v1, v2);
+	return XMVECTOR(v1) - XMVECTOR(v2);
 }
 
 Vector4 operator* (const Vector4& v1, const Vector4& v2)
 {
-	return XMVectorMultiply(v1, v2);
+	return XMVECTOR(v1) * XMVECTOR(v2);
 }
 
 Vector4 operator* (const Vector4& v, float f)
 {
-	return XMVectorScale(v, f);
+	return XMVECTOR(v) * f;
 }
 
 Vector4 operator/ (const Vector4& v1, const Vector4& v2)
 {
-	return XMVectorDivide(v1, v2);
+	return XMVECTOR(v1) / XMVECTOR(v2);
 }
 
 Vector4 operator/ (const Vector4& v, float f)
 {
-	return XMVectorScale(v, 1.0f / f);
+	return XMVECTOR(v) / f;
 }
 
 Vector4 operator* (float f, const Vector4& v)
 {
-	return XMVectorScale(v, f);
+	return XMVECTOR(v) * f;
+}
+
+Vector4 Vector4::Normalize(const Vector4& v)
+{
+	return XMVector4Normalize(v);
+}
+
+Vector4 Vector4::Transform(const Vector4& v, const Matrix& m)
+{
+	return XMVector4Transform(v, m);
+}
+
+Vector4 Vector4::Reciprocal(const Vector4& v)
+{
+	return XMVectorReciprocal(v);
 }

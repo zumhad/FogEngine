@@ -30,10 +30,8 @@ struct FOG_API APPCLASS
     struct
     {
         float nearZ = 0.1f;
-        float farZ = 10000.0f;
+        float farZ = 1000.0f;
         float fov = 60.0f;
-        float rotationSmooth = 1000.0f;
-        float moveSmooth = 1000.0f;
     } camera;
 
     struct

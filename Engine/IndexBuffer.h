@@ -18,7 +18,7 @@ private:
 	IndexBuffer();
 
 	template <typename T>
-	void Create(Array<T>& arr);
+	void Create(const Array<T>& arr);
 
 	ID3D11Buffer* Get();
 	void Release();
@@ -30,7 +30,7 @@ private:
 };
 
 template <typename T>
-void IndexBuffer::Create(Array<T>& arr)
+void IndexBuffer::Create(const Array<T>& arr)
 {
 	mCount = arr.Size();
 

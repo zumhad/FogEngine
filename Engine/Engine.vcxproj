@@ -193,10 +193,10 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClCompile Include="ComputeShader.cpp" />
-    <ClCompile Include="ConstantBuffer.cpp" />
     <ClCompile Include="Cursor.cpp" />
     <ClCompile Include="CustomFile.cpp" />
     <ClCompile Include="CustomString.cpp" />
+    <ClCompile Include="DepthPass.cpp" />
     <ClCompile Include="DepthStencilState.cpp" />
     <ClCompile Include="Direct3D.cpp" />
     <ClCompile Include="Font.cpp" />
@@ -254,6 +254,7 @@
     <ClInclude Include="CustomFile.h" />
     <ClInclude Include="CustomString.h" />
     <ClInclude Include="Definitions.h" />
+    <ClInclude Include="DepthPass.h" />
     <ClInclude Include="DepthStencilState.h" />
     <ClInclude Include="Direct3D.h" />
     <ClInclude Include="Engine.h" />
@@ -352,6 +353,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Shadow.hlsl">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Pack.hlsl">
       <FileType>Document</FileType>
     </None>
   </ItemGroup>

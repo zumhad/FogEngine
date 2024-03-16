@@ -10,9 +10,7 @@
 #include "Quaternion.h"
 #include "Vector2.h"
 
-using namespace DirectX;
-
-Mesh::Mesh(Array<Vertex>& vertex, Array<unsigned int>& index)
+Mesh::Mesh(const Array<Vertex>& vertex, const Array<unsigned int>& index)
 {
     D3D11_BUFFER_DESC desc{};
     desc.Usage = D3D11_USAGE_DEFAULT;

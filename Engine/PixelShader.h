@@ -26,7 +26,7 @@ class FOG_API PixelShader
 private:
 	PixelShader();
 
-	void Create(String name, String entry = L"PS");
+	void Create(const String& name, const String& entry = L"PS");
 	void Release();
 
 	ID3D11PixelShader* Get();

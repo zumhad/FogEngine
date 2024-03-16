@@ -3,10 +3,6 @@
 #include "Utility.h"
 #include "Direct3D.h"
 
-#include <DirectXMath.h>
-
-using namespace DirectX;
-
 VertexBuffer::VertexBuffer()
 {
 	mVertexBuffer = 0;

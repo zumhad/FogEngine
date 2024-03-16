@@ -13,6 +13,10 @@
 #include "ObjectManager.h"
 #include "Light.h"
 #include "LightMap.h"
+#include "Vector4.h"
+#include "ShadowPass.h"
+
+#include <DirectXMath.h>
 
 struct PrePass::Buffer0
 {
@@ -46,14 +50,14 @@ InputLayout PrePass::mInputLayout;
 ID3D11RenderTargetView* PrePass::mColorRTV = 0;
 ID3D11ShaderResourceView* PrePass::mColorSRV = 0;
 
-ID3D11RenderTargetView* PrePass::mNormalLightRTV = 0;
-ID3D11ShaderResourceView* PrePass::mNormalLightSRV = 0;
+ID3D11RenderTargetView* PrePass::mNormalLightingRTV = 0;
+ID3D11ShaderResourceView* PrePass::mNormalLightingSRV = 0;
 
-ID3D11RenderTargetView* PrePass::mPositionIDRTV = 0;
-ID3D11ShaderResourceView* PrePass::mPositionIDSRV = 0;
+ID3D11RenderTargetView* PrePass::mPositionMaterialRTV = 0;
+ID3D11ShaderResourceView* PrePass::mPositionMaterialSRV = 0;
 
-ID3D11RenderTargetView* PrePass::mRangeMaterialRTV = 0;
-ID3D11ShaderResourceView* PrePass::mRangeMaterialSRV = 0;
+ID3D11RenderTargetView* PrePass::mIDRTV = 0;
+ID3D11ShaderResourceView* PrePass::mIDSRV = 0;
 
 ID3D11DepthStencilView* PrePass::mDepthDSV = 0;
 ID3D11ShaderResourceView* PrePass::mDepthSRV = 0;
@@ -119,7 +123,7 @@ void PrePass::Setup()
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		desc.Format = DXGI_FORMAT_R10G10B10A2_UNORM;
-		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mNormalLightRTV));
+		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mNormalLightingRTV));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
@@ -127,7 +131,7 @@ void PrePass::Setup()
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mNormalLightSRV));
+		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mNormalLightingSRV));
 	}
 	SAFE_RELEASE(texture);
 	{
@@ -164,7 +168,7 @@ void PrePass::Setup()
 		desc.Height = height;
 		desc.MipLevels = 1;
 		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		desc.Format = DXGI_FORMAT_R16G16B16A16_UINT;
 		desc.SampleDesc.Count = 1;
 		desc.SampleDesc.Quality = 0;
 		desc.Usage = D3D11_USAGE_DEFAULT;
@@ -174,16 +178,16 @@ void PrePass::Setup()
 	{
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mPositionIDRTV));
+		desc.Format = DXGI_FORMAT_R16G16B16A16_UINT;
+		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mPositionMaterialRTV));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		desc.Format = DXGI_FORMAT_R16G16B16A16_UINT;
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mPositionIDSRV));
+		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mPositionMaterialSRV));
 	}
 	SAFE_RELEASE(texture);
 	{
@@ -203,7 +207,7 @@ void PrePass::Setup()
 		D3D11_RENDER_TARGET_VIEW_DESC desc{};
 		desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 		desc.Format = DXGI_FORMAT_R32_UINT;
-		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mRangeMaterialRTV));
+		FOG_TRACE(Direct3D::Device()->CreateRenderTargetView(texture, &desc, &mIDRTV));
 	}
 	{
 		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
@@ -211,7 +215,7 @@ void PrePass::Setup()
 		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mRangeMaterialSRV));
+		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mIDSRV));
 	}
 	SAFE_RELEASE(texture);
 
@@ -219,11 +223,10 @@ void PrePass::Setup()
 		mVertexShader.Create(L"PrePass.hlsl");
 		mPixelShader.Create(L"PrePass.hlsl");
 
-		Array<String> input;
-		input.Add(L"POSITION");
-		input.Add(L"NORMAL");
-		input.Add(L"TEXCOORD");
-		mInputLayout.Create(mVertexShader.GetBlob(), input);
+		mInputLayout.Add(L"POSITION");
+		mInputLayout.Add(L"NORMAL");
+		mInputLayout.Add(L"TEXCOORD");
+		mInputLayout.Create(mVertexShader.GetBlob());
 	}
 
 	mBuffer0.Create();
@@ -231,9 +234,9 @@ void PrePass::Setup()
 	mBuffer2.Create();
 
 	mRTV.Add(mColorRTV);
-	mRTV.Add(mNormalLightRTV);
-	mRTV.Add(mPositionIDRTV);
-	mRTV.Add(mRangeMaterialRTV);
+	mRTV.Add(mNormalLightingRTV);
+	mRTV.Add(mPositionMaterialRTV);
+	mRTV.Add(mIDRTV);
 }
 
 void PrePass::Bind()
@@ -257,9 +260,9 @@ void PrePass::Bind()
 	for (int i = 0; i < size; i++)
 	{
 		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
-		if (!light->enable) continue;
+		if (!light->GetEnable()) continue;
 
-		LightMap::UpdateBuffer(*light);
+		LightMap::UpdateBuffer(light);
 
 		UpdateBuffer1(light->GetModel());
 		UpdateBuffer2(light->GetModel());
@@ -274,9 +277,9 @@ void PrePass::Bind()
 	for (int i = 0; i < size; i++)
 	{
 		PointLight* light = ObjectManager::GetWithNumber<PointLight>(i);
-		if (!light->enable) continue;
+		if (!light->GetEnable()) continue;
 
-		int count = LightMap::UpdateBuffer(*light);
+		int count = LightMap::UpdateBuffer(light);
 
 		UpdateBuffer1(light->GetModel());
 		UpdateBuffer2(light->GetModel());
@@ -355,23 +358,24 @@ void PrePass::UpdateBuffer1(Model* model)
 void PrePass::UpdateBuffer2(Model* model)
 {
 	static Buffer2 buffer{};
-	buffer.color = model->color;
+	buffer.color = model->GetColor();
 	buffer.id = model->GetID();
-	buffer.lighting = model->lighting;
-	buffer.roughness = model->roughness;
-	buffer.metallic = model->metallic;
+	buffer.lighting = model->GetLighting();
+	buffer.roughness = model->GetRoughness();
+	buffer.metallic = model->GetMetallic();
 
 	mBuffer2.Bind(buffer);
 }
+
 void PrePass::Clear()
 {
 	static const float color[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
 	Direct3D::DeviceContext()->ClearDepthStencilView(mDepthDSV, D3D11_CLEAR_DEPTH, 0.0f, 0);
 	Direct3D::DeviceContext()->ClearRenderTargetView(mColorRTV, color);
-	Direct3D::DeviceContext()->ClearRenderTargetView(mNormalLightRTV, color);
-	Direct3D::DeviceContext()->ClearRenderTargetView(mPositionIDRTV, color);
-	Direct3D::DeviceContext()->ClearRenderTargetView(mRangeMaterialRTV, color);
+	Direct3D::DeviceContext()->ClearRenderTargetView(mNormalLightingRTV, color);
+	Direct3D::DeviceContext()->ClearRenderTargetView(mPositionMaterialRTV, color);
+	Direct3D::DeviceContext()->ClearRenderTargetView(mIDRTV, color);
 }
 
 ID3D11DepthStencilView* const PrePass::GetDepthDSV()
@@ -384,19 +388,19 @@ ID3D11RenderTargetView* const* PrePass::GetColorRTV()
 	return &mColorRTV;
 }
 
-ID3D11RenderTargetView* const* PrePass::GetNormalLightRTV()
+ID3D11RenderTargetView* const* PrePass::GetNormalLightingRTV()
 {
-	return &mNormalLightRTV;
+	return &mNormalLightingRTV;
 }
 
-ID3D11RenderTargetView* const* PrePass::GetRangeMaterialRTV()
+ID3D11RenderTargetView* const* PrePass::GetIDRTV()
 {
-	return &mRangeMaterialRTV;
+	return &mIDRTV;
 }
 
-ID3D11RenderTargetView* const* PrePass::GetPositionIDRTV()
+ID3D11RenderTargetView* const* PrePass::GetPositionMaterialRTV()
 {
-	return &mPositionIDRTV;
+	return &mPositionMaterialRTV;
 }
 
 ID3D11ShaderResourceView* const* PrePass::GetDepthSRV()
@@ -409,33 +413,33 @@ ID3D11ShaderResourceView* const* PrePass::GetColorSRV()
 	return &mColorSRV;
 }
 
-ID3D11ShaderResourceView* const* PrePass::GetNormalLightSRV()
+ID3D11ShaderResourceView* const* PrePass::GetNormalLightingSRV()
 {
-	return &mNormalLightSRV;
+	return &mNormalLightingSRV;
 }
 
-ID3D11ShaderResourceView* const* PrePass::GetRangeMaterialSRV()
+ID3D11ShaderResourceView* const* PrePass::GetIDSRV()
 {
-	return &mRangeMaterialSRV;
+	return &mIDSRV;
 }
 
-ID3D11ShaderResourceView* const* PrePass::GetPositionIDSRV()
+ID3D11ShaderResourceView* const* PrePass::GetPositionMaterialSRV()
 {
-	return &mPositionIDSRV;
+	return &mPositionMaterialSRV;
 }
 
 void PrePass::Shotdown()
 {
 	SAFE_RELEASE(mColorRTV);
 	SAFE_RELEASE(mColorSRV);
-	SAFE_RELEASE(mNormalLightRTV);
-	SAFE_RELEASE(mNormalLightSRV);
+	SAFE_RELEASE(mNormalLightingRTV);
+	SAFE_RELEASE(mNormalLightingSRV);
 	SAFE_RELEASE(mDepthDSV);
 	SAFE_RELEASE(mDepthSRV);
-	SAFE_RELEASE(mPositionIDRTV);
-	SAFE_RELEASE(mPositionIDSRV);
-	SAFE_RELEASE(mRangeMaterialRTV);
-	SAFE_RELEASE(mRangeMaterialSRV);
+	SAFE_RELEASE(mPositionMaterialRTV);
+	SAFE_RELEASE(mPositionMaterialSRV);
+	SAFE_RELEASE(mIDRTV);
+	SAFE_RELEASE(mIDSRV);
 
 	mBuffer0.Release();
 	mBuffer1.Release();

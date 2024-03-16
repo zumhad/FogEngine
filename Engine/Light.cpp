@@ -5,17 +5,18 @@
 
 DirectionLight::DirectionLight() : Object()
 {
-	color = Color(1.0f, 1.0f, 1.0f);
-	rotation = Vector3(0.0f, -90.0f, 0.0f);
-	power = 1.0f;
+	mRotation = Vector3(0.0f, -90.0f, 0.0f);
+
+	mColor = Color(1.0f, 1.0f, 1.0f);
+	mPower = 1.0f;
 
 	mModel = 0;
 }
 
 DirectionLight::DirectionLight(const DirectionLight& light) : Object(light)
 {
-	color = light.color;
-	power = light.power;
+	mColor = light.mColor;
+	mPower = light.mPower;
 
 	mModel = 0;
 }
@@ -23,8 +24,8 @@ DirectionLight::DirectionLight(const DirectionLight& light) : Object(light)
 DirectionLight::DirectionLight(DirectionLight&& light) noexcept : DirectionLight(light)
 {
 	Model model;
-	model.name = L"sun.obj";
-	model.lighting = false;
+	model.SetModelPath(L"sun.obj");
+	model.SetLighting(false);
 
 	mModel = new Model(std::move(model));
 }
@@ -41,10 +42,11 @@ void DirectionLight::BindTexture()
 
 Model* DirectionLight::GetModel()
 {
-	mModel->position = position;
-	mModel->rotation = rotation;
-	mModel->scale = scale;
-	mModel->color = color;
+	mModel->mOffset = mOffset;
+	mModel->mPosition = mPosition;
+	mModel->mRotation = mRotation;
+	mModel->mScale = mScale;
+	mModel->mColor = mColor;
 	mModel->mID = mID;
 
 	return mModel;
@@ -57,25 +59,60 @@ DirectionLight::~DirectionLight()
 
 Vector3 DirectionLight::GetDirection()
 {
-	Quaternion q = Quaternion::Euler(rotation.x, rotation.y, rotation.z);
+	Quaternion q = Quaternion::Euler(Vector3::ConvertToRadians(mRotation));
 
-	return Vector3::Rotate(Vector3(0, 0, 1), q);
+	return Vector3::Rotate(Vector3(0.0f, 0.0f, 1.0f), q);
+}
+
+void DirectionLight::SetColor(const Color& color)
+{
+	mColor = color;
+}
+
+void DirectionLight::SetColorR(float r)
+{
+	mColor.r = r;
+}
+
+void DirectionLight::SetColorG(float g)
+{
+	mColor.g = g;
+}
+
+void DirectionLight::SetColorB(float b)
+{
+	mColor.b = b;
+}
+
+Color DirectionLight::GetColor()
+{
+	return mColor;
+}
+
+void DirectionLight::SetPower(float power)
+{
+	mPower = power;
+}
+
+float DirectionLight::GetPower()
+{
+	return mPower;
 }
 
 PointLight::PointLight() : Object()
 {
-	color = Color(1.0f, 1.0f, 1.0f);
-	radius = 1.0f;
-	power = 1.0f;
+	mColor = Color(1.0f, 1.0f, 1.0f);
+	mRadius = 1.0f;
+	mPower = 1.0f;
 
 	mModel = 0;
 }
 
 PointLight::PointLight(const PointLight& light) : Object(light)
 {
-	color = light.color;
-	radius = light.radius;
-	power = light.power;
+	mColor = light.mColor;
+	mRadius = light.mRadius;
+	mPower = light.mPower;
 
 	mModel = 0;
 }
@@ -83,8 +120,8 @@ PointLight::PointLight(const PointLight& light) : Object(light)
 PointLight::PointLight(PointLight&& light) noexcept : PointLight(light)
 {
 	Model model;
-	model.name = L"bulb.obj";
-	model.lighting = false;
+	model.SetModelPath(L"bulb.obj");
+	model.SetLighting(false);
 
 	mModel = new Model(std::move(model));
 }
@@ -106,11 +143,57 @@ void PointLight::BindTexture()
 
 Model* PointLight::GetModel()
 {
-	mModel->position = position;
-	mModel->rotation = rotation;
-	mModel->scale = scale;
-	mModel->color = color;
+	mModel->mOffset = mOffset;
+	mModel->mPosition = mPosition;
+	mModel->mRotation = mRotation;
+	mModel->mScale = mScale;
+	mModel->mColor = mColor;
 	mModel->mID = mID;
 
 	return mModel;
+}
+
+void PointLight::SetColor(const Color& color)
+{
+	mColor = color;
+}
+
+void PointLight::SetColorR(float r)
+{
+	mColor.r = r;
+}
+
+void PointLight::SetColorG(float g)
+{
+	mColor.g = g;
+}
+
+void PointLight::SetColorB(float b)
+{
+	mColor.b = b;
+}
+
+Color PointLight::GetColor()
+{
+	return mColor;
+}
+
+void PointLight::SetRadius(float radius)
+{
+	mRadius = radius;
+}
+
+float PointLight::GetRadius()
+{
+	return mRadius;
+}
+
+void PointLight::SetPower(float power)
+{
+	mPower = power;
+}
+
+float PointLight::GetPower()
+{
+	return mPower;
 }

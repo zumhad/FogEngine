@@ -9,6 +9,7 @@
 #include "Color.h"
 #include "CustomString.h"
 #include "CustomArray.h"
+#include "VertexBuffer.h"
 
 #include <d3d11.h>
 
@@ -53,7 +54,7 @@ private:
 	void DrawRect();
 	void DrawText();
 	void UpdateText();
-	int BinarySearch(Array<Button*>& arr, int i);
+	int BinarySearch(const Array<Button*>& arr, int i);
 
 public:
 	struct
@@ -106,7 +107,7 @@ public:
 	int data;
 
 private:
-	ID3D11Buffer* mVertexBuffer;
+	VertexBuffer mVertexBuffer;
 	int mVertexSize;
 
 	struct

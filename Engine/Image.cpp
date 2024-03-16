@@ -9,7 +9,7 @@
 
 #include <png.h>
 
-unsigned char* Image::Load(String name, int& width, int& height, ImageType type)
+unsigned char* Image::Load(const String& name, int& width, int& height, Type type)
 {
 	String path = PathHelper::GetAssetsPath();
 	path += name;
@@ -22,7 +22,7 @@ unsigned char* Image::Load(String name, int& width, int& height, ImageType type)
 	png_byte colorType;
 	png_byte depth;
 
-	file = fopen(path, "rb");
+	file = _wfopen(path, L"rb");
 	FOG_ASSERT(file != 0);
 
 	pngStruct = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
@@ -78,7 +78,7 @@ unsigned char* Image::Load(String name, int& width, int& height, ImageType type)
 
 	switch (type)
 	{
-		case ImageType::RGBA:
+		case Type::RGBA:
 		{
 			data = new unsigned char[rowSize * height];
 			for (int i = 0; i < height; i++)
@@ -89,7 +89,7 @@ unsigned char* Image::Load(String name, int& width, int& height, ImageType type)
 			break;
 		}
 
-		case ImageType::A:
+		case Type::A:
 		{
 			data = new unsigned char[(rowSize / 4) * height];
 			for (int i = 0; i < height; i++)

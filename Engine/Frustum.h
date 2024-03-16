@@ -4,7 +4,7 @@
 
 #include "Matrix.h"
 #include "Vector3.h"
-#include "Vector4.h"
+#include "Quaternion.h"
 
 class FOG_API ShadowPass;
 
@@ -16,15 +16,15 @@ public:
     Frustum();
 
 private:
-    void Update(Matrix& view, Matrix& proj);
-    Matrix Cascade(Vector3 dir, int resolution);
-    void Create(Matrix& proj);
-    void Transform(Matrix& inv);
+    void Update(const Matrix& view, const Matrix& proj);
+    Matrix Cascade(const Vector3& dir, int resolution);
+    void Create(const Matrix& proj);
+    void Transform(const Matrix& inv);
     void GetCorners(Vector3* corners);
 
 private:
     Vector3 mOrigin;
-    Vector4 mOrientation;
+    Quaternion mOrientation;
 
     float mRightSlope;
     float mLeftSlope;

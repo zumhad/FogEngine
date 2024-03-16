@@ -118,20 +118,18 @@ void OutlinePass::Setup()
 		mVertexShader0.Create(L"OutlinePass.hlsl", L"VS0");
 		mPixelShader0.Create(L"OutlinePass.hlsl", L"PS0");
 
-		Array<String> input;
-		input.Add(L"POSITION");
-		mInputLayout0.Create(mVertexShader0.GetBlob(), input);
+		mInputLayout0.Add(L"POSITION");
+		mInputLayout0.Create(mVertexShader0.GetBlob());
 	}
 	{
-		mCopmuteShader.Create("OutlinePassCS.hlsl");
+		mCopmuteShader.Create(L"OutlinePassCS.hlsl");
 	}
 	{
 		mVertexShader1.Create(L"OutlinePass.hlsl", L"VS1");
 		mPixelShader1.Create(L"OutlinePass.hlsl", L"PS1");
 
-		Array<String> input;
-		input.Add(L"TEXCOORD");
-		mInputLayout1.Create(mVertexShader1.GetBlob(), input);
+		mInputLayout1.Add(L"TEXCOORD");
+		mInputLayout1.Create(mVertexShader1.GetBlob());
 	}
 
 	mBuffer0.Create();
@@ -161,7 +159,7 @@ void OutlinePass::Bind()
 	{
 		Model* model = ObjectManager::GetWithNumber<Model>(i);
 
-		if (model->outline && model->enable)
+		if (model->GetOutline() && model->GetEnable())
 		{
 			UpdateBuffer1(model);
 
@@ -176,7 +174,7 @@ void OutlinePass::Bind()
 	{
 		PointLight* light = ObjectManager::GetWithNumber<PointLight>(i);
 
-		if (light->outline && light->enable)
+		if (light->GetOutline() && light->GetEnable())
 		{
 			UpdateBuffer1(light->GetModel());
 
@@ -191,7 +189,7 @@ void OutlinePass::Bind()
 	{
 		DirectionLight* light = ObjectManager::GetWithNumber<DirectionLight>(i);
 
-		if (light->outline && light->enable)
+		if (light->GetOutline() && light->GetEnable())
 		{
 			UpdateBuffer1(light->GetModel());
 
@@ -338,7 +336,7 @@ void OutlinePass::Shotdown()
 	SAFE_RELEASE(mOffsetUAV);
 }
 
-void OutlinePass::SetColor(Color color)
+void OutlinePass::SetColor(const Color& color)
 {
 	mOutline.color = color;
 }

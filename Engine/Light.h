@@ -28,17 +28,23 @@ public:
 	~DirectionLight();
 
 	Vector3 GetDirection();
+	void SetColor(const Color& color);
+	void SetColorR(float r);
+	void SetColorG(float g);
+	void SetColorB(float b);
+	Color GetColor();
+	void SetPower(float power);
+	float GetPower();
 
 private:
 	void Bind();
 	void BindTexture();
 	Model* GetModel();
 
-public:
-	Color color;
-	float power;
-
 private:
+	Color mColor;
+	float mPower;
+
 	Model* mModel;
 };
 
@@ -57,17 +63,26 @@ public:
 	PointLight(PointLight&& light) noexcept;
 	~PointLight();
 
+	void SetColor(const Color& color);
+	void SetColorR(float r);
+	void SetColorG(float g);
+	void SetColorB(float b);
+	Color GetColor();
+	void SetRadius(float radius);
+	float GetRadius();
+	void SetPower(float power);
+	float GetPower();
+
 private:
 	void Bind();
 	void BindTexture();
 	Model* GetModel();
 
-public:
-	Color color;
-	float radius;
-	float power;
-
 private:
+	Color mColor;
+	float mRadius;
+	float mPower;
+
 	Model* mModel;
 };
 

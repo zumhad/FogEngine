@@ -10,8 +10,8 @@ void UpdateSelectObject(Object* obj)
 	{
 		if (currentObj)
 		{
-			Button* b1 = GUI::GetWithID(currentObj->data);
-			Button* b2 = GUI::GetWithID(currentObj->data + 1);
+			Button* b1 = GUI::GetWithID(currentObj->GetData());
+			Button* b2 = GUI::GetWithID(currentObj->GetData() + 1);
 
 			if (b1 && b2)
 			{
@@ -19,14 +19,14 @@ void UpdateSelectObject(Object* obj)
 				b2->rect.color.r = 0.1f;
 			}
 
-			currentObj->outline = false;
+			currentObj->SetOutline(false);
 
 			currentObj = obj;
 
-			currentObj->outline = true;
+			currentObj->SetOutline(true);
 
-			b1 = GUI::GetWithID(currentObj->data);
-			b2 = GUI::GetWithID(currentObj->data + 1);
+			b1 = GUI::GetWithID(currentObj->GetData());
+			b2 = GUI::GetWithID(currentObj->GetData() + 1);
 
 			if (b1 && b2)
 			{
@@ -38,10 +38,10 @@ void UpdateSelectObject(Object* obj)
 		{
 			currentObj = obj;
 
-			currentObj->outline = true;
+			currentObj->SetOutline(true);
 
-			Button* b1 = GUI::GetWithID(currentObj->data);
-			Button* b2 = GUI::GetWithID(currentObj->data + 1);
+			Button* b1 = GUI::GetWithID(currentObj->GetData());
+			Button* b2 = GUI::GetWithID(currentObj->GetData() + 1);
 
 			if (b1 && b2)
 			{
@@ -54,8 +54,8 @@ void UpdateSelectObject(Object* obj)
 	{
 		if (currentObj)
 		{
-			Button* b1 = GUI::GetWithID(currentObj->data);
-			Button* b2 = GUI::GetWithID(currentObj->data + 1);
+			Button* b1 = GUI::GetWithID(currentObj->GetData());
+			Button* b2 = GUI::GetWithID(currentObj->GetData() + 1);
 
 			if (b1 && b2)
 			{
@@ -63,7 +63,7 @@ void UpdateSelectObject(Object* obj)
 				b2->rect.color.r = 0.1f;
 			}
 
-			currentObj->outline = false;
+			currentObj->SetOutline(false);
 
 			currentObj = 0;
 		}
@@ -83,33 +83,33 @@ void UpdateTransform(Button* button, Object* object)
 	static Button* scaleZ = button->GetChildWithNumber(12);
 
 	static Vector3 position = Vector3(-1.0f, -1.0f, -1.0f);
-	if (position != object->position)
+	if (position != object->GetPosition())
 	{
-		posX->text.text = String::ToString(object->position.x);
-		posY->text.text = String::ToString(object->position.y);
-		posZ->text.text = String::ToString(object->position.z);
+		posX->text.text = String::ToString(object->GetPosition().x, 2);
+		posY->text.text = String::ToString(object->GetPosition().y, 2);
+		posZ->text.text = String::ToString(object->GetPosition().z, 2);
 
-		position = object->position;
+		position = object->GetPosition();
 	}
 
 	static Vector3 rotation = Vector3(-1.0f, -1.0f, -1.0f);
-	if(rotation != object->rotation)
+	if(rotation != object->GetRotation())
 	{
-		rotX->text.text = String::ToString(object->rotation.x);
-		rotY->text.text = String::ToString(object->rotation.y);
-		rotZ->text.text = String::ToString(object->rotation.z);
+		rotX->text.text = String::ToString(object->GetRotation().x, 2);
+		rotY->text.text = String::ToString(object->GetRotation().y, 2);
+		rotZ->text.text = String::ToString(object->GetRotation().z, 2);
 
-		rotation = object->rotation;
+		rotation = object->GetRotation();
 	}
 
 	static Vector3 scale = Vector3(-1.0f, -1.0f, -1.0f);
-	if(scale != object->scale)
+	if(scale != object->GetScale())
 	{
-		scaleX->text.text = String::ToString(object->scale.x);
-		scaleY->text.text = String::ToString(object->scale.y);
-		scaleZ->text.text = String::ToString(object->scale.z);
+		scaleX->text.text = String::ToString(object->GetScale().x, 2);
+		scaleY->text.text = String::ToString(object->GetScale().y, 2);
+		scaleZ->text.text = String::ToString(object->GetScale().z, 2);
 
-		scale = object->scale;
+		scale = object->GetScale();
 	}
 }
 
@@ -122,28 +122,54 @@ void UpdateMaterial(Button* button, Model* model)
 	static Button* roughness = button->GetChildWithNumber(8);
 
 	static Color color = Color(-1.0f, -1.0f, -1.0f);
-	if (color != model->color)
+	if (color != model->GetColor())
 	{
-		colorR->text.text = String::ToString(model->color.r);
-		colorG->text.text = String::ToString(model->color.g);
-		colorB->text.text = String::ToString(model->color.b);
+		colorR->text.text = String::ToString(model->GetColor().r, 3);
+		colorG->text.text = String::ToString(model->GetColor().g, 3);
+		colorB->text.text = String::ToString(model->GetColor().b, 3);
 
-		color = model->color;
+		color = model->GetColor();
 	}
 
 	static float _metallic = -1.0f;
-	if (_metallic != model->metallic)
+	if (_metallic != model->GetMetallic())
 	{
-		metallic->text.text = String::ToString(model->metallic);
+		metallic->text.text = String::ToString(model->GetMetallic(), 3);
 
-		_metallic = model->metallic;
+		_metallic = model->GetMetallic();
 	}
 
 	static float _roughness = -1.0f;
-	if (_roughness != model->roughness)
+	if (_roughness != model->GetRoughness())
 	{
-		roughness->text.text = String::ToString(model->roughness);
+		roughness->text.text = String::ToString(model->GetRoughness(), 3);
 
-		_roughness = model->roughness;
+		_roughness = model->GetRoughness();
+	}
+}
+
+void UpdateLight(Button* button, DirectionLight* light)
+{
+	static Button* colorR = button->GetChildWithNumber(2);
+	static Button* colorG = button->GetChildWithNumber(3);
+	static Button* colorB = button->GetChildWithNumber(4);
+	static Button* power = button->GetChildWithNumber(6);
+
+	static Color color = Color(-1.0f, -1.0f, -1.0f);
+	if (color != light->GetColor())
+	{
+		colorR->text.text = String::ToString(light->GetColor().r, 3);
+		colorG->text.text = String::ToString(light->GetColor().g, 3);
+		colorB->text.text = String::ToString(light->GetColor().b, 3);
+
+		color = light->GetColor();
+	}
+
+	static float _power = -1.0f;
+	if (_power != light->GetPower())
+	{
+		power->text.text = String::ToString(light->GetPower(), 2);
+
+		_power = light->GetPower();
 	}
 }

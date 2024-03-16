@@ -47,33 +47,31 @@ InputLayout PipelineState::mPostProcessIL;
 void PipelineState::Setup()
 {
 	mSamplerState.Create();
-	mShadowSamplerState.Create(SamplerStateType::Shadow);
-	mPostProcessSamplerState.Create(SamplerStateType::PostProcess);
+	mShadowSamplerState.Create(SamplerState::Type::Shadow);
+	mPostProcessSamplerState.Create(SamplerState::Type::PostProcess);
 
-	mReadWriteDSS.Create(DepthStencilStateType::ReadWrite);
-	mReadOnlyDSS.Create(DepthStencilStateType::ReadOnly);
-	mDisableDSS.Create(DepthStencilStateType::Disable);
+	mReadWriteDSS.Create(DepthStencilState::Type::ReadWrite);
+	mReadOnlyDSS.Create(DepthStencilState::Type::ReadOnly);
+	mDisableDSS.Create(DepthStencilState::Type::Disable);
 
-	mSkyboxRasterizerState.Create(RasterizerStateType::Skybox);
-	mRasterizerState.Create();
-	mShadowRasterizerState.Create(RasterizerStateType::Shadow);
+	mSkyboxRasterizerState.Create(RasterizerState::Type::Skybox);
+	mRasterizerState.Create(RasterizerState::Type::Default);
+	mShadowRasterizerState.Create(RasterizerState::Type::Shadow);
 
 	{
 		mPassVS.Create(L"LightPass.hlsl");
 		mPassPS.Create(L"LightPass.hlsl");
 
-		Array<String> input;
-		input.Add(L"TEXCOORD");
-		mPassIL.Create(mPassVS.GetBlob(), input);
+		mPassIL.Add(L"TEXCOORD");
+		mPassIL.Create(mPassVS.GetBlob());
 	}
 
 	{
 		mPostProcessVS.Create(L"PostProcess.hlsl");
 		mPostProcessPS.Create(L"PostProcess.hlsl");
 
-		Array<String> input;
-		input.Add(L"TEXCOORD");
-		mPostProcessIL.Create(mPostProcessVS.GetBlob(), input);
+		mPostProcessIL.Add(L"TEXCOORD");
+		mPostProcessIL.Create(mPostProcessVS.GetBlob());
 	}
 }
 
@@ -132,15 +130,13 @@ void PipelineState::Bind()
 
 	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, PrePass::GetColorSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, PrePass::GetDepthSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, PrePass::GetPositionIDSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, PrePass::GetNormalLightSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, PrePass::GetRangeMaterialSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(5, 1, ShadowPass::GetDepthSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, PrePass::GetPositionMaterialSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, PrePass::GetNormalLightingSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, ShadowPass::GetDepthSRV());
 
 	LightMap::UpdateBuffer();
 	TextureMap::Bind();
 
-	Direct3D::DeviceContext()->PSSetShaderResources(5, 1, Direct3D::NullSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, Direct3D::NullSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, Direct3D::NullSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, Direct3D::NullSRV());

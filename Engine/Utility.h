@@ -4,7 +4,7 @@
 
 #include "CustomString.h"
 
-FOG_API void MessageBoxError(String file, int line, String msg);
+FOG_API void MessageBoxError(const String& file, int line, const String& msg);
 
 #if defined(DEBUG) | defined(_DEBUG)
 #define FOG_TRACE(x) \

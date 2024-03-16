@@ -9,16 +9,18 @@
 #include <d3d11.h>
 
 class FOG_API TextureMap;
+class FOG_API Button;
 
 class FOG_API VertexBuffer
 {
 	friend class TextureMap;
+	friend class Button;
 
 private:
 	VertexBuffer();
 
 	template <typename T>
-	void Create(Array<T>& arr);
+	void Create(const Array<T>& arr);
 
 	ID3D11Buffer* const* Get();
 	UINT* Stride();
@@ -33,7 +35,7 @@ private:
 };
 
 template <typename T>
-void VertexBuffer::Create(Array<T>& arr)
+void VertexBuffer::Create(const Array<T>& arr)
 {
 	mOffset = 0;
 	mStride = sizeof(T);

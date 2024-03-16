@@ -24,7 +24,7 @@ class FOG_API Mesh
 	friend class Model;
 
 public:
-	Mesh(Array<Vertex>& vertex, Array<unsigned int>& index);
+	Mesh(const Array<Vertex>& vertex, const Array<unsigned int>& index);
 	~Mesh();
 
 private:

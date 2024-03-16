@@ -15,10 +15,6 @@ struct FOG_API LightMap::LightBuffer
 {
 	struct
 	{
-		struct
-		{
-			float split; float pad[3];
-		} split[MAX_CASCADES];
 		Matrix viewProj;
 		Vector4 offset[MAX_CASCADES];
 		Vector4 scale[MAX_CASCADES];
@@ -26,15 +22,16 @@ struct FOG_API LightMap::LightBuffer
 		Vector3 direction;
 		float power;
 		float bias; 
-		float blend; float pad[2];
-	} dirLight;
+		float normalBias;
+		float blend; float pad;
+	} dirLight{};
 	struct
 	{
 		Color color;
 		Vector3 position;
 		float radius;
 		float power; float pad[3];
-	} pointLight[MAX_POINT_LIGHT];
+	} pointLight[MAX_POINT_LIGHT]{};
 	Vector3 cameraPosition;
 	int width;
 	int height;
@@ -95,29 +92,29 @@ void LightMap::Setup()
 	mLightBuffer.Create();
 }
 
-void LightMap::UpdateBuffer(DirectionLight& dir)
+void LightMap::UpdateBuffer(DirectionLight* dir)
 {
-	mBuffer.dirLight.color = dir.color;
-	mBuffer.dirLight.direction = dir.GetDirection();
-	mBuffer.dirLight.power = dir.power;
+	mBuffer.dirLight.color = dir->GetColor();
+	mBuffer.dirLight.direction = dir->GetDirection();
+	mBuffer.dirLight.power = dir->GetPower();
 	mBuffer.dirLight.bias = ShadowPass::GetBias();
+	mBuffer.dirLight.normalBias = ShadowPass::GetNormalBias();
 	mBuffer.dirLight.blend = ShadowPass::GetBlend();
 
 	for (int i = 0; i < MAX_CASCADES; i++)
 	{
-		mBuffer.dirLight.split[i].split = ShadowPass::GetSplit(i);
 		mBuffer.dirLight.offset[i] = ShadowPass::GetOffset(i);
 		mBuffer.dirLight.scale[i] = ShadowPass::GetScale(i);
 		mBuffer.dirLight.viewProj = ShadowPass::GetMatrix();
 	}
 }
 
-int LightMap::UpdateBuffer(PointLight& point)
+int LightMap::UpdateBuffer(PointLight* point)
 {
-	mBuffer.pointLight[mBuffer.pointCount].color = point.color;
-	mBuffer.pointLight[mBuffer.pointCount].position = point.position;
-	mBuffer.pointLight[mBuffer.pointCount].power = point.power;
-	mBuffer.pointLight[mBuffer.pointCount].radius = point.radius;
+	mBuffer.pointLight[mBuffer.pointCount].color = point->GetColor();
+	mBuffer.pointLight[mBuffer.pointCount].position = point->GetPosition() - Camera::GetOffsetPosition();
+	mBuffer.pointLight[mBuffer.pointCount].power = point->GetPower();
+	mBuffer.pointLight[mBuffer.pointCount].radius = point->GetRadius();
 	mBuffer.pointCount++;
 
 	return mBuffer.pointCount;
@@ -140,7 +137,7 @@ void LightMap::UpdateBuffer()
 
 	mBuffer.width = width;
 	mBuffer.height = height;
-	mBuffer.cameraPosition = Camera::GetPosition();
+	mBuffer.cameraPosition = Camera::GetRealPosition();
 
 	mLightBuffer.Bind(mBuffer);
 

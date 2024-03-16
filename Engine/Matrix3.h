@@ -5,6 +5,8 @@
 
 #include "Core.h"
 
+#include "Vector3.h"
+
 #include <DirectXMath.h>
 
 class FOG_API Matrix3
@@ -34,7 +36,7 @@ public:
     Matrix3 operator+ () const;
     Matrix3 operator- () const;
 
-    static Matrix3 Inverse(Matrix3& _m);
+    static Matrix3 Inverse(const Matrix3& _m);
 
 public:
     union
@@ -46,6 +48,7 @@ public:
             float _20, _21, _22;
         };
         float m[3][3];
+        Vector3 v[3];
     };
 };
 

@@ -2,9 +2,9 @@
 
 #include "Core.h"
 
-#include <DirectXMath.h>
+#include "Vector3.h"
 
-class FOG_API Vector3;
+#include <DirectXMath.h>
 
 class FOG_API Vector4
 {
@@ -13,6 +13,7 @@ public:
     Vector4(float ix) : x(ix), y(ix), z(ix), w(ix) {}
     Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
     Vector4(const float* arr) : x(arr[0]), y(arr[1]), z(arr[2]), w(arr[3]) {}
+    Vector4(Vector3 v, float f);
     Vector4(DirectX::FXMVECTOR v);
     Vector4(const DirectX::XMFLOAT4& f);
 
@@ -33,6 +34,10 @@ public:
 
     Vector4 operator+ ();
     Vector4 operator- ();
+
+    static Vector4 Normalize(const Vector4& v);
+    static Vector4 Transform(const Vector4& v, const Matrix& m);
+    static Vector4 Reciprocal(const Vector4& v);
 
 public:
 	float x, y, z, w;

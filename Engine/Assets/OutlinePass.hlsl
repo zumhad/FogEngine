@@ -86,19 +86,15 @@ cbuffer Buffer3 : register(b0)
 PS_OUTPUT1 PS1(VS_OUTPUT1 input)
 {
     PS_OUTPUT1 output;
-    output.color = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
     input.uv *= float2(gWidth, gHeight);
 
     int2 offset = gTexture.Load(int3(input.uv, 0));
 
-    if ((offset.x != 0 || offset.y != 0) && dot(offset, offset) <= (gOutlineWidth * gOutlineWidth))
-    {
-        output.color = gColor;
-        output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
-        return output;
-    }
-    else discard;
+    if ((offset.x == 0 && offset.y == 0) || dot(offset, offset) > (gOutlineWidth * gOutlineWidth))
+        clip(-1);
 
+    output.color = gColor;
+    output.color.a = dot(output.color.rgb, float3(0.299, 0.587, 0.114));
     return output;
 }

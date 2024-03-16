@@ -40,135 +40,79 @@ Matrix3::operator DirectX::XMFLOAT3X3() const
 
 Matrix3& Matrix3::operator+= (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    XMStoreFloat3x3((XMFLOAT3X3*)m, m1 + m2);
+    *this = XMMATRIX(*this) + XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix3& Matrix3::operator-= (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    XMStoreFloat3x3((XMFLOAT3X3*)m, m1 - m2);
+    *this = XMMATRIX(*this) - XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix3& Matrix3::operator*= (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    XMStoreFloat3x3((XMFLOAT3X3*)m, m1 * m2);
+    *this = XMMATRIX(*this) * XMMATRIX(_m);
 
     return *this;
 }
 
 Matrix3& Matrix3::operator*= (float f)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    XMStoreFloat3x3((XMFLOAT3X3*)m, m1 * f);
+    *this = XMMATRIX(*this) * f;
 
     return *this;
 }
 
 Matrix3& Matrix3::operator/= (float f)
 {
-    FOG_ASSERT(f != 0);
+    FOG_ASSERT(f != 0.0f);
 
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    XMStoreFloat3x3((XMFLOAT3X3*)m, m1 / f);
+    *this = XMMATRIX(*this) / f;
 
     return *this;
 }
 
 Matrix3 Matrix3::operator+ () const
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    Matrix3 _m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(_m.m), +m1);
-
-    return _m;
+    return +XMMATRIX(*this);
 }
 
 Matrix3 Matrix3::operator- () const
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    Matrix3 _m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(_m.m), -m1);
-
-    return _m;
+    return -XMMATRIX(*this);
 }
 
 Matrix3 Matrix3::operator+ (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    Matrix3 __m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(__m.m), m1 + m2);
-
-    return __m;
+    return XMMATRIX(*this) + XMMATRIX(_m);
 }
 
 Matrix3 Matrix3::operator- (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    Matrix3 __m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(__m.m), m1 - m2);
-
-    return __m;
+    return XMMATRIX(*this) - XMMATRIX(_m);
 }
 
 Matrix3 Matrix3::operator* (const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-    XMMATRIX m2 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    Matrix3 __m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(__m.m), m1 * m2);
-
-    return __m;
+    return XMMATRIX(*this) * XMMATRIX(_m);
 }
 
 Matrix3 Matrix3::operator* (float f)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    Matrix3 _m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(_m.m), m1 * f);
-
-    return _m;
+    return XMMATRIX(*this) * f;
 }
 
 Matrix3 Matrix3::operator/ (float f)
 {
     FOG_ASSERT(f != 0.0f);
 
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)m);
-
-    Matrix3 _m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(_m.m), m1 / f);
-
-    return _m;
+    return XMMATRIX(*this) / f;
 }
 
-Matrix3 Matrix3::Inverse(Matrix3& _m)
+Matrix3 Matrix3::Inverse(const Matrix3& _m)
 {
-    XMMATRIX m1 = XMLoadFloat3x3((XMFLOAT3X3*)(_m.m));
-
-    Matrix3 __m;
-    XMStoreFloat3x3((XMFLOAT3X3*)(__m.m), XMMatrixInverse(0, m1));
-
-    return __m;
+    return XMMatrixInverse(0, _m);
 }

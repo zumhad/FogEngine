@@ -25,8 +25,8 @@ private:
 	static void Setup();
 	static void Shotdown();
 
-	static void UpdateBuffer(DirectionLight& dir);
-	static int UpdateBuffer(PointLight& point);
+	static void UpdateBuffer(DirectionLight* dir);
+	static int UpdateBuffer(PointLight* point);
 	static void UpdateBuffer();
 	static void Clear();
 

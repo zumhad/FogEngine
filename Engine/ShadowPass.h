@@ -20,12 +20,14 @@ class FOG_API LightMap;
 class FOG_API VertexShader;
 class FOG_API PixelShader;
 class FOG_API InputLayout;
+class FOG_API PrePass;
 
 class FOG_API ShadowPass
 {
 	friend class Application;
 	friend class PipelineState;
 	friend class LightMap;
+	friend class PrePass;
 
 private:
 	static void Setup();
@@ -35,26 +37,27 @@ private:
 	static int GetResolution();
 	static void SetResolution(int resolution);
 	static void SetSplit(int index, float split);
+	static float GetSplit(int index);
 	static void SetBias(float bias);
 	static float GetBias();
-	static float GetBlend();
 	static void SetBlend(float blend);
+	static float GetBlend();
+	static void SetNormalBias(float bias);
+	static float GetNormalBias();
 
 	static void Clear();
 	static void UpdateBuffer0(int index);
 	static void UpdateBuffer1(Model* model);
-	static void UpdateCascade(Vector3 dir);
+	static void UpdateCascade(const Vector3& dir);
 	static void UpdateTexture();
 	static void CreateOffsetsAndScales(int index);
-	static Matrix CreateSplits(Vector3 dir);
-	static void CreateMatrix(Vector3 dir);
+	static Matrix CreateSplits(const Vector3& dir);
+	static void CreateMatrix(const Vector3& dir);
 	static void UpdateViewport();
 
 	static Matrix GetMatrix();
-	static Matrix GetMatrix(int index);
 	static Vector4 GetOffset(int index);
 	static Vector4 GetScale(int index);
-	static float GetSplit(int index);
 
 	static ID3D11ShaderResourceView* const* GetDepthSRV();
 	static ID3D11DepthStencilView* GetDepthDSV(int index);
@@ -81,6 +84,7 @@ private:
 		Array<Matrix> matrices;
 		Matrix matrix;
 		float bias;
+		float normalBias;
 		float blend;
 	} mCascade;
 

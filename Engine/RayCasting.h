@@ -8,6 +8,6 @@ class FOG_API Vector4;
 class FOG_API RayCasting
 {
 public:
-	static Vector3 RayCast(Vector3 dir, Vector3 orig, Vector4 plane);
+	static Vector3 RayCast(const Vector3& dir, const Vector3& orig, const Vector4& plane);
 };
 

@@ -6,8 +6,7 @@
 #include "Frustum.h"
 #include "Application.h"
 
-using namespace DirectX;
-
+Vector3 Camera::mOffset;
 Vector3 Camera::mPosition;
 Vector3 Camera::mRotation;
 
@@ -19,27 +18,22 @@ float Camera::mAspectRatio;
 float Camera::mNearZ;
 float Camera::mFarZ;
 
-float Camera::GetRotateX() 
-{
-	return mRotation.x; 
-}
-
-float Camera::GetRotateY() 
-{
-	return mRotation.y;
-}
-
-float Camera::GetRotateZ()
+Vector3 Camera::GetPosition()
 { 
-	return mRotation.z;
+	return mOffset + mPosition;
 }
 
-Vector3& Camera::GetPosition()
-{ 
+Vector3& Camera::GetOffsetPosition()
+{
+	return mOffset;
+}
+
+Vector3& Camera::GetRealPosition()
+{
 	return mPosition;
 }
 
-Vector3& Camera::GetRotation()
+Vector3 Camera::GetRotation()
 {
 	return mRotation; 
 }
@@ -55,25 +49,22 @@ Matrix& Camera::GetProjMatrix()
 
 Vector3 Camera::GetDirection()
 {
-	XMVECTOR v = XMVectorSet(0.0f, 0.0f, 1.0f, 1.0f);
-	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(Vector3::ConvertToRadians(mRotation));
+	Vector3 v = Vector3(0.0f, 0.0f, 1.0f);
+	Quaternion q = Quaternion::Euler(Vector3::ConvertToRadians(mRotation));
 
-	return XMVector3Rotate(v, q);
+	return Vector3::Rotate(v, q);
 }
 
-void Camera::LookAt(Vector3 pos)
+void Camera::LookAt(const Vector3& pos)
 {
-	Vector3 dir = Vector3::Normalize(pos - mPosition);
+	Vector3 dir = Vector3::Normalize(pos - mOffset - mPosition);
 
 	mRotation.x = -Math::ConvertToDegrees(Math::ASin(dir.y));
 	mRotation.y = Math::ConvertToDegrees(Math::ATan2(dir.x, dir.z));
 }
 
-void Camera::Setup(APPCLASS& app)
+void Camera::Setup(const APPCLASS& app)
 {
-	mPosition = Vector3(0.0f, 0.0f, 0.0f);
-	mRotation = Vector3(0.0f, 0.0f, 0.0f);
-
 	float width, height, aspect;
 
 	if (Application::IsGame())
@@ -89,84 +80,145 @@ void Camera::Setup(APPCLASS& app)
 		aspect = width / height;
 	}
 
-	mFOV = app.camera.fov * XM_PI / 180.0f;
+	mFOV = Math::ConvertToRadians(app.camera.fov);
 	mAspectRatio = aspect;
 	mNearZ = app.camera.nearZ;
 	mFarZ = app.camera.farZ;
 }
 
-void Camera::SetFOV(float fov) { mFOV = fov; }
+void Camera::SetFOV(float fov)
+{ 
+	mFOV = fov; 
+}
 
-void Camera::SetNear(float nearZ) { mNearZ = nearZ; }
+void Camera::SetNear(float nearZ)
+{
+	mNearZ = nearZ;
+}
 
-void Camera::SetFar(float farZ) { mFarZ = farZ; }
+void Camera::SetFar(float farZ)
+{ 
+	mFarZ = farZ;
+}
 
-float Camera::GetFOV() { return mFOV; }
+float Camera::GetFOV()
+{
+	return mFOV;
+}
 
-float Camera::GetNear() { return mNearZ; }
+float Camera::GetNear() 
+{ 
+	return mNearZ;
+}
 
-float Camera::GetFar() { return mFarZ; }
+float Camera::GetFar()
+{
+	return mFarZ;
+}
 
-float Camera::GetAspectRatio() { return mAspectRatio; }
+float Camera::GetAspectRatio() 
+{
+	return mAspectRatio;
+}
 
-void Camera::SetRotation(Vector3 rotation)
+void Camera::SetRotation(const Vector3& rotation)
 {
 	mRotation = rotation;
 }
 
-void Camera::SetRotation(float x, float y, float z)
+void Camera::SetPosition(const Vector3& position)
 {
-	mRotation = Vector3(x, y, z);
-}
+	mOffset = Vector3((float)(int)position.x, (float)(int)position.y, (float)(int)position.z);
+	mPosition = Vector3(position.x - mOffset.x, position.y - mOffset.y, position.z - mOffset.z);
 
-void Camera::SetRotationX(float x)
-{ 
-	mRotation.x = x;
-}
+	mOffset.x = Math::Clamp(mOffset.x, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+	mOffset.y = Math::Clamp(mOffset.y, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+	mOffset.z = Math::Clamp(mOffset.z, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
 
-void Camera::SetRotationY(float y)
-{ 
-	mRotation.y = y;
-}
-
-void Camera::SetRotationZ(float z)
-{ 
-	mRotation.z = z;
-}
-
-void Camera::SetPosition(Vector3 position)
-{
-	mPosition = position;
-}
-
-void Camera::SetPosition(float x, float y, float z)
-{
-	mPosition = Vector3(x, y, z);
+	if (mOffset.x == -FLOAT_MAX_NUMBER(2) || mOffset.x == FLOAT_MAX_NUMBER(2)) mPosition.x = 0.0f;
+	if (mOffset.y == -FLOAT_MAX_NUMBER(2) || mOffset.y == FLOAT_MAX_NUMBER(2)) mPosition.y = 0.0f;
+	if (mOffset.z == -FLOAT_MAX_NUMBER(2) || mOffset.z == FLOAT_MAX_NUMBER(2)) mPosition.z = 0.0f;
 }
 
 void Camera::SetPositionX(float x)
 {
-	mPosition.x = x;
+	mOffset.x = (float)(int)x;
+	mPosition.x = x - mOffset.x;
+
+	mOffset.x = Math::Clamp(mOffset.x, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+
+	if (mOffset.x == -FLOAT_MAX_NUMBER(2) || mOffset.x == FLOAT_MAX_NUMBER(2)) mPosition.x = 0.0f;
 }
 
 void Camera::SetPositionY(float y)
 {
-	mPosition.y = y;
+	mOffset.y = (float)(int)y;
+	mPosition.y = y - mOffset.y;
+
+	mOffset.y = Math::Clamp(mOffset.y, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+
+	if (mOffset.y == -FLOAT_MAX_NUMBER(2) || mOffset.y == FLOAT_MAX_NUMBER(2)) mPosition.y = 0.0f;
 }
 
 void Camera::SetPositionZ(float z)
 {
-	mPosition.z = z;
+	mOffset.z = (float)(int)z;
+	mPosition.z = z - mOffset.z;
+
+	mOffset.z = Math::Clamp(mOffset.z, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+
+	if (mOffset.z == -FLOAT_MAX_NUMBER(2) || mOffset.z == FLOAT_MAX_NUMBER(2)) mPosition.z = 0.0f;
 }
 
-void Camera::Rotate(Vector3 f)
+void Camera::SetRotationX(float x)
+{
+	mRotation.x = x;
+}
+
+void Camera::SetRotationY(float y)
+{
+	mRotation.y = y;
+}
+
+void Camera::SetRotationZ(float z)
+{
+	mRotation.z = z;
+}
+
+void Camera::Rotate(const Vector3& f)
 {
 	mRotation += f;
 }
 
-void Camera::Move(Vector3 f)
+void Camera::Move(const Vector3& v)
 {
-	mPosition += f;
+	mPosition += v;
+
+	if (mPosition.x >= 1.0f || mPosition.x <= -1.0f)
+	{
+		mOffset.x += (int)mPosition.x;
+		mPosition.x -= (int)mPosition.x;
+	}
+
+	if (mPosition.y >= 1.0f || mPosition.y <= -1.0f)
+	{
+		mOffset.y += (int)mPosition.y;
+		mPosition.y -= (int)mPosition.y;
+	}
+
+	if (mPosition.z >= 1.0f || mPosition.z <= -1.0f)
+	{
+		mOffset.z += (int)mPosition.z;
+		mPosition.z -= (int)mPosition.z;
+	}
+
+	mOffset.x = Math::Clamp(mOffset.x, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+	mOffset.y = Math::Clamp(mOffset.y, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+	mOffset.z = Math::Clamp(mOffset.z, -FLOAT_MAX_NUMBER(2), FLOAT_MAX_NUMBER(2));
+
+	if (mOffset.x == -FLOAT_MAX_NUMBER(2) || mOffset.x == FLOAT_MAX_NUMBER(2)) mPosition.x = 0.0f;
+	if (mOffset.y == -FLOAT_MAX_NUMBER(2) || mOffset.y == FLOAT_MAX_NUMBER(2)) mPosition.y = 0.0f;
+	if (mOffset.z == -FLOAT_MAX_NUMBER(2) || mOffset.z == FLOAT_MAX_NUMBER(2)) mPosition.z = 0.0f;
 }
 
 void Camera::Update()
@@ -184,20 +236,10 @@ void Camera::Update()
 		mAspectRatio = width / height;
 	}
 
-	if (mRotation.x > 90.0f)
-		mRotation.x = 90.0f;
-	if (mRotation.x < -90.0f)
-		mRotation.x = -90.0f;
+	Quaternion q = Quaternion::Euler(Vector3::ConvertToRadians(mRotation));
+	Vector3 forward = Vector3::Rotate(Vector3(0.0f, 0.0f, 1.0f), q);
+	Vector3 up = Vector3::Rotate(Vector3(0.0f, 1.0f, 0.0f), q);
 
-	XMVECTOR position = mPosition;
-	XMVECTOR rotation = Vector3::ConvertToRadians(mRotation);
-
-	XMVECTOR q = XMQuaternionRotationRollPitchYawFromVector(rotation);
-	XMVECTOR forward = XMVector3Rotate(XMVectorSet(0, 0, 1, 1), q);
-	XMVECTOR up = XMVector3Rotate(XMVectorSet(0, 1, 0, 1), q);
-
-	XMVECTOR target = forward + position;
-	
-	mProj = XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mFarZ, mNearZ);
-	mView = XMMatrixLookAtLH(position, target, up);
+	mProj = DirectX::XMMatrixPerspectiveFovLH(mFOV, mAspectRatio, mFarZ, mNearZ);
+	mView = DirectX::XMMatrixLookAtLH(mPosition, mPosition + forward, up);
 }

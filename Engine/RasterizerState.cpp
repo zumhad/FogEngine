@@ -8,13 +8,13 @@ RasterizerState::RasterizerState()
 	mRasterizerState = 0;
 }
 
-void RasterizerState::Create(RasterizerStateType type)
+void RasterizerState::Create(Type type)
 {
 	D3D11_RASTERIZER_DESC desc = {};
 
 	switch (type)
 	{
-		case RasterizerStateType::Default:
+		case Type::Default:
 		{
 			desc.FillMode = D3D11_FILL_SOLID;
 			desc.CullMode = D3D11_CULL_BACK;
@@ -25,21 +25,21 @@ void RasterizerState::Create(RasterizerStateType type)
 			break;
 		}
 
-		case RasterizerStateType::Shadow:
+		case Type::Shadow:
 		{
 			desc.FillMode = D3D11_FILL_SOLID;
 			desc.CullMode = D3D11_CULL_FRONT;
 			desc.FrontCounterClockwise = false;
 			desc.DepthClipEnable = false;
 			desc.ScissorEnable = true;
-			desc.DepthBias = -100000;
-			//desc.SlopeScaledDepthBias = -2.1f;
+			//desc.DepthBias = -10000;
+			//desc.SlopeScaledDepthBias = -1.5f;
 			//desc.DepthBiasClamp = -0.01f;
 
 			break;
 		}
 
-		case RasterizerStateType::Skybox:
+		case Type::Skybox:
 		{
 			desc.FillMode = D3D11_FILL_SOLID;
 			desc.CullMode = D3D11_CULL_FRONT;

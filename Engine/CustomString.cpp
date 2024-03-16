@@ -3,42 +3,26 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Color.h"
+#include "Utility.h"
+#include "MathHelper.h"
 
 #include <windows.h>
 
 using namespace std;
-
-String::String(CHAR ch)
-{
-	const CHAR* str = &ch;
-
-	mStr.resize(1);
-
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, mStr.data(), 1);
-}
 
 String::String(WCHAR ch)
 {
 	mStr += ch;
 }
 
-String::String(const CHAR* str)
+String::operator WCHAR* ()
 {
-	int size = (int)std::strlen(str);
-
-	mStr.resize(size);
-
-	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, str, -1, mStr.data(), size);
+	return mStr.data();
 }
 
-String::operator const char* ()
+String::operator const WCHAR* () const
 {
-	return GetCHAR();
-}
-
-String::operator const wchar_t* ()
-{
-	return GetWCHAR();
+	return mStr.data();
 }
 
 String& String::operator= (const String& str)
@@ -111,21 +95,6 @@ void String::Delete(int start, int end)
 	mStr.erase(start, end - start + 1);
 }
 
-CHAR* String::GetCHAR()
-{
-	int size = (int)mStr.size();
-	mBuffer.resize(size);
-
-	WideCharToMultiByte(CP_ACP, 0, mStr.c_str(), -1, mBuffer.data(), size + 1, 0, 0);
-
-	return mBuffer.data();
-}
-
-WCHAR* String::GetWCHAR()
-{
-	return mStr.data();
-}
-
 int String::Find(const String& str, const String& f)
 {
 	return (int)str.mStr.find(f.mStr);
@@ -138,78 +107,94 @@ void String::Copy(String& dest, const String& src, int start, int end)
 
 String String::ToString(int _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[12];
+	swprintf_s(buffer, 12, L"%d", _Val);
+
+	return String(buffer);
 }
 
 String String::ToString(unsigned int _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[11];
+	swprintf_s(buffer, 11, L"%du", _Val);
+
+	return String(buffer);
 }
 
-String String::ToString(long _Val)
+String String::ToString(short _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[7];
+	swprintf_s(buffer, 7, L"%hd", _Val);
+
+	return String(buffer);
 }
 
-String String::ToString(unsigned long _Val)
+String String::ToString(unsigned short _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[6];
+	swprintf_s(buffer, 6, L"%hu", _Val);
+
+	return String(buffer);
 }
 
 String String::ToString(long long _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[21];
+	swprintf_s(buffer, 21, L"%lld", _Val);
+
+	return String(buffer);
 }
 
 String String::ToString(unsigned long long _Val)
 {
-	return to_wstring(_Val).c_str();
+	wchar_t buffer[21];
+	swprintf_s(buffer, 21, L"%llu", _Val);
+
+	return String(buffer);
 }
 
-String String::ToString(double _Val)
+String String::ToString(float _Val, int precision)
 {
-	return to_wstring(_Val).c_str();
+	FOG_ASSERT(Math::Abs(_Val) <= FLOAT_MAX_NUMBER(precision));
+	FOG_ASSERT(precision >= 0 && precision <= FLOAT_MAX_DIGITS);
+
+	wchar_t buffer0[6];
+	swprintf_s(buffer0, 6, L"%%%d.%df", FLOAT_MAX_DIGITS - precision, precision);
+
+	wchar_t buffer1[11];
+	swprintf_s(buffer1, 9, buffer0, _Val);
+	return String(buffer1);
 }
 
-String String::ToString(float _Val)
+String String::ToString(const Vector3& _Val, int precision)
 {
-	return to_wstring(_Val).c_str();
+	String x = ToString(_Val.x, precision);
+	String y = ToString(_Val.y, precision);
+	String z = ToString(_Val.z, precision);
+	String res = L"(" + x + L", " + y + L", " + z + L")";
+
+	return res;
 }
 
-String String::ToString(long double _Val)
+String String::ToString(const Vector4& _Val, int precision)
 {
-	return to_wstring(_Val).c_str();
+	String x = ToString(_Val.x, precision);
+	String y = ToString(_Val.y, precision);
+	String z = ToString(_Val.z, precision);
+	String w = ToString(_Val.w, precision);
+	String res = L"(" + x + L", " + y + L", " + z + L", " + w + L")";
+
+	return res;
 }
 
-String String::ToString(const Vector3& _Val)
+String String::ToString(const Color& _Val, int precision)
 {
-	wstring x = to_wstring(_Val.x);
-	wstring y = to_wstring(_Val.y);
-	wstring z = to_wstring(_Val.z);
-	wstring res = L"(" + x + L", " + y + L", " + z + L")";
+	String r = ToString(_Val.r, precision);
+	String g = ToString(_Val.g, precision);
+	String b = ToString(_Val.b, precision);
+	String res = L"(" + r + L", " + g + L", " + b + L")";
 
-	return res.c_str();
-}
-
-String String::ToString(const Vector4& _Val)
-{
-	wstring x = to_wstring(_Val.x);
-	wstring y = to_wstring(_Val.y);
-	wstring z = to_wstring(_Val.z);
-	wstring w = to_wstring(_Val.w);
-	std::wstring res = L"(" + x + L", " + y + L", " + z + L", " + w + L")";
-
-	return res.c_str();
-}
-
-String String::ToString(const Color& _Val)
-{
-	wstring r = to_wstring(_Val.r);
-	wstring g = to_wstring(_Val.g);
-	wstring b = to_wstring(_Val.b);
-	wstring res = L"(" + r + L", " + g + L", " + b + L")";
-
-	return res.c_str();
+	return res;
 }
 
 void String::Clear()
@@ -225,4 +210,67 @@ FOG_API bool operator== (const String& left, const WCHAR* right)
 FOG_API bool operator== (const String& left, const String& right)
 {
 	return left.mStr == right.mStr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+StringConverter::StringConverter(CHAR ch)
+{
+	mString1 = ch;
+
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mString1.data(), -1, mString2.data(), 1);
+}
+
+StringConverter::StringConverter(const CHAR* str)
+{
+	mString1 = str;
+
+	mString2.resize(mString1.size());
+
+	MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, mString1.data(), -1, mString2.data(), (int)mString2.size());
+}
+
+StringConverter::StringConverter(WCHAR ch)
+{
+	mString2 = ch;
+
+	WideCharToMultiByte(CP_ACP, MB_PRECOMPOSED, mString2.data(), -1, mString1.data(), 1, 0, 0);
+}
+
+StringConverter::StringConverter(const WCHAR* str)
+{
+	mString2 = str;
+
+	mString1.resize(mString2.size());
+
+	WideCharToMultiByte(CP_ACP, 0, mString2.data(), -1, mString1.data(), (int)mString1.size(), 0, 0);
+}
+
+StringConverter::StringConverter(const String& str)
+{
+	mString2 = str;
+
+	mString1.resize(mString2.size());
+
+	WideCharToMultiByte(CP_ACP, 0, mString2.data(), -1, mString1.data(), (int)mString1.size(), 0, 0);
+}
+
+StringConverter::operator CHAR* ()
+{
+	return mString1.data();
+}
+
+StringConverter::operator const CHAR* () const
+{
+	return mString1.data();
+}
+
+StringConverter::operator WCHAR* ()
+{
+	return mString2.data();
+}
+
+StringConverter::operator const WCHAR* () const
+{
+	return mString2.data();
 }

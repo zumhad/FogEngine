@@ -10,7 +10,7 @@
 #include <d3dcompiler.h>
 #include <string>
 
-void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3D10Blob** blob)
+void Shader::Compile(const String& fileName, const String& entryPoint, const String& shaderModel, ID3D10Blob** blob)
 {
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
 
@@ -26,21 +26,21 @@ void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3
 
 	Array<D3D_SHADER_MACRO> define;
 
-	String temp0 = String::ToString(MAX_POINT_LIGHT);
+	StringConverter temp0 = String::ToString(MAX_POINT_LIGHT);
 	define.Add({ "MAX_POINT_LIGHT", temp0 });
 
-	String temp1 = String::ToString(MAX_CASCADES);
+	StringConverter temp1 = String::ToString(MAX_CASCADES);
 	define.Add({ "MAX_CASCADES", temp1 });
 
 	define.Add({ 0, 0 });
 
 	ID3DBlob* pErrorBlob = 0;
-	FOG_TRACE(D3DCompileFromFile(fileName.GetWCHAR(), define.Data(), &include, entryPoint.GetCHAR(), shaderModel.GetCHAR(), dwShaderFlags, 0, blob, &pErrorBlob));
+	FOG_TRACE(D3DCompileFromFile(fileName, define.Data(), &include, StringConverter(entryPoint), StringConverter(shaderModel), dwShaderFlags, 0, blob, &pErrorBlob));
 
 	if (pErrorBlob)
 	{
-		String str = (const CHAR*)pErrorBlob->GetBufferPointer();
-		FOG_ERROR(str);
+		StringConverter str = (const CHAR*)pErrorBlob->GetBufferPointer();
+		FOG_ERROR(String(str));
 	}
 
 	SAFE_RELEASE(pErrorBlob)
@@ -49,12 +49,12 @@ void Shader::Compile(String fileName, String entryPoint, String shaderModel, ID3
 SHADERAPI ShaderInclude::Open(D3D_INCLUDE_TYPE, LPCSTR pFileName, LPCVOID, LPCVOID* ppData, UINT* pBytes)
 {
 	String includePath = PathHelper::GetAssetsPath();
-	includePath += String(pFileName);
+	includePath += StringConverter(pFileName);
 
 	if (File::Exists(includePath) == false)
 		return E_FAIL;
 
-	File file(includePath, FileOpenMode::Read);
+	File file(includePath, File::Mode::Read);
 	*pBytes = UINT(file.Size());
 	UINT* data = (UINT*)(std::malloc(*pBytes));
 	file.Read(data, *pBytes);

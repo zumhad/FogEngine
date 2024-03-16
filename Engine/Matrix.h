@@ -5,6 +5,8 @@
 
 #include "Core.h"
 
+#include "Vector4.h"
+
 #include <DirectXMath.h>
 
 class FOG_API Matrix
@@ -34,7 +36,12 @@ public:
     Matrix operator+ () const;
     Matrix operator- () const;
 
-    static Matrix Inverse(Matrix& _m);
+    static Matrix Inverse(const Matrix& _m);
+    static Matrix Scaling(const Vector3& _v);
+    static Matrix Scaling(float x, float y, float z);
+    static Matrix Translation(const Vector3& _v);
+    static Matrix Translation(float x, float y, float z);
+    static Matrix AffineTransformation(const Vector3& position, const Vector3& rotation, const Vector3& scale);
 
 public:
     union
@@ -47,6 +54,7 @@ public:
             float _30, _31, _32, _33;
         };
         float m[4][4];
+        Vector4 v[4];
     };
 };
 

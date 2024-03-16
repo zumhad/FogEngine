@@ -5,8 +5,6 @@
 #include "Utility.h"
 #include "Image.h"
 
-using namespace DirectX;
-
 void Texture::Release()
 {
     SAFE_RELEASE(mTexture);
@@ -17,7 +15,7 @@ Texture::Texture()
     mTexture = 0;
 }
 
-void Texture::Create(String name)
+void Texture::Create(const String& name)
 {
 	int width, height;
 	unsigned char* data = Image::Load(name, width, height);

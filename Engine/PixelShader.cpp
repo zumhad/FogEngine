@@ -15,7 +15,7 @@ void PixelShader::Release()
 	SAFE_RELEASE(mPixelShader);
 }
 
-void PixelShader::Create(String name, String entry)
+void PixelShader::Create(const String& name, const String& entry)
 {
 	SAFE_RELEASE(mPixelShader);
 

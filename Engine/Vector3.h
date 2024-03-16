@@ -5,6 +5,7 @@
 #include <DirectXMath.h>
 
 class FOG_API Quaternion;
+class FOG_API Matrix;
 
 class FOG_API Vector3
 {
@@ -42,8 +43,12 @@ public:
     static const Vector3& Forward();
     static const Vector3& Backward();
 
+    static Vector3 Dot(const Vector3& v1, const Vector3& v2);
+    static Vector3 Max(const Vector3& v1, const Vector3& v2);
+    static Vector3 Round(const Vector3& v);
+    static Vector3 Transform(const Vector3& v, const Matrix& m);
     static float Angle(const Vector3& v1, const Vector3& v2);
-    static float Distance(const Vector3& v1, const Vector3& v2);
+    static float Lenght(const Vector3& v);
     static Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t);
     static Vector3 Rotate(const Vector3& v, const Quaternion& q);
     static Vector3 Normalize(const Vector3& v);

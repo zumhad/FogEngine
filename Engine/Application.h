@@ -22,7 +22,7 @@ public:
     static void SetSceneY(int y);
     static void SetSceneWidth(int width);
     static void SetSceneHeight(int height);
-    static void SetSceneColor(Color color);
+    static void SetSceneColor(const Color& color);
 
     static int GetSceneX();
     static int GetSceneY();
@@ -30,7 +30,7 @@ public:
     static int GetSceneHeight();
     static Color GetSceneColor();
 
-    static void SetEditorColor(Color color);
+    static void SetEditorColor(const Color& color);
 
     static int GetEditorWidth();
     static int GetEditorHeight();
@@ -38,7 +38,7 @@ public:
 
     static void SetGameWidth(int width);
     static void SetGameHeight(int height);
-    static void SetGameColor(Color color);
+    static void SetGameColor(const Color& color);
 
     static int GetGameWidth();
     static int GetGameHeight();
@@ -55,14 +55,18 @@ public:
     static void Close();
 
     static void SetOutlineWidth(int width);
-    static void SetOutlineColor(Color color);
+    static void SetOutlineColor(const Color& color);
 
     static int GetCascadeResolution();
     static void SetCascadeResolution(int resolution);
     static void SetCascadeSplit(int index, float split);
+    static float GetCascadeSplit(int index);
     static void SetCascadeBias(float bias);
+    static float GetCascadeBias();
     static void SetCascadeBlend(float blend);
     static float GetCascadeBlend();
+    static void SetNormalBias(float bias);
+    static float GetNormalBias();
 
     static void SaveProject();
     static void OpenFileDialog();
@@ -76,18 +80,17 @@ public:
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
-    static int Run(APPCLASS app);
+    static int Run(const APPCLASS& app);
     static void Shotdown();
     static void CheckDebug();
     static void InitWindow();
     static void AdjustMaxClient(RECT& rect);
     static LRESULT HitTest();
-    static void InitProp(APPCLASS app);
-    static void InitApp(APPCLASS app);
-    static void InitModules(APPCLASS app);
+    static void InitProp(const APPCLASS& app);
+    static void InitApp(const APPCLASS& app);
+    static void InitModules(const APPCLASS& app);
     static HWND GetHWND() { return mHwnd; }
     static void InitBuffers();
-    //static bool IsMouseActivate();
 
 private:
     static bool mIsGame;
@@ -136,7 +139,7 @@ private:
 class FOG_API Engine
 {
 public:
-    static int Start(APPCLASS app)
+    static int Start(const APPCLASS& app)
     {
         int exitCode = Application::Run(app);
         Application::Shotdown();

@@ -19,6 +19,8 @@ class FOG_API Matrix;
 class FOG_API SkyboxPass;
 class FOG_API OutlinePass;
 class FOG_API PrePass;
+class FOG_API Picking;
+class FOG_API Object;
 
 struct FOG_API APPCLASS;
 
@@ -36,29 +38,27 @@ class FOG_API Camera
 	friend class SkyboxPass;
 	friend class OutlinePass;
 	friend class PrePass;
+	friend class Picking;
+	friend class Object;
 
 public:
-	static void SetPosition(Vector3 position);
-	static void SetPosition(float x, float y, float z);
+	static void SetPosition(const Vector3& position);
+	static void SetRotation(const Vector3& rotation);
+
 	static void SetPositionX(float x);
 	static void SetPositionY(float y);
 	static void SetPositionZ(float z);
 
-	static void SetRotation(Vector3 rotation);
-	static void SetRotation(float x, float y, float z);
 	static void SetRotationX(float x);
 	static void SetRotationY(float y);
 	static void SetRotationZ(float z);
 
-	static void LookAt(Vector3 pos);
-	static void Move(Vector3 v);
-	static void Rotate(Vector3 v);
-	static float GetRotateX();
-	static float GetRotateY();
-	static float GetRotateZ();
+	static void LookAt(const Vector3& pos);
+	static void Move(const Vector3& v);
+	static void Rotate(const Vector3& v);
 
-	static Vector3& GetPosition();
-	static Vector3& GetRotation();
+	static Vector3 GetPosition();
+	static Vector3 GetRotation();
 	static Vector3 GetDirection();
 
 	static void SetFOV(float fov);
@@ -71,12 +71,15 @@ public:
 	static float GetAspectRatio();
 
 private:
+	static Vector3& GetOffsetPosition();
+	static Vector3& GetRealPosition();
 	static Matrix& GetViewMatrix();
 	static Matrix& GetProjMatrix();
-	static void Setup(APPCLASS& app);
+	static void Setup(const APPCLASS& app);
 	static void Update();
 
 private:
+	static Vector3 mOffset;
 	static Vector3 mPosition;
 	static Vector3 mRotation;
 

@@ -17,6 +17,17 @@
 #define BIT_7 0b01000000
 #define BIT_8 0b10000000
 
+#define FLOAT_TEST_PRECISION_0(x) (x == 0 ? 8388608.0f : 0.0f)
+#define FLOAT_TEST_PRECISION_1(x) (x == 1 ? 524287.0f : FLOAT_TEST_PRECISION_0(x))
+#define FLOAT_TEST_PRECISION_2(x) (x == 2 ? 65535.0f : FLOAT_TEST_PRECISION_1(x))
+#define FLOAT_TEST_PRECISION_3(x) (x == 3 ? 8192.0f : FLOAT_TEST_PRECISION_2(x))
+#define FLOAT_TEST_PRECISION_4(x) (x == 4 ? 511.0f : FLOAT_TEST_PRECISION_3(x))
+#define FLOAT_TEST_PRECISION_5(x) (x == 5 ? 63.0f : FLOAT_TEST_PRECISION_4(x))
+#define FLOAT_TEST_PRECISION_6(x) (x == 6 ? 7.0f : FLOAT_TEST_PRECISION_5(x))
+#define FLOAT_MAX_NUMBER(x) FLOAT_TEST_PRECISION_6(x)
+
+#define FLOAT_MAX_DIGITS 7
+
 #define SAFE_DELETE(x) if(x) { delete x; x = 0; }
 #define SAFE_DELETE_ARR(x) if(x) { delete[] x; x = 0; }
 #define SAFE_RELEASE(x) if(x) { x->Release(); x = 0; }

@@ -61,9 +61,9 @@ float Math::Clamp(float value, float min, float max)
     return value;
 }
 
-float Math::Floor(float f)
+int Math::Floor(float f)
 {
-    return std::floor(f);
+    return (int)std::floor(f);
 }
 
 int Math::Ceil(float f)
@@ -71,9 +71,9 @@ int Math::Ceil(float f)
     return (int)std::ceil(f);
 }
 
-float Math::Round(float f)
+int Math::Round(float f)
 {
-    return std::round(f);
+    return (int)std::round(f);
 }
 
 float Math::Repeat(float t, float length)
@@ -142,7 +142,7 @@ float Math::SmoothDamp(float current, float target, float& currentVelocity, floa
     return num8;
 }
 
-float Math::Float16ToFloat32(unsigned short float16)
+float Math::F16ToF32(unsigned short float16)
 {
     unsigned int sign = float16 >> 15;
     unsigned int exponent = (float16 >> 10) & 0x1F;
@@ -178,12 +178,23 @@ float Math::Float16ToFloat32(unsigned short float16)
     return *((float*)&float32);
 }
 
-float Math::StringToFloat(String s)
+float Math::Round(float f, int presicion)
 {
-    return (float)std::atof(s);
+    float div = (float)std::pow(10, presicion);
+    return std::round(f * div) / div;
+}
+
+float Math::StringToFloat(const String& s)
+{
+    return std::wcstof(s, 0);
 }
 
 float Math::Log2(float x)
 {
     return std::log2(x);
+}
+
+float Math::PI()
+{
+    return mPI;
 }

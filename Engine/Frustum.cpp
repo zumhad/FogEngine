@@ -4,17 +4,14 @@
 #include "Quaternion.h"
 #include "CustomString.h"
 #include "ShadowPass.h"
-
-#include <d3d11.h>
-#include <limits>
+#include "Matrix3.h"
 
 using namespace DirectX;
-using namespace std;
 
 Frustum::Frustum()
 {
     mOrigin = Vector3(0.0f, 0.0f, 0.0f);
-    mOrientation = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+    mOrientation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
     mRightSlope = 1.0f;
     mLeftSlope = -1.0f;
@@ -24,39 +21,39 @@ Frustum::Frustum()
     mFar = 1.0f;
 }
 
-void Frustum::Update(Matrix& view, Matrix& proj)
+void Frustum::Update(const Matrix& view, const Matrix& proj)
 {
     Create(proj);
 
-    Matrix inv = XMMatrixInverse(0, view);
+    Matrix inv = Matrix::Inverse(view);
     Transform(inv);
 }
 
 void Frustum::GetCorners(Vector3* corners)
 {
-    XMVECTOR vRightTop = XMVectorSet(mRightSlope, mTopSlope, 1.0f, 0.0f);
-    XMVECTOR vRightBottom = XMVectorSet(mRightSlope, mBottomSlope, 1.0f, 0.0f);
-    XMVECTOR vLeftTop = XMVectorSet(mLeftSlope, mTopSlope, 1.0f, 0.0f);
-    XMVECTOR vLeftBottom = XMVectorSet(mLeftSlope, mBottomSlope, 1.0f, 0.0f);
-    XMVECTOR vNear = XMVectorReplicatePtr(&mNear);
-    XMVECTOR vFar = XMVectorReplicatePtr(&mFar);
+    Vector3 vRightTop = Vector3(mRightSlope, mTopSlope, 1.0f);
+    Vector3 vRightBottom = Vector3(mRightSlope, mBottomSlope, 1.0f);
+    Vector3 vLeftTop = Vector3(mLeftSlope, mTopSlope, 1.0f);
+    Vector3 vLeftBottom = Vector3(mLeftSlope, mBottomSlope, 1.0f);
+    Vector3 vNear = Vector3(mNear);
+    Vector3 vFar = Vector3(mFar);
 
-    corners[0] = XMVectorMultiply(vLeftTop, vNear);
-    corners[1] = XMVectorMultiply(vRightTop, vNear);
-    corners[2] = XMVectorMultiply(vRightBottom, vNear);
-    corners[3] = XMVectorMultiply(vLeftBottom, vNear);
-    corners[4] = XMVectorMultiply(vLeftTop, vFar);
-    corners[5] = XMVectorMultiply(vRightTop, vFar);
-    corners[6] = XMVectorMultiply(vRightBottom, vFar);
-    corners[7] = XMVectorMultiply(vLeftBottom, vFar);
+    corners[0] = vLeftTop * vNear;
+    corners[1] = vRightTop * vNear;
+    corners[2] = vRightBottom * vNear;
+    corners[3] = vLeftBottom * vNear;
+    corners[4] = vLeftTop * vFar;
+    corners[5] = vRightTop * vFar;
+    corners[6] = vRightBottom * vFar;
+    corners[7] = vLeftBottom * vFar;
 
     for (size_t i = 0; i < 8; ++i)
     {
-        corners[i] = XMVectorAdd(XMVector3Rotate(corners[i], mOrientation), mOrigin);
+        corners[i] = Vector3::Rotate(corners[i], mOrientation) + mOrigin;
     }
 }
 
-void Frustum::Create(Matrix& proj)
+void Frustum::Create(const Matrix& proj)
 {
     static Vector4 homogenousPoints[6] =
     {
@@ -68,67 +65,54 @@ void Frustum::Create(Matrix& proj)
         {{{  0.0f,  0.0f, 1.0f, 1.0f }}}
     };
 
-    XMMATRIX matInverse = XMMatrixInverse(0, proj);
+    Matrix matInverse = Matrix::Inverse(proj);
 
-    XMVECTOR points[6];
+    Vector4 points[6];
 
     for (int i = 0; i < 6; ++i)
     {
-        points[i] = XMVector4Transform(homogenousPoints[i], matInverse);
+        points[i] = Vector4::Transform(homogenousPoints[i], matInverse);
     }
 
     mOrigin = Vector3(0.0f, 0.0f, 0.0f);
-    mOrientation = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
+    mOrientation = Quaternion(0.0f, 0.0f, 0.0f, 1.0f);
 
-    points[0] = XMVectorMultiply(points[0], XMVectorReciprocal(XMVectorSplatZ(points[0])));
-    points[1] = XMVectorMultiply(points[1], XMVectorReciprocal(XMVectorSplatZ(points[1])));
-    points[2] = XMVectorMultiply(points[2], XMVectorReciprocal(XMVectorSplatZ(points[2])));
-    points[3] = XMVectorMultiply(points[3], XMVectorReciprocal(XMVectorSplatZ(points[3])));
+    points[0] = points[0] * Vector4::Reciprocal(Vector4(points[0].z));
+    points[1] = points[1] * Vector4::Reciprocal(Vector4(points[1].z));
+    points[2] = points[2] * Vector4::Reciprocal(Vector4(points[2].z));
+    points[3] = points[3] * Vector4::Reciprocal(Vector4(points[3].z));
 
-    mRightSlope = XMVectorGetX(points[0]);
-    mLeftSlope = XMVectorGetX(points[1]);
-    mTopSlope = XMVectorGetY(points[2]);
-    mBottomSlope = XMVectorGetY(points[3]);
+    mRightSlope = points[0].x;
+    mLeftSlope = points[1].x;
+    mTopSlope = points[2].y;
+    mBottomSlope = points[3].y;
 
-    points[4] = XMVectorMultiply(points[4], XMVectorReciprocal(XMVectorSplatW(points[4])));
-    points[5] = XMVectorMultiply(points[5], XMVectorReciprocal(XMVectorSplatW(points[5])));
+    points[4] = points[4] * Vector4::Reciprocal(Vector4(points[4].w));
+    points[5] = points[5] * Vector4::Reciprocal(Vector4(points[5].w));
 
-    mNear = XMVectorGetZ(points[4]);
-    mFar = XMVectorGetZ(points[5]);
+    mNear = points[4].z;
+    mFar = points[5].z;
 }
 
-void Frustum::Transform(Matrix& inv)
+void Frustum::Transform(const Matrix& inv)
 {
-    Vector3 r0 = Vector3(inv.m[0][0], inv.m[0][1], inv.m[0][2]);
-    Vector3 r1 = Vector3(inv.m[1][0], inv.m[1][1], inv.m[1][2]);
-    Vector3 r2 = Vector3(inv.m[2][0], inv.m[2][1], inv.m[2][2]);
-
-    Vector3 n0 = XMVector3Normalize(r0);
-    Vector3 n1 = XMVector3Normalize(r1);
-    Vector3 n2 = XMVector3Normalize(r2);
-
     Matrix m;
-    m.m[0][0] = r0.x;
-    m.m[0][1] = r0.y;
-    m.m[0][2] = r0.z;
-    m.m[1][0] = r1.x;
-    m.m[1][1] = r1.y;
-    m.m[1][2] = r1.z;
-    m.m[2][0] = r2.x;
-    m.m[2][1] = r2.y;
-    m.m[2][2] = r2.z;
+    m.v[0] = Vector4(Vector3::Normalize(inv.v[0]), 0.0f);
+    m.v[1] = Vector4(Vector3::Normalize(inv.v[1]), 0.0f);
+    m.v[2] = Vector4(Vector3::Normalize(inv.v[2]), 0.0f);
+    m.v[3] = Vector4(0.0f, 0.0f, 0.0f, 1.0f);
 
-    XMVECTOR rotation = XMQuaternionRotationMatrix(m);
-    mOrientation = XMQuaternionMultiply(mOrientation, rotation);
+    Quaternion rotation = Quaternion::Rotation(m);
+    mOrientation = mOrientation * rotation;
 
-    mOrigin = XMVector3Transform(mOrigin, inv);
+    mOrigin = Vector3::Transform(mOrigin, inv);
 
-    XMVECTOR dX = XMVector3Dot(r0, r0);
-    XMVECTOR dY = XMVector3Dot(r1, r1);
-    XMVECTOR dZ = XMVector3Dot(r2, r2);
+    Vector3 dX = Vector3::Dot(inv.v[0], inv.v[0]);
+    Vector3 dY = Vector3::Dot(inv.v[1], inv.v[1]);
+    Vector3 dZ = Vector3::Dot(inv.v[2], inv.v[2]);
 
-    XMVECTOR d = XMVectorMax(dX, XMVectorMax(dY, dZ));
-    float scale = Math::Sqrt(XMVectorGetX(d));
+    Vector3 d = Vector3::Max(dX, Vector3::Max(dY, dZ));
+    float scale = Math::Sqrt(d.x);
 
     mNear = mNear * scale;
     mFar = mFar * scale;

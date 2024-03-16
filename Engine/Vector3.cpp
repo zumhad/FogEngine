@@ -3,6 +3,8 @@
 #include "MathHelper.h"
 #include "Timer.h"
 #include "Quaternion.h"
+#include "Utility.h"
+#include "Matrix.h"
 
 using namespace DirectX;
 
@@ -56,78 +58,80 @@ Vector3& Vector3::operator= (const XMFLOAT3& f)
 
 Vector3& Vector3::operator+= (const Vector3& v)
 {
-    *this = XMVectorAdd(*this, v);
+    *this = XMVECTOR(*this) + XMVECTOR(v);
     return *this;
 }
 
 Vector3& Vector3::operator-= (const Vector3& v)
 {
-    *this = XMVectorSubtract(*this, v);
+    *this = XMVECTOR(*this) - XMVECTOR(v);
     return *this;
 }
 
 Vector3& Vector3::operator*= (const Vector3& v)
 {
-    *this = XMVectorMultiply(*this, v);
+    *this = XMVECTOR(*this) * XMVECTOR(v);
     return *this;
 }
 
 Vector3& Vector3::operator*= (float f)
 {
-    *this = XMVectorScale(*this, f);
+    *this = XMVECTOR(*this) * f;
     return *this;
 }
 
 Vector3& Vector3::operator/= (float f)
 {
-    assert(f != 0.0f);
-    *this = XMVectorScale(*this, 1.0f / f);
+    FOG_ASSERT(f != 0.0f);
+
+    *this = XMVECTOR(*this) / f;
+
     return *this;
 }
 
 Vector3 Vector3::operator+ ()
 {
-    return *this;
+    return +XMVECTOR(*this);
 }
 
 Vector3 Vector3::operator- ()
 {
-    return XMVectorNegate(*this);
+    return -XMVECTOR(*this);
 }
 
 Vector3 operator+ (const Vector3& v1, const Vector3& v2)
 {
-    return XMVectorAdd(v1, v2);
+    return XMVECTOR(v1) + XMVECTOR(v2);
 }
 
 Vector3 operator- (const Vector3& v1, const Vector3& v2)
 {
-    return XMVectorSubtract(v1, v2);
+    return XMVECTOR(v1) - XMVECTOR(v2);
 }
 
 Vector3 operator* (const Vector3& v1, const Vector3& v2)
 {
-    return XMVectorMultiply(v1, v2);
+    return XMVECTOR(v1) * XMVECTOR(v2);
 }
 
 Vector3 operator* (const Vector3& v, float f)
 {
-    return XMVectorScale(v, f);
+    return XMVECTOR(v) * f;
 }
 
 Vector3 operator/ (const Vector3& v1, const Vector3& v2)
 {
-    return XMVectorDivide(v1, v2);
+    return XMVECTOR(v1) / XMVECTOR(v2);
 }
 
 Vector3 operator/ (const Vector3& v, float f)
 {
-    return XMVectorScale(v, 1.0f / f);
+    return XMVECTOR(v) / f;
 }
 
 Vector3 operator* (float f, const Vector3& v)
 {
-    return XMVectorScale(v, f);
+    return XMVECTOR(v) * f;
 }
 
 
@@ -181,7 +185,12 @@ const Vector3& Vector3::Backward()
 
 Vector3 Vector3::ConvertToRadians(const Vector3& v)
 {
-    return v * (XM_PI / 180.0f);
+    return v * (Math::PI() / 180.0f);
+}
+
+Vector3 Vector3::Transform(const Vector3& v, const Matrix& m)
+{
+    return XMVector3Transform(v, m);
 }
 
 Vector3 Vector3::SmoothDamp(const Vector3& current, Vector3 target, Vector3& currentVelocity, float smoothTime)
@@ -239,7 +248,7 @@ Vector3 Vector3::SmoothDamp(const Vector3& current, Vector3 target, Vector3& cur
     float outMinusOrig_y = output_y - originalTo.y;
     float outMinusOrig_z = output_z - originalTo.z;
 
-    if (origMinusCurrent_x * outMinusOrig_x + origMinusCurrent_y * outMinusOrig_y + origMinusCurrent_z * outMinusOrig_z > 0)
+    if (origMinusCurrent_x * outMinusOrig_x + origMinusCurrent_y * outMinusOrig_y + origMinusCurrent_z * outMinusOrig_z > 0.0f)
     {
         output_x = originalTo.x;
         output_y = originalTo.y;
@@ -253,9 +262,19 @@ Vector3 Vector3::SmoothDamp(const Vector3& current, Vector3 target, Vector3& cur
     return Vector3(output_x, output_y, output_z);
 }
 
+Vector3 Vector3::Dot(const Vector3& v1, const Vector3& v2)
+{
+    return XMVector3Dot(v1, v2);
+}
+
+Vector3 Vector3::Max(const Vector3& v1, const Vector3& v2)
+{
+    return XMVectorMax(v1, v2);
+}
+
 Vector3 Vector3::ConvertToDegrees(const Vector3& v)
 {
-    return v * (180.0f / XM_PI);
+    return v * (180.0f / Math::PI());
 }
 
 Vector3 Vector3::Normalize(const Vector3& v)
@@ -268,19 +287,24 @@ Vector3 Vector3::Rotate(const Vector3& v, const Quaternion& q)
     return XMVector3Rotate(v, q);
 }
 
+Vector3 Vector3::Round(const Vector3& v)
+{
+    return XMVectorRound(v);
+}
+
 Vector3 Vector3::Lerp(const Vector3& v1, const Vector3& v2, float t)
 {
     return XMVectorLerp(v1, v2, t);
 }
 
-float Vector3::Distance(const Vector3& v1, const Vector3& v2)
+float Vector3::Lenght(const Vector3& v)
 {
-    return XMVectorGetX(XMVector3Length(v2 - v1));
+    return XMVectorGetX(XMVector3Length(v));
 }
 
 float Vector3::Angle(const Vector3& v1, const Vector3& v2)
 {
-    XMVECTOR v = XMVector3AngleBetweenVectors(v1, v2);
+    Vector3 v = XMVector3AngleBetweenVectors(v1, v2);
 
-    return Math::ConvertToDegrees(XMVectorGetX(v));
+    return Math::ConvertToDegrees(v.x);
 }
