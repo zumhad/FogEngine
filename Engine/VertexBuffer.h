@@ -10,11 +10,15 @@
 
 class FOG_API TextureMap;
 class FOG_API Button;
+class FOG_API BoundingBox;
+class FOG_API Mesh;
 
 class FOG_API VertexBuffer
 {
 	friend class TextureMap;
 	friend class Button;
+	friend class BoundingBox;
+	friend class Mesh;
 
 private:
 	VertexBuffer();
@@ -23,15 +27,15 @@ private:
 	void Create(const Array<T>& arr);
 
 	ID3D11Buffer* const* Get();
-	UINT* Stride();
-	UINT* Offset();
+	unsigned int GetStride();
+	unsigned int GetOffset();
 	void Release();
 
 private:
 	ID3D11Buffer* mVertexBuffer;
 
-	UINT mStride;
-	UINT mOffset;
+	unsigned int mStride;
+	unsigned int mOffset;
 };
 
 template <typename T>

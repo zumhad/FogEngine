@@ -52,9 +52,13 @@ PS_OUTPUT PS(VS_OUTPUT input)
 {
     PS_OUTPUT output;
 
+    int2 uv;
+    gTexturePositionMaterial.GetDimensions(uv.x, uv.y);
+    uv *= input.uv;
+
     float4 color = gTextureColor.Sample(gSampler, input.uv);
     float depth = gTextureDepth.Sample(gSampler, input.uv);
-    uint4 positionMaterial = gTexturePositionMaterial.Load(int3(input.uv.x * gWidth, input.uv.y * gHeight, 0));
+    uint4 positionMaterial = gTexturePositionMaterial.Load(int3(uv, 0));
     float4 normalLighting = gTextureNormalLighting.Sample(gSampler, input.uv);
 
     float3 position = f16tof32(positionMaterial.rgb);

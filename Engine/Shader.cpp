@@ -12,14 +12,10 @@
 
 void Shader::Compile(const String& fileName, const String& entryPoint, const String& shaderModel, ID3D10Blob** blob)
 {
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS;
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS | D3DCOMPILE_WARNINGS_ARE_ERRORS | D3DCOMPILE_OPTIMIZATION_LEVEL3;
 
 #ifdef _DEBUG
 	dwShaderFlags |= D3DCOMPILE_DEBUG;
-	//dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL0;
-#else
-	dwShaderFlags |= D3DCOMPILE_OPTIMIZATION_LEVEL3;
 #endif
 
 	ShaderInclude include;

@@ -53,7 +53,6 @@ private:
 	static void CreateOffsetsAndScales(int index);
 	static Matrix CreateSplits(const Vector3& dir);
 	static void CreateMatrix(const Vector3& dir);
-	static void UpdateViewport();
 
 	static Matrix GetMatrix();
 	static Vector4 GetOffset(int index);

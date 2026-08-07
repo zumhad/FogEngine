@@ -6,6 +6,8 @@
 #include "Color.h"
 #include "Matrix.h"
 
+#include <d3d11.h>
+
 enum class TypeObject
 {
 	DirectionLight,
@@ -75,4 +77,7 @@ protected:
 
 	int mData;
 	int mID;
+
+	ID3D11Query* mQuery;
+	bool mQueryReady;
 };

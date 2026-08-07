@@ -1,5 +1,7 @@
 #include "Texture.h"
 
+#pragma warning(disable : 6387)
+
 #include "Direct3D.h"
 #include "PathHelper.h"
 #include "Utility.h"

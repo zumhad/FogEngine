@@ -13,6 +13,7 @@ class FOG_API SkyboxPass;
 class FOG_API OutlinePass;
 class FOG_API PrePass;
 class FOG_API ShadowPass;
+class FOG_API DebugPass;
 
 class FOG_API PixelShader
 {
@@ -22,6 +23,7 @@ class FOG_API PixelShader
 	friend class OutlinePass;
 	friend class PrePass;
 	friend class ShadowPass;
+	friend class DebugPass;
 
 private:
 	PixelShader();

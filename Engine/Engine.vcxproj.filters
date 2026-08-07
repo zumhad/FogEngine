@@ -122,6 +122,10 @@
     <ClCompile Include="PrePass.cpp" />
     <ClCompile Include="DepthPass.cpp" />
     <ClCompile Include="Utility.cpp" />
+    <ClCompile Include="Viewport.cpp" />
+    <ClCompile Include="ScissorRect.cpp" />
+    <ClCompile Include="BoundingBox.cpp" />
+    <ClCompile Include="DebugPass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h">
@@ -247,6 +251,10 @@
     <ClInclude Include="ComputeShader.h" />
     <ClInclude Include="PrePass.h" />
     <ClInclude Include="DepthPass.h" />
+    <ClInclude Include="Viewport.h" />
+    <ClInclude Include="ScissorRect.h" />
+    <ClInclude Include="BoundingBox.h" />
+    <ClInclude Include="DebugPass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\PrePass.hlsl">
@@ -283,6 +291,12 @@
       <Filter>stuff</Filter>
     </None>
     <None Include="Assets\Pack.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\DepthPass.hlsl">
+      <Filter>stuff</Filter>
+    </None>
+    <None Include="Assets\DebugPass.hlsl">
       <Filter>stuff</Filter>
     </None>
   </ItemGroup>

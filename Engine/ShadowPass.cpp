@@ -277,7 +277,6 @@ void ShadowPass::Bind()
 
 	if (lightDir != Vector3(0.0f, 0.0f, 0.0f))
 	{
-		UpdateViewport();
 		Clear();
 
 		UpdateCascade(lightDir);
@@ -302,30 +301,10 @@ void ShadowPass::Bind()
 
 				UpdateBuffer1(model);
 
-				model->Draw();
+				model->Bind(false, false);
 			}
 		}
 	}
-}
-
-void ShadowPass::UpdateViewport()
-{
-	static D3D11_VIEWPORT viewport{};
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.Width = (float)mCascade.resolution;
-	viewport.Height = (float)mCascade.resolution;
-
-	static D3D11_RECT rect{};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = mCascade.resolution;
-	rect.bottom = mCascade.resolution;
-
-	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
-	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
 void ShadowPass::UpdateBuffer0(int index)

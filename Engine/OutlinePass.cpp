@@ -1,5 +1,7 @@
 #include "OutlinePass.h"
 
+#pragma warning(disable : 6387)
+
 #include "Utility.h"
 #include "Direct3D.h"
 #include "Application.h"
@@ -56,9 +58,7 @@ ConstantBuffer<OutlinePass::Buffer2> OutlinePass::mBuffer2;
 struct OutlinePass::Buffer3
 {
 	Color color;
-	int stepSize;
-	int width;
-	int height; float pad;
+	int stepSize; float pad[3];
 };
 ConstantBuffer<OutlinePass::Buffer3> OutlinePass::mBuffer3;
 
@@ -163,7 +163,7 @@ void OutlinePass::Bind()
 		{
 			UpdateBuffer1(model);
 
-			model->Draw();
+			model->Bind(false, false);
 
 			isDrawOutline = true;
 		}
@@ -176,9 +176,11 @@ void OutlinePass::Bind()
 
 		if (light->GetOutline() && light->GetEnable())
 		{
-			UpdateBuffer1(light->GetModel());
+			Model* model = light->GetModel();
 
-			light->Bind();
+			UpdateBuffer1(model);
+
+			model->Bind(false, false);
 
 			isDrawOutline = true;
 		}
@@ -191,9 +193,11 @@ void OutlinePass::Bind()
 
 		if (light->GetOutline() && light->GetEnable())
 		{
-			UpdateBuffer1(light->GetModel());
+			Model* model = light->GetModel();
 
-			light->Bind();
+			UpdateBuffer1(model);
+
+			model->Bind(false, false);
 
 			isDrawOutline = true;
 		}
@@ -295,24 +299,9 @@ void OutlinePass::UpdateBuffer2(int stepSize)
 
 void OutlinePass::UpdateBuffer3()
 {
-	int width, height;
-
-	if (Application::IsGame())
-	{
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
-
 	static Buffer3 buffer{};
 	buffer.color = mOutline.color;
 	buffer.stepSize = mOutline.width;
-	buffer.width = width;
-	buffer.height = height;
 
 	mBuffer3.Bind(buffer);
 }

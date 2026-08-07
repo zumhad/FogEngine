@@ -12,6 +12,8 @@ class FOG_API SkyboxPass;
 class FOG_API OutlinePass;
 class FOG_API PrePass;
 class FOG_API ShadowPass;
+class FOG_API DepthPass;
+class FOG_API DebugPass;
 
 class FOG_API VertexShader
 {
@@ -21,6 +23,8 @@ class FOG_API VertexShader
 	friend class OutlinePass;
 	friend class PrePass;
 	friend class ShadowPass;
+	friend class DepthPass;
+	friend class DebugPass;
 
 private:
 	VertexShader();

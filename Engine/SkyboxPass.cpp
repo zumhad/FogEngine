@@ -52,7 +52,7 @@ void SkyboxPass::Bind()
 	Direct3D::DeviceContext()->VSSetConstantBuffers(0, 1, mBuffer0.Get());
 
 	mModel->BindTexture();
-	mModel->Draw();
+	mModel->Bind(true, true);
 }
 
 void SkyboxPass::UpdateBuffer0()

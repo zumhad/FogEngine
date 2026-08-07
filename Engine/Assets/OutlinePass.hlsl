@@ -78,18 +78,18 @@ Texture2D<int2> gTexture : register(t0);
 cbuffer Buffer3 : register(b0)
 {
     float4 gColor;
-    int gOutlineWidth;
-    int gWidth;
-    int gHeight; float pad1;
+    int gOutlineWidth; float3 pad1;
 };
 
 PS_OUTPUT1 PS1(VS_OUTPUT1 input)
 {
     PS_OUTPUT1 output;
 
-    input.uv *= float2(gWidth, gHeight);
+    int2 uv;
+    gTexture.GetDimensions(uv.x, uv.y);
+    uv *= input.uv;
 
-    int2 offset = gTexture.Load(int3(input.uv, 0));
+    int2 offset = gTexture.Load(int3(uv, 0));
 
     if ((offset.x == 0 && offset.y == 0) || dot(offset, offset) > (gOutlineWidth * gOutlineWidth))
         clip(-1);

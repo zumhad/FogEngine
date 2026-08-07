@@ -3,6 +3,9 @@
 #include "Application.h"
 #include "Light.h"
 #include "Model.h"
+#include "Camera.h"
+
+#include <algorithm>
 
 Array<Object*> ObjectManager::mArrObject;
 Array<Model*> ObjectManager::mArrModel;
@@ -231,6 +234,46 @@ void ObjectManager::DeleteWithID(int i)
 
 	SAFE_DELETE(mArrObject[res]);
 	mArrObject.Delete(res);
+}
+
+bool ObjectManager::PredModel(Model* obj1, Model* obj2)
+{
+	Vector3 v1 = Camera::GetPosition() - obj1->GetPosition();
+	v1 = Vector3::Dot(v1, v1);
+
+	Vector3 v2 = Camera::GetPosition() - obj2->GetPosition();
+	v2 = Vector3::Dot(v2, v2);
+
+	return v1.x < v2.x;
+}
+
+bool ObjectManager::PredDirectionLight(DirectionLight* light1, DirectionLight* light2)
+{
+	Vector3 v1 = Camera::GetPosition() - light1->GetPosition();
+	v1 = Vector3::Dot(v1, v1);
+
+	Vector3 v2 = Camera::GetPosition() - light2->GetPosition();
+	v2 = Vector3::Dot(v2, v2);
+
+	return v1.x < v2.x;
+}
+
+bool ObjectManager::PredPointLight(PointLight* light1, PointLight* light2)
+{
+	Vector3 v1 = Camera::GetPosition() - light1->GetPosition();
+	v1 = Vector3::Dot(v1, v1);
+
+	Vector3 v2 = Camera::GetPosition() - light2->GetPosition();
+	v2 = Vector3::Dot(v2, v2);
+
+	return v1.x < v2.x;
+}
+
+void ObjectManager::Sort()
+{
+	std::sort(mArrModel.Data(), mArrModel.Data() + mArrModel.Size(), PredModel);
+	std::sort(mArrDirectionLight.Data(), mArrDirectionLight.Data() + mArrDirectionLight.Size(), PredDirectionLight);
+	std::sort(mArrPointLight.Data(), mArrPointLight.Data() + mArrPointLight.Size(), PredPointLight);
 }
 
 void ObjectManager::Shotdown()

@@ -21,6 +21,8 @@ class FOG_API RenderTargetView;
 class FOG_API SamplerState;
 class FOG_API DepthStencilState;
 class FOG_API Model;
+class FOG_API Viewport;
+class FOG_API ScissorRect;
 
 class FOG_API PipelineState
 {
@@ -30,15 +32,27 @@ public:
 	static void Shotdown();
 
 private:
-	static void UpdateShadowPassViewport();
+	static void UpdateViewportBuffer();
+	static void UpdateViewportScreen();
+	static void UpdateViewportCascade();
 
 private:
+	static Viewport mViewportBuffer;
+	static Viewport mViewportScreen;
+	static Viewport mViewportCascade;
+
+	static ScissorRect mScissorRectBuffer;
+	static ScissorRect mScissorRectScreen;
+	static ScissorRect mScissorRectCascade;
+
 	static RasterizerState mRasterizerState;
 	static RasterizerState mShadowRasterizerState;
 	static RasterizerState mSkyboxRasterizerState;
+
 	static SamplerState mShadowSamplerState;
 	static SamplerState mSamplerState;
 	static SamplerState mPostProcessSamplerState;
+
 	static DepthStencilState mReadWriteDSS;
 	static DepthStencilState mReadOnlyDSS;
 	static DepthStencilState mDisableDSS;

@@ -30,16 +30,6 @@ DirectionLight::DirectionLight(DirectionLight&& light) noexcept : DirectionLight
 	mModel = new Model(std::move(model));
 }
 
-void DirectionLight::Bind()
-{
-	mModel->Draw();
-}
-
-void DirectionLight::BindTexture()
-{
-	mModel->BindTexture();
-}
-
 Model* DirectionLight::GetModel()
 {
 	mModel->mOffset = mOffset;
@@ -129,16 +119,6 @@ PointLight::PointLight(PointLight&& light) noexcept : PointLight(light)
 PointLight::~PointLight()
 {
 	SAFE_DELETE(mModel);
-}
-
-void PointLight::Bind()
-{
-	mModel->Draw();
-}
-
-void PointLight::BindTexture()
-{
-	mModel->BindTexture();
 }
 
 Model* PointLight::GetModel()

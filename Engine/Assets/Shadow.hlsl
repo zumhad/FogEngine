@@ -3,9 +3,7 @@ cbuffer cbLightPassBuffer : register(b0)
     DirectionalLight gDirLight;
     PointLight gPointLight[MAX_POINT_LIGHT];
     float3 gCameraPosition;
-    int gWidth;
-    int gHeight;
-    int gPointCount; float2 pad;
+    int gPointCount;
 };
 
 Texture2DArray<float> gTextureShadow : register(t4);

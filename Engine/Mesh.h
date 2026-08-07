@@ -4,14 +4,20 @@
 
 #include "Vector2.h"
 #include "Vector3.h"
+#include "VertexBuffer.h"
+#include "IndexBuffer.h"
+#include "BoundingBox.h"
 
-#include <d3d11.h>
-
-struct Vertex
+struct VertexMax
 {
 	Vector3 position;
 	Vector3 normal;
 	Vector2 uv;
+};
+
+struct VertexMin
+{
+	Vector3 position;
 };
 
 template <typename T>
@@ -24,16 +30,17 @@ class FOG_API Mesh
 	friend class Model;
 
 public:
-	Mesh(const Array<Vertex>& vertex, const Array<unsigned int>& index);
+	Mesh(const Array<VertexMax>& vertexMax, const Array<VertexMin>& vertexMin, const Array<unsigned int>& index, const Vector3& min, const Vector3& max);
 	~Mesh();
 
 private:
-	void Draw();
+	void Bind(bool normal, bool uv);
+	void BindBoundingBox();
 
 private:
-	int mIndexCount;
-	int mVertexSize;
-	ID3D11Buffer* mVertexBuffer;
-	ID3D11Buffer* mIndexBuffer;
+	VertexBuffer mVertexBufferMax;
+	VertexBuffer mVertexBufferMin;
+	IndexBuffer mIndexBuffer;
+	BoundingBox mBoundingBox;
 };
 

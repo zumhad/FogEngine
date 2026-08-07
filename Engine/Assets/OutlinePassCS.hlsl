@@ -1,4 +1,4 @@
-RWTexture2D<int2> gTexture : register(u0);
+ RWTexture2D<int2> gTexture : register(u0);
 
 cbuffer Buffer2 : register(b0)
 {
@@ -15,9 +15,6 @@ void CS(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID, uint GI
     gData[GI] = gTexture[DTid.xy];
     GroupMemoryBarrierWithGroupSync();
 
-    if (DTid.x >= (uint)gWidth || DTid.y >= (uint)gHeight)
-        return;
-
     float bestDist = 32767.0f;
     int2 bestOffset = int2(32767, 32767);
 
@@ -29,9 +26,9 @@ void CS(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID, uint GI
         {
             int2 offset;
 
-            int2 step = int2(i, j) * gStepSize;
-            int2 uv1 = DTid.xy + step;
-            int2 uv2 = GTid.xy + step;
+            int2 stepSize = int2(i, j) * gStepSize;
+            int2 uv1 = DTid.xy + stepSize;
+            int2 uv2 = GTid.xy + stepSize;
 
             bool test = (uv1.x >= 0 && uv1.y >= 0 && uv1.x < gWidth && uv1.y < gHeight);
 
@@ -44,10 +41,10 @@ void CS(uint3 DTid : SV_DispatchThreadID, uint3 GTid : SV_GroupThreadID, uint GI
                 offset = (test ? gTexture[uv1] : int2(32767, 32767));
             }
 
-            int2 coord = offset - step;
+            int2 coord = offset - stepSize;
             float dist = dot(coord, coord);
 
-            if (dist < bestDist && offset.x != 32767)
+            if (bestDist > dist && any(offset - 32767))
             {
                 bestDist = dist;
                 bestOffset = coord;

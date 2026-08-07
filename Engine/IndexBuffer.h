@@ -9,10 +9,14 @@
 #include <d3d11.h>
 
 class FOG_API TextureMap;
+class FOG_API BoundingBox;
+class FOG_API Mesh;
 
 class FOG_API IndexBuffer
 {
 	friend class TextureMap;
+	friend class BoundingBox;
+	friend class Mesh;
 
 private:
 	IndexBuffer();
@@ -22,7 +26,7 @@ private:
 
 	ID3D11Buffer* Get();
 	void Release();
-	int Count();
+	int GetCount();
 
 private:
 	ID3D11Buffer* mIndexBuffer;

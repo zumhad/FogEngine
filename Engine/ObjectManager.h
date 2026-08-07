@@ -15,6 +15,7 @@ class FOG_API BufferManager;
 class FOG_API Model;
 class FOG_API DirectionLight;
 class FOG_API PointLight;
+class FOG_API PipelineState;
 
 class FOG_API ObjectManager
 {
@@ -23,6 +24,7 @@ class FOG_API ObjectManager
     friend class Object;
     friend class DepthMap;
     friend class BufferManager;
+    friend class PipelineState;
 
 public:
     template<typename T>
@@ -79,6 +81,10 @@ public:
 
 private:
     static void Shotdown();
+    static void Sort();
+    static bool PredModel(Model* obj1, Model* obj2);
+    static bool PredDirectionLight(DirectionLight* light1, DirectionLight* light2);
+    static bool PredPointLight(PointLight* light1, PointLight* light2);
 
     template <typename T>
     static int BinarySearch(const Array<T*>& arr, int id);

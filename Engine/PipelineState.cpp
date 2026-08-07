@@ -25,16 +25,30 @@
 #include "Matrix3.h"
 #include "OutlinePass.h"
 #include "PrePass.h"
+#include "DepthPass.h"
+#include "Viewport.h"
+#include "ScissorRect.h"
+#include "DebugPass.h"
+
+Viewport PipelineState::mViewportBuffer;
+Viewport PipelineState::mViewportScreen;
+Viewport PipelineState::mViewportCascade;
+
+ScissorRect PipelineState::mScissorRectBuffer;
+ScissorRect PipelineState::mScissorRectScreen;
+ScissorRect PipelineState::mScissorRectCascade;
 
 RasterizerState PipelineState::mShadowRasterizerState;
 RasterizerState PipelineState::mRasterizerState;
+RasterizerState PipelineState::mSkyboxRasterizerState;
+
 SamplerState PipelineState::mShadowSamplerState;
 SamplerState PipelineState::mSamplerState;
 SamplerState PipelineState::mPostProcessSamplerState;
+
 DepthStencilState PipelineState::mReadWriteDSS;
 DepthStencilState PipelineState::mReadOnlyDSS;
 DepthStencilState PipelineState::mDisableDSS;
-RasterizerState PipelineState::mSkyboxRasterizerState;
 
 VertexShader PipelineState::mPassVS;
 PixelShader PipelineState::mPassPS;
@@ -96,7 +110,11 @@ void PipelineState::Shotdown()
 
 void PipelineState::Bind()
 {
+	UpdateViewportCascade();
+
 	Direct3D::DeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Direct3D::DeviceContext()->RSSetViewports(1, mViewportCascade.Get());
+	Direct3D::DeviceContext()->RSSetScissorRects(1, mScissorRectCascade.Get());
 
 	//////////////////////////////////////////////////////////////////////////////
 
@@ -105,18 +123,30 @@ void PipelineState::Bind()
 
 	ShadowPass::Bind();
 
-	//////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////
+
+	UpdateViewportBuffer();
+
+	Direct3D::DeviceContext()->RSSetViewports(1, mViewportBuffer.Get());
+	Direct3D::DeviceContext()->RSSetScissorRects(1, mScissorRectBuffer.Get());
+
+	///////////////////////////////////////////////////////////////////////////////
 
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
-	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetDepthStencilState(mReadWriteDSS.Get(), 0);
 
+	DepthPass::Bind();
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+
+	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
+	Direct3D::DeviceContext()->OMSetDepthStencilState(mReadOnlyDSS.Get(), 0);
+
+	ObjectManager::Sort();
 	PrePass::Bind();
 
 	//////////////////////////////////////////////////////////////////////////////////////////////
 
-	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
-	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
 	Direct3D::DeviceContext()->PSSetSamplers(1, 1, mShadowSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetRenderTargets(1, LightMap::GetRTV(), 0);
 	Direct3D::DeviceContext()->OMSetDepthStencilState(mDisableDSS.Get(), 0);
@@ -129,7 +159,7 @@ void PipelineState::Bind()
 	Direct3D::DeviceContext()->PSSetConstantBuffers(0, 1, LightMap::GetBuffer());
 
 	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, PrePass::GetColorSRV());
-	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, PrePass::GetDepthSRV());
+	Direct3D::DeviceContext()->PSSetShaderResources(1, 1, DepthPass::GetDepthSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(2, 1, PrePass::GetPositionMaterialSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(3, 1, PrePass::GetNormalLightingSRV());
 	Direct3D::DeviceContext()->PSSetShaderResources(4, 1, ShadowPass::GetDepthSRV());
@@ -147,12 +177,12 @@ void PipelineState::Bind()
 
 	Direct3D::DeviceContext()->RSSetState(mSkyboxRasterizerState.Get());
 	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mSamplerState.Get());
-	Direct3D::DeviceContext()->OMSetRenderTargets(1, LightMap::GetRTV(), PrePass::GetDepthDSV());
+	Direct3D::DeviceContext()->OMSetRenderTargets(1, LightMap::GetRTV(), DepthPass::GetDepthDSV());
 	Direct3D::DeviceContext()->OMSetDepthStencilState(mReadOnlyDSS.Get(), 0);
 
 	SkyboxPass::Bind();
 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////
 
 	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
 	Direct3D::DeviceContext()->OMSetDepthStencilState(mDisableDSS.Get(), 0);
@@ -161,10 +191,15 @@ void PipelineState::Bind()
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Direct3D::DeviceContext()->RSSetState(mRasterizerState.Get());
+	UpdateViewportScreen();
+
+	Direct3D::DeviceContext()->RSSetViewports(1, mViewportScreen.Get());
+	Direct3D::DeviceContext()->RSSetScissorRects(1, mScissorRectScreen.Get());
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////
+
 	Direct3D::DeviceContext()->PSSetSamplers(0, 1, mPostProcessSamplerState.Get());
 	Direct3D::DeviceContext()->OMSetRenderTargets(1, Direct3D::GetRTV(), 0);
-	Direct3D::DeviceContext()->OMSetDepthStencilState(mDisableDSS.Get(), 0);
 
 	Direct3D::DeviceContext()->IASetInputLayout(mPostProcessIL.Get());
 	Direct3D::DeviceContext()->VSSetShader(mPostProcessVS.Get(), 0, 0);
@@ -178,4 +213,55 @@ void PipelineState::Bind()
 	TextureMap::Bind();
 
 	Direct3D::DeviceContext()->PSSetShaderResources(0, 1, Direct3D::NullSRV());
+}
+
+void PipelineState::UpdateViewportBuffer()
+{
+	int width, height;
+
+	if (Application::IsGame())
+	{
+		width = Application::GetGameWidth();
+		height = Application::GetGameHeight();
+	}
+	else
+	{
+		width = Application::GetSceneWidth();
+		height = Application::GetSceneHeight();
+	}
+
+	mViewportBuffer.Update(0, 0, width, height);
+	mScissorRectBuffer.Update(0, 0, width, height);
+}
+
+void PipelineState::UpdateViewportScreen()
+{
+	int x, y;
+	int width, height;
+
+	if (Application::IsGame())
+	{
+		x = 0;
+		y = 0;
+		width = Application::GetGameWidth();
+		height = Application::GetGameHeight();
+	}
+	else
+	{
+		x = Application::GetSceneX();
+		y = Application::GetSceneY();
+		width = Application::GetSceneWidth();
+		height = Application::GetSceneHeight();
+	}
+
+	mViewportScreen.Update(x, y, width, height);
+	mScissorRectScreen.Update(x, y, x + width, y + height);
+}
+
+void PipelineState::UpdateViewportCascade()
+{
+	int r = ShadowPass::GetResolution();
+
+	mViewportCascade.Update(0, 0, r, r);
+	mScissorRectCascade.Update(0, 0, r, r);
 }

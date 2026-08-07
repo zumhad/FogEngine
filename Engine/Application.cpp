@@ -20,6 +20,8 @@
 #include "SkyboxPass.h"
 #include "OutlinePass.h"
 #include "PrePass.h"
+#include "DepthPass.h"
+#include "DebugPass.h"
 
 #include <ctime>
 #include <shellapi.h>
@@ -127,13 +129,15 @@ void Application::InitApp(const APPCLASS& app)
 void Application::CheckDebug()
 {
 #ifdef _DEBUG
-    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 }
 
 void Application::InitModules(const APPCLASS& app)
 {
     Direct3D::Setup();
+    DebugPass::Setup();
+    DepthPass::Setup();
     PrePass::Setup();
     OutlinePass::Setup();
     SkyboxPass::Setup();
@@ -220,6 +224,8 @@ void Application::Shotdown() //exit
     SkyboxPass::Shotdown();
     OutlinePass::Shotdown();
     PrePass::Shotdown();
+    DepthPass::Shotdown();
+    DebugPass::Shotdown();
     Direct3D::Shotdown();
 }
 

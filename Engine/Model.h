@@ -22,6 +22,8 @@ class FOG_API PointLight;
 class FOG_API DirectionLight;
 class FOG_API OutlinePass;
 class FOG_API PrePass;
+class FOG_API DepthPass;
+class FOG_API DebugPass;
 
 class FOG_API Model : public Object
 {
@@ -33,6 +35,8 @@ class FOG_API Model : public Object
 	friend class DirectionLight;
 	friend class OutlinePass;
 	friend class PrePass;
+	friend class DepthPass;
+	friend class DebugPass;
 
 public:
 	TypeObject GetType() override { return TypeObject::Model; }
@@ -60,7 +64,8 @@ public:
 
 private:
 	void BindTexture();
-	void Draw();
+	void Bind(bool normal, bool uv);
+	void BindBoundingBox();
 
 private:
 	String mModelPath;

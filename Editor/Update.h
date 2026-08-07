@@ -154,6 +154,8 @@ void UpdateLight(Button* button, DirectionLight* light)
 	static Button* colorG = button->GetChildWithNumber(3);
 	static Button* colorB = button->GetChildWithNumber(4);
 	static Button* power = button->GetChildWithNumber(6);
+	static Button* cascadeBias = button->GetChildWithNumber(8);
+	static Button* normalBias = button->GetChildWithNumber(10);
 
 	static Color color = Color(-1.0f, -1.0f, -1.0f);
 	if (color != light->GetColor())
@@ -171,5 +173,21 @@ void UpdateLight(Button* button, DirectionLight* light)
 		power->text.text = String::ToString(light->GetPower(), 2);
 
 		_power = light->GetPower();
+	}
+
+	static float _cascadeBias = -1.0f;
+	if (_cascadeBias != Application::GetCascadeBias())
+	{
+		cascadeBias->text.text = String::ToString(Application::GetCascadeBias(), 4);
+
+		_cascadeBias = Application::GetCascadeBias();
+	}
+
+	static float _normalBias = -1.0f;
+	if (_normalBias != Application::GetNormalBias())
+	{
+		normalBias->text.text = String::ToString(Application::GetNormalBias(), 2);
+
+		_normalBias = Application::GetNormalBias();
 	}
 }

@@ -21,6 +21,8 @@ class FOG_API OutlinePass;
 class FOG_API PrePass;
 class FOG_API Picking;
 class FOG_API Object;
+class FOG_API DepthPass;
+class FOG_API DebugPass;
 
 struct FOG_API APPCLASS;
 
@@ -40,6 +42,8 @@ class FOG_API Camera
 	friend class PrePass;
 	friend class Picking;
 	friend class Object;
+	friend class DepthPass;
+	friend class DebugPass;
 
 public:
 	static void SetPosition(const Vector3& position);

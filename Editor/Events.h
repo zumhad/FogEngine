@@ -61,6 +61,24 @@ void SliderPower(Button& button)
 	dir->SetPower(value);
 }
 
+void SliderCascadeBias(Button& button)
+{
+	float value = 0.0001f * Input::GetAxis(MOUSE_X) + Application::GetCascadeBias();
+	value = Math::Max(0.0f, value);
+
+	button.text.text = String::ToString(value, 4);
+	Application::SetCascadeBias(value);
+}
+
+void SliderNormalBias(Button& button)
+{
+	float value = 0.01f * Input::GetAxis(MOUSE_X) + Application::GetNormalBias();
+	value = Math::Max(0.0f, value);
+
+	button.text.text = String::ToString(value, 2);
+	Application::SetNormalBias(value);
+}
+
 void SliderPosX(Button& button)
 {
 	Object* obj = Picking::GetPickObject();

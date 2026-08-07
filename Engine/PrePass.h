@@ -34,21 +34,17 @@ private:
 	static void Shotdown();
 
 private:
-	static ID3D11DepthStencilView* const GetDepthDSV();
-
 	static ID3D11RenderTargetView* const* GetColorRTV();
 	static ID3D11RenderTargetView* const* GetNormalLightingRTV();
 	static ID3D11RenderTargetView* const* GetIDRTV();
 	static ID3D11RenderTargetView* const* GetPositionMaterialRTV();
 
-	static ID3D11ShaderResourceView* const* GetDepthSRV();
 	static ID3D11ShaderResourceView* const* GetColorSRV();
 	static ID3D11ShaderResourceView* const* GetNormalLightingSRV();
 	static ID3D11ShaderResourceView* const* GetIDSRV();
 	static ID3D11ShaderResourceView* const* GetPositionMaterialSRV();
 
 private:
-	static void UpdateViewport();
 	static void Clear();
 	static void UpdateBuffer0();
 	static void UpdateBuffer1(Model* model);
@@ -66,9 +62,6 @@ private:
 
 	static ID3D11RenderTargetView* mIDRTV;
 	static ID3D11ShaderResourceView* mIDSRV;
-
-	static ID3D11DepthStencilView* mDepthDSV;
-	static ID3D11ShaderResourceView* mDepthSRV;
 
 	static VertexShader mVertexShader;
 	static PixelShader mPixelShader;

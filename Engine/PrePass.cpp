@@ -1,5 +1,7 @@
 #include "PrePass.h"
 
+#pragma warning(disable : 6387)
+
 #include "ConstantBuffer.h"
 #include "Matrix.h"
 #include "Application.h"
@@ -15,6 +17,7 @@
 #include "LightMap.h"
 #include "Vector4.h"
 #include "ShadowPass.h"
+#include "DepthPass.h"
 
 #include <DirectXMath.h>
 
@@ -58,9 +61,6 @@ ID3D11ShaderResourceView* PrePass::mPositionMaterialSRV = 0;
 
 ID3D11RenderTargetView* PrePass::mIDRTV = 0;
 ID3D11ShaderResourceView* PrePass::mIDSRV = 0;
-
-ID3D11DepthStencilView* PrePass::mDepthDSV = 0;
-ID3D11ShaderResourceView* PrePass::mDepthSRV = 0;
 
 void PrePass::Setup()
 {
@@ -132,34 +132,6 @@ void PrePass::Setup()
 		desc.Texture2D.MostDetailedMip = 0;
 		desc.Texture2D.MipLevels = 1;
 		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mNormalLightingSRV));
-	}
-	SAFE_RELEASE(texture);
-	{
-		D3D11_TEXTURE2D_DESC desc{};
-		desc.Width = width;
-		desc.Height = height;
-		desc.MipLevels = 1;
-		desc.ArraySize = 1;
-		desc.Format = DXGI_FORMAT_R32_TYPELESS;
-		desc.SampleDesc.Count = 1;
-		desc.SampleDesc.Quality = 0;
-		desc.Usage = D3D11_USAGE_DEFAULT;
-		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-		FOG_TRACE(Direct3D::Device()->CreateTexture2D(&desc, 0, &texture));
-	}
-	{
-		D3D11_DEPTH_STENCIL_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_D32_FLOAT;
-		desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-		FOG_TRACE(Direct3D::Device()->CreateDepthStencilView(texture, &desc, &mDepthDSV));
-	}
-	{
-		D3D11_SHADER_RESOURCE_VIEW_DESC desc{};
-		desc.Format = DXGI_FORMAT_R32_FLOAT;
-		desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-		desc.Texture2D.MostDetailedMip = 0;
-		desc.Texture2D.MipLevels = 1;
-		FOG_TRACE(Direct3D::Device()->CreateShaderResourceView(texture, &desc, &mDepthSRV));
 	}
 	SAFE_RELEASE(texture);
 	{
@@ -241,10 +213,9 @@ void PrePass::Setup()
 
 void PrePass::Bind()
 {
-	UpdateViewport();
 	Clear();
 
-	Direct3D::DeviceContext()->OMSetRenderTargets(mRTV.Size(), mRTV.Data(), mDepthDSV);
+	Direct3D::DeviceContext()->OMSetRenderTargets(mRTV.Size(), mRTV.Data(), DepthPass::GetDepthDSV());
 
 	Direct3D::DeviceContext()->IASetInputLayout(mInputLayout.Get());
 	Direct3D::DeviceContext()->VSSetShader(mVertexShader.Get(), 0, 0);
@@ -264,11 +235,13 @@ void PrePass::Bind()
 
 		LightMap::UpdateBuffer(light);
 
-		UpdateBuffer1(light->GetModel());
-		UpdateBuffer2(light->GetModel());
+		Model* model = light->GetModel();
 
-		light->BindTexture();
-		light->Bind();
+		UpdateBuffer1(model);
+		UpdateBuffer2(model);
+
+		model->BindTexture();
+		model->Bind(true, true);
 
 		break;
 	}
@@ -281,11 +254,13 @@ void PrePass::Bind()
 
 		int count = LightMap::UpdateBuffer(light);
 
+		Model* model = light->GetModel();
+
 		UpdateBuffer1(light->GetModel());
 		UpdateBuffer2(light->GetModel());
 
-		light->BindTexture();
-		light->Bind();
+		model->BindTexture();
+		model->Bind(true, true);
 
 		if (count == MAX_POINT_LIGHT) break;
 	}
@@ -299,41 +274,8 @@ void PrePass::Bind()
 		UpdateBuffer2(model);
 
 		model->BindTexture();
-		model->Draw();
+		model->Bind(true, true);
 	}
-}
-
-void PrePass::UpdateViewport()
-{
-	int width, height;
-
-	if (Application::IsGame())
-	{
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
-
-	static D3D11_VIEWPORT viewport{};
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-	viewport.TopLeftX = 0.0f;
-	viewport.TopLeftY = 0.0f;
-	viewport.Width = (FLOAT)width;
-	viewport.Height = (FLOAT)height;
-
-	static D3D11_RECT rect{};
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = width;
-	rect.bottom = height;
-
-	Direct3D::DeviceContext()->RSSetViewports(1, &viewport);
-	Direct3D::DeviceContext()->RSSetScissorRects(1, &rect);
 }
 
 void PrePass::UpdateBuffer0()
@@ -371,16 +313,10 @@ void PrePass::Clear()
 {
 	static const float color[4]{ 0.0f, 0.0f, 0.0f, 0.0f };
 
-	Direct3D::DeviceContext()->ClearDepthStencilView(mDepthDSV, D3D11_CLEAR_DEPTH, 0.0f, 0);
 	Direct3D::DeviceContext()->ClearRenderTargetView(mColorRTV, color);
 	Direct3D::DeviceContext()->ClearRenderTargetView(mNormalLightingRTV, color);
 	Direct3D::DeviceContext()->ClearRenderTargetView(mPositionMaterialRTV, color);
 	Direct3D::DeviceContext()->ClearRenderTargetView(mIDRTV, color);
-}
-
-ID3D11DepthStencilView* const PrePass::GetDepthDSV()
-{
-	return mDepthDSV;
 }
 
 ID3D11RenderTargetView* const* PrePass::GetColorRTV()
@@ -401,11 +337,6 @@ ID3D11RenderTargetView* const* PrePass::GetIDRTV()
 ID3D11RenderTargetView* const* PrePass::GetPositionMaterialRTV()
 {
 	return &mPositionMaterialRTV;
-}
-
-ID3D11ShaderResourceView* const* PrePass::GetDepthSRV()
-{
-	return &mDepthSRV;
 }
 
 ID3D11ShaderResourceView* const* PrePass::GetColorSRV()
@@ -434,8 +365,6 @@ void PrePass::Shotdown()
 	SAFE_RELEASE(mColorSRV);
 	SAFE_RELEASE(mNormalLightingRTV);
 	SAFE_RELEASE(mNormalLightingSRV);
-	SAFE_RELEASE(mDepthDSV);
-	SAFE_RELEASE(mDepthSRV);
 	SAFE_RELEASE(mPositionMaterialRTV);
 	SAFE_RELEASE(mPositionMaterialSRV);
 	SAFE_RELEASE(mIDRTV);

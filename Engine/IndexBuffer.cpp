@@ -9,7 +9,7 @@ IndexBuffer::IndexBuffer()
 	mCount = 0;
 }
 
-int IndexBuffer::Count()
+int IndexBuffer::GetCount()
 {
 	return mCount;
 }

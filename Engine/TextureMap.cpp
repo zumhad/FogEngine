@@ -23,7 +23,7 @@ void TextureMap::Setup()
 	vertices.Add(Vector2(0.0f, 1.0f));
 	vertices.Add(Vector2(1.0f, 1.0f));
 
-	Array<UINT> indices;
+	Array<unsigned int> indices;
 	indices.Add(0);
 	indices.Add(1);
 	indices.Add(2);
@@ -37,10 +37,13 @@ void TextureMap::Setup()
 
 void TextureMap::Bind()
 {
-	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, mVertexBuffer.Get(), mVertexBuffer.Stride(), mVertexBuffer.Offset());
+	static unsigned int stride = mVertexBuffer.GetStride();
+	static unsigned int offset = mVertexBuffer.GetOffset();
+
+	Direct3D::DeviceContext()->IASetVertexBuffers(0, 1, mVertexBuffer.Get(), &stride, &offset);
 	Direct3D::DeviceContext()->IASetIndexBuffer(mIndexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	Direct3D::DeviceContext()->DrawIndexed(mIndexBuffer.Count(), 0, 0);
+	Direct3D::DeviceContext()->DrawIndexed(mIndexBuffer.GetCount(), 0, 0);
 }
 
 void TextureMap::Shotdown()

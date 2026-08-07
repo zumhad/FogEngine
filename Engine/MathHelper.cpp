@@ -11,6 +11,22 @@ float Math::mInfinity = (float)FLT_MAX;
 float Math::mPI = (float)M_PI;
 float Math::mE = (float)M_E;
 
+int Math::CountDigit(int i)
+{
+    i = Abs(i);
+
+    if (i < 10) return 1;
+    if (i < 100) return 2;
+    if (i < 1000) return 3;
+    if (i < 10000) return 4;
+    if (i < 100000) return 5;
+    if (i < 1000000) return 6;
+    if (i < 10000000) return 7;
+    if (i < 100000000) return 8;
+    if (i < 1000000000) return 9;
+
+    return 10;
+}
 
 float Math::Abs(float f)
 {

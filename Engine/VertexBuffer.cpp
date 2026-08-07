@@ -15,14 +15,14 @@ ID3D11Buffer* const* VertexBuffer::Get()
 	return &mVertexBuffer;
 }
 
-UINT* VertexBuffer::Stride()
+unsigned int VertexBuffer::GetStride()
 {
-	return &mStride;
+	return mStride;
 }
 
-UINT* VertexBuffer::Offset()
+unsigned int VertexBuffer::GetOffset()
 {
-	return &mOffset;
+	return mOffset;
 }
 
 void VertexBuffer::Release()

@@ -38,16 +38,20 @@ Model::Model(Model&& model) noexcept : Model(model)
 	path += mModelPath;
 
 	Importer importer;
-	const aiScene* scene = importer.ReadFile(StringConverter(path), aiProcess_Triangulate | aiProcess_ConvertToLeftHanded | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph);
+	const aiScene* scene = importer.ReadFile(StringConverter(path), aiProcess_ConvertToLeftHanded | aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_GenBoundingBoxes);
 
 	mArr.Resize(scene->mNumMeshes);
 
 	for (unsigned int i = 0; i < scene->mNumMeshes; i++)
 	{
 		aiMesh* mesh = scene->mMeshes[i];
+		const aiMaterial* mtl = scene->mMaterials[mesh->mMaterialIndex];
+		
+		static Array<VertexMax> vertexMax;
+		vertexMax.Resize(mesh->mNumVertices);
 
-		static Array<Vertex> vertex;
-		vertex.Resize(mesh->mNumVertices);
+		static Array<VertexMin> vertexMin;
+		vertexMin.Resize(mesh->mNumVertices);
 
 		static Array<unsigned int> index;
 		index.Resize(mesh->mNumFaces * 3);
@@ -59,24 +63,25 @@ Model::Model(Model&& model) noexcept : Model(model)
 			v.x = mesh->mVertices[j].x;
 			v.y = mesh->mVertices[j].y;
 			v.z = mesh->mVertices[j].z;
-			vertex[j].position = v;
+			vertexMax[j].position = v;
+			vertexMin[j].position = v;
 
 			if (mesh->HasNormals())
 			{
 				v.x = mesh->mNormals[j].x;
 				v.y = mesh->mNormals[j].y;
 				v.z = mesh->mNormals[j].z;
-				vertex[j].normal = v;
+				vertexMax[j].normal = v;
 			}
-			else vertex[j].normal = Vector3::Zero();
+			else vertexMax[j].normal = Vector3::Zero();
 
 			if (mesh->mTextureCoords[0])
 			{
 				v.x = mesh->mTextureCoords[0][j].x;
 				v.y = mesh->mTextureCoords[0][j].y;
-				vertex[j].uv = Vector2(v.x, v.y);
+				vertexMax[j].uv = Vector2(v.x, v.y);
 			}
-			else vertex[j].uv = Vector2(0.0f, 0.0f);
+			else vertexMax[j].uv = Vector2(0.0f, 0.0f);
 		}
 
 		for (unsigned int j = 0; j < mesh->mNumFaces; j++)
@@ -87,7 +92,10 @@ Model::Model(Model&& model) noexcept : Model(model)
 			}
 		}
 
-		mArr[i] = new Mesh(vertex, index);
+		Vector3 min = Vector3(mesh->mAABB.mMin.x, mesh->mAABB.mMin.y, mesh->mAABB.mMin.z);
+		Vector3 max = Vector3(mesh->mAABB.mMax.x, mesh->mAABB.mMax.y, mesh->mAABB.mMax.z);
+
+		mArr[i] = new Mesh(vertexMax, vertexMin, index, min, max);
 	}
 
 	mTexture.Create(mTexturePath);
@@ -173,12 +181,21 @@ void Model::BindTexture()
 	mTexture.Bind();
 }
 
-void Model::Draw()
+void Model::Bind(bool normal, bool uv)
 {
 	int size = mArr.Size();
 	for (int i = 0; i < size; i++)
 	{
-		mArr[i]->Draw();
+		mArr[i]->Bind(normal, uv);
+	}
+}
+
+void Model::BindBoundingBox()
+{
+	int size = mArr.Size();
+	for (int i = 0; i < size; i++)
+	{
+		mArr[i]->BindBoundingBox();
 	}
 }
 

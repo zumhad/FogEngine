@@ -159,10 +159,10 @@ String String::ToString(float _Val, int precision)
 	FOG_ASSERT(precision >= 0 && precision <= FLOAT_MAX_DIGITS);
 
 	wchar_t buffer0[6];
-	swprintf_s(buffer0, 6, L"%%%d.%df", FLOAT_MAX_DIGITS - precision, precision);
+	swprintf_s(buffer0, 6, L"%%%d.%df", Math::CountDigit((int)_Val) + precision + 1, precision);
 
 	wchar_t buffer1[11];
-	swprintf_s(buffer1, 9, buffer0, _Val);
+	swprintf_s(buffer1, 11, buffer0, _Val);
 	return String(buffer1);
 }
 

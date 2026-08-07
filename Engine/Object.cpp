@@ -17,6 +17,9 @@ Object::Object()
 
 	mData = 0;
 	mID = 0;
+
+	mQuery = 0;
+	mQueryReady = false;
 }
 
 Object::Object(const Object& o) : Object()
@@ -28,6 +31,8 @@ Object::Object(const Object& o) : Object()
 	mOutline = o.mOutline;
 	mEnable = o.mEnable;
 	mData = o.mData;
+	mQuery = o.mQuery;
+	mQueryReady = o.mQueryReady;
 }
 
 void Object::SetPosition(const Vector3& v)

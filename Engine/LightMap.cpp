@@ -33,9 +33,7 @@ struct FOG_API LightMap::LightBuffer
 		float power; float pad[3];
 	} pointLight[MAX_POINT_LIGHT]{};
 	Vector3 cameraPosition;
-	int width;
-	int height;
-	int pointCount; float pad[2];
+	int pointCount;
 };
 
 ID3D11RenderTargetView* LightMap::mRenderTargetView = 0;
@@ -122,21 +120,6 @@ int LightMap::UpdateBuffer(PointLight* point)
 
 void LightMap::UpdateBuffer()
 {
-	int width, height;
-
-	if (Application::IsGame())
-	{
-		width = Application::GetGameWidth();
-		height = Application::GetGameHeight();
-	}
-	else
-	{
-		width = Application::GetSceneWidth();
-		height = Application::GetSceneHeight();
-	}
-
-	mBuffer.width = width;
-	mBuffer.height = height;
 	mBuffer.cameraPosition = Camera::GetRealPosition();
 
 	mLightBuffer.Bind(mBuffer);

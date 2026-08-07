@@ -11,6 +11,8 @@ class FOG_API Model;
 class FOG_API PipelineState;
 class FOG_API OutlinePass;
 class FOG_API PrePass;
+class FOG_API DepthPass;
+class FOG_API DebugPass;
 
 class FOG_API DirectionLight : public Object
 {
@@ -18,6 +20,8 @@ class FOG_API DirectionLight : public Object
 	friend class PipelineState;
 	friend class OutlinePass;
 	friend class PrePass;
+	friend class DepthPass;
+	friend class DebugPass;
 
 public:
 	TypeObject GetType() override { return TypeObject::DirectionLight; }
@@ -37,8 +41,6 @@ public:
 	float GetPower();
 
 private:
-	void Bind();
-	void BindTexture();
 	Model* GetModel();
 
 private:
@@ -54,6 +56,8 @@ class FOG_API PointLight : public Object
 	friend class PipelineState;
 	friend class OutlinePass;
 	friend class PrePass;
+	friend class DepthPass;
+	friend class DebugPass;
 
 public:
 	TypeObject GetType() override { return TypeObject::PointLight; }
@@ -74,8 +78,6 @@ public:
 	float GetPower();
 
 private:
-	void Bind();
-	void BindTexture();
 	Model* GetModel();
 
 private:

@@ -10,6 +10,7 @@
 class FOG_API Math
 {
 public:
+    static int CountDigit(int i);
     static int Sign(float f);
     static float Abs(float f);
     static float Sqrt(float f);

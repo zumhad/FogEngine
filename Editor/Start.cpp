@@ -445,14 +445,14 @@ void Start()
 	Camera::SetFar(500.0f);
 
 	Application::SetCascadeSplit(0, 10.0f);
-	Application::SetCascadeSplit(1, 30.0f);
-	Application::SetCascadeSplit(2, 40.0f);
+	Application::SetCascadeSplit(1, 15.0f);
+	Application::SetCascadeSplit(2, 20.0f);
 	Application::SetCascadeSplit(3, 50.0f);
 
 	Application::SetCascadeResolution(1024);
 	Application::SetCascadeBias(0.002f);
 	Application::SetCascadeBlend(0.1f);
-	Application::SetNormalBias(0.4f);
+	Application::SetNormalBias(0.0f);
 
 	Application::SetOutlineWidth(5);
 	Application::SetOutlineColor(Color(1.0f, 1.0f, 0.0f));
@@ -806,7 +806,7 @@ void Start()
 	light.rect.x = 5;
 	light.rect.y = transform.rect.y + transform.rect.height + 5;
 	light.rect.width = properties.rect.width - 10;
-	light.rect.height = 140;
+	light.rect.height = 175;
 	light.enable = false;
 	idLight = GUI::AddChild(idProperties, light);
 
@@ -870,6 +870,42 @@ void Start()
 	power.rect.width = 136;
 	power.event.leftPress = SliderPower;
 	GUI::AddChild(idLight, power);
+
+	Button cascadeBias;
+	cascadeBias.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	cascadeBias.rect.x = 5;
+	cascadeBias.rect.y = power.rect.y + power.rect.height + 5;
+	cascadeBias.rect.width = 220;
+	cascadeBias.rect.height = 30;
+	cascadeBias.text.text = L"Cascade Bias";
+	cascadeBias.rect.color = Color(0.1f, 0.1f, 0.1f);
+	cascadeBias.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	cascadeBias.text.x = 20;
+	GUI::AddChild(idLight, cascadeBias);
+
+	cascadeBias.rect.x += cascadeBias.rect.width + 5;
+	cascadeBias.text.text = L"0.0";
+	cascadeBias.rect.width = 136;
+	cascadeBias.event.leftPress = SliderCascadeBias;
+	GUI::AddChild(idLight, cascadeBias);
+
+	Button normalBias;
+	normalBias.rect.alignm = { ALIGNM_LEFT, ALIGNM_TOP };
+	normalBias.rect.x = 5;
+	normalBias.rect.y = cascadeBias.rect.y + cascadeBias.rect.height + 5;
+	normalBias.rect.width = 220;
+	normalBias.rect.height = 30;
+	normalBias.text.text = L"Normal Bias";
+	normalBias.rect.color = Color(0.1f, 0.1f, 0.1f);
+	normalBias.text.alignm = { ALIGNM_LEFT, ALIGNM_CENTER_V };
+	normalBias.text.x = 20;
+	GUI::AddChild(idLight, normalBias);
+
+	normalBias.rect.x += normalBias.rect.width + 5;
+	normalBias.text.text = L"0.0";
+	normalBias.rect.width = 136;
+	normalBias.event.leftPress = SliderNormalBias;
+	GUI::AddChild(idLight, normalBias);
 
 	AddRoom();
 }
